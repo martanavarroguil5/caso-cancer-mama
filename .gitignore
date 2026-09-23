@@ -216,3 +216,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Downloaded dataset and generated training artifacts
+/breastdcedl/
+/checkpoints/
+/runs/
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.keras
+*.onnx
