@@ -1,0 +1,18 @@
+variable_o_grupo,rol,recomendacion,motivo
+pid,agrupación,Excluir como predictor,Identificador; usar para agrupar cortes y evitar fuga.
+pCR,objetivo,Solo etiqueta,Variable que se predice.
+split,partición,Excluir como predictor,Codifica train/test de forma directa.
+test,partición,Excluir como predictor,Redundante con split; fuga directa.
+fold,partición,Excluir como predictor,Solo controla validación cruzada.
+dataset,cohorte,Monitorizar/estratificar,"Puede capturar hospital y protocolo; útil para auditoría, peligroso como atajo."
+pre,adquisición,Excluir,Constante en todo el dataset.
+post_early/post_late,adquisición,Monitorizar,Índices de tiempo potencialmente ligados a cohorte.
+n_xy/n_z/n_times,adquisición,Monitorizar,Describen el protocolo y pueden codificar cohorte.
+slice_thick/xy_spacing,adquisición,Monitorizar,Resolución física; potencial cambio de dominio.
+mask/crop coordinates,preprocesado,No usar inicialmente,Derivadas de anotación y preprocesado; posible atajo y no siempre disponibles en producción.
+age,clínica,Candidata,Usar solo con imputación dentro de cada fold.
+tum_vol,clínica,Candidata,Muy asimétrica; considerar log1p e imputación por fold.
+HR/HER2/subtipo,clínica,Candidata,Biológicamente relevante; evitar duplicar variables derivadas redundantes.
+menopause,clínica,Candidata con cautela,"13,5% ausente y disponibilidad dependiente de la fuente."
+race indicators,sensible,Auditar; no usar por defecto,"Variable sensible, incompleta y no causal; evaluar equidad por separado."
+image features EDA,imagen,"Diagnóstico, no entrada obligatoria",Resúmenes diseñados para entender sesgo; la CNN recibirá las fases completas.

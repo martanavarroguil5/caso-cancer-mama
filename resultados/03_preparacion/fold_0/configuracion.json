@@ -1,0 +1,93 @@
+{
+  "fold_validation": 0,
+  "batch_size": 32,
+  "workers_requested": 0,
+  "workers_effective": 0,
+  "semilla": 42,
+  "normalizacion": "none",
+  "augment_train": "RandomHorizontalFlipJoint(p=0.5)",
+  "augment_validation": null,
+  "test_loader_created": false,
+  "particiones": [
+    {
+      "rol": "train",
+      "cortes": 8759,
+      "pacientes": 878,
+      "cortes_pcr0": 6183,
+      "cortes_pcr1": 2576,
+      "pacientes_pcr0": 620,
+      "pacientes_pcr1": 258,
+      "tasa_pcr_pacientes": 0.2938496583143508
+    },
+    {
+      "rol": "validation",
+      "cortes": 2186,
+      "pacientes": 219,
+      "cortes_pcr0": 1546,
+      "cortes_pcr1": 640,
+      "pacientes_pcr0": 155,
+      "pacientes_pcr1": 64,
+      "tasa_pcr_pacientes": 0.2922374429223744
+    },
+    {
+      "rol": "test_closed",
+      "cortes": 1758,
+      "pacientes": 176,
+      "cortes_pcr0": 1228,
+      "cortes_pcr1": 530,
+      "pacientes_pcr0": 123,
+      "pacientes_pcr1": 53,
+      "tasa_pcr_pacientes": 0.30113636363636365
+    }
+  ],
+  "estadisticas_train": {
+    "mean_channels": [
+      0.12749062583215565,
+      0.19535360273396846,
+      0.2056894149941164
+    ],
+    "std_channels": [
+      0.15879352763029647,
+      0.24769745086692,
+      0.2555287283357846
+    ],
+    "shared_mean": 0.17617788118674682,
+    "shared_std": 0.22764989958752485,
+    "min_value": 0.0,
+    "max_value": 1.0,
+    "slices": 8759,
+    "pixels_per_channel": 574029824
+  },
+  "pos_weight_cortes": 2.4002329192546585,
+  "pos_weight_pacientes": 2.4031007751937983,
+  "smoke_train": {
+    "shape": [
+      32,
+      3,
+      256,
+      256
+    ],
+    "dtype": "torch.float32",
+    "min": 0.0,
+    "max": 1.0,
+    "n_positivos": 9,
+    "n_negativos": 23,
+    "patient_ids_unicos_en_lote": 31
+  },
+  "smoke_validation": {
+    "shape": [
+      32,
+      3,
+      256,
+      256
+    ],
+    "dtype": "torch.float32",
+    "min": 0.0,
+    "max": 1.0,
+    "n_positivos": 0,
+    "n_negativos": 32,
+    "patient_ids_unicos_en_lote": 4
+  },
+  "torch_version": "2.14.0+cpu",
+  "cuda_available": false
+}

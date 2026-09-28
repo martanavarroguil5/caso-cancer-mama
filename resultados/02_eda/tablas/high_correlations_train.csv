@@ -1,0 +1,12 @@
+variable_a,variable_b,spearman,abs_spearman
+tum_vol,log1p_tum_vol,1.0,1.0
+HER2,HER2pos,1.0,1.0
+early_mean_all,late_mean_all,0.9550077142810498,0.9550077142810498
+early_mean_tissue,early_p50_tissue,0.9532671718991105,0.9532671718991105
+early_p50_tissue,late_p50_tissue,0.949082963930903,0.949082963930903
+late_mean_tissue,late_p50_tissue,0.9468329264580565,0.9468329264580565
+early_p10_tissue,late_p10_tissue,0.9418263824615966,0.9418263824615966
+early_mean_tissue,late_p50_tissue,0.9124524166107831,0.9124524166107831
+enhancement_std,enhancement_p90,0.9085434148255023,0.9085434148255023
+early_mean_tissue,late_mean_tissue,0.9084767082815706,0.9084767082815706
+xy_spacing,fov_xy,0.9042201155266845,0.9042201155266845

@@ -22,6 +22,37 @@ vuelve a ejecutarlo para descargar solo lo que falte. Para probar con menos
 datos, ejecuta `descargar_datos.py --pacientes 5`. La guia del caso se descarga
 en `breastdcedl/GUIA.md`.
 
+## Analisis reproducible
+
+Desde la raiz del proyecto:
+
+```powershell
+.\.venv\Scripts\python.exe 01_auditoria_datos.py
+.\.venv\Scripts\python.exe 02_eda_profesional.py
+.\.venv\Scripts\python.exe 03_preparar_datos.py --fold 0
+```
+
+La auditoria valida pacientes, clases, particiones, PNG, canales y rangos. El
+EDA trabaja a nivel de paciente, integra variables clinicas y caracteristicas de
+imagen, estudia cohortes y cambio de distribucion, genera PCA y documenta que
+variables deben excluirse o vigilarse. Los resultados se guardan en
+`resultados/01_auditoria/` y `resultados/02_eda/` sin modificar los CSV fuente.
+El tercer script crea y verifica las particiones y los DataLoaders del baseline
+de imagen, calcula estadisticas solo con train y mantiene test cerrado.
+
+Para regenerar tambien las caracteristicas de imagen, en lugar de reutilizar la
+cache derivada:
+
+```powershell
+.\.venv\Scripts\python.exe 02_eda_profesional.py --recalcular-imagenes
+```
+
+Las comprobaciones del pipeline se ejecutan con:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
 ## Trabajar en dos ordenadores
 
 Antes de empezar en cualquiera de ellos, ejecuta `git pull`. Al terminar,
