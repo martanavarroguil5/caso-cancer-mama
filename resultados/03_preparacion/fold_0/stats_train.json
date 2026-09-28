@@ -1,0 +1,22 @@
+{
+  "fold_validation": 0,
+  "samples_sha256": "7ddd0ecc8272e6460211bd63c1479513bf815e3ea518d1b6bafdcd69f9a75c03",
+  "estadisticas": {
+    "mean_channels": [
+      0.12749062583215565,
+      0.19535360273396846,
+      0.2056894149941164
+    ],
+    "std_channels": [
+      0.15879352763029647,
+      0.24769745086692,
+      0.2555287283357846
+    ],
+    "shared_mean": 0.17617788118674682,
+    "shared_std": 0.22764989958752485,
+    "min_value": 0.0,
+    "max_value": 1.0,
+    "slices": 8759,
+    "pixels_per_channel": 574029824
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "filas_patients": 1273,
+  "filas_samples": 12703,
+  "imagenes": 38109,
+  "fuentes_sha256": {
+    "patients.csv": "ca3b1f8e4d1bc1abf276659bda60520075ace9bd384d623e34d85746ebf50885",
+    "samples.csv": "7ddd0ecc8272e6460211bd63c1479513bf815e3ea518d1b6bafdcd69f9a75c03",
+    "statistics.json": "dcd0abb646cdbaa136c443c85477c6bc4c851c21ac0e5f19d028ab91e1c0560d"
+  },
+  "entorno": {
+    "python": "3.12.14",
+    "numpy": "2.5.3",
+    "pandas": "3.0.6",
+    "matplotlib": "3.11.2"
+  },
+  "asociaciones_pcr": "solo train",
+  "uso_test": "solo shift de covariables; no selección por pCR",
+  "pca_clinica": {
+    "variables": [
+      "age",
+      "log1p_tum_vol",
+      "n_xy",
+      "n_z",
+      "n_times",
+      "post_early",
+      "post_late",
+      "slice_thick",
+      "xy_spacing",
+      "tumor_z_span",
+      "crop_height",
+      "crop_width",
+      "fov_xy",
+      "menopause",
+      "race_white",
+      "race_black",
+      "HR",
+      "HER2"
+    ],
+    "explained_variance_pc1": 0.21298397158368934,
+    "explained_variance_pc2": 0.15598620188446286,
+    "imputacion": "mediana global solo para visualización PCA",
+    "escalado": "z-score"
+  },
+  "pca_imagen": {
+    "variables": [
+      "background_fraction",
+      "pre_mean_all",
+      "pre_mean_tissue",
+      "pre_std_tissue",
+      "pre_p10_tissue",
+      "pre_p50_tissue",
+      "pre_p90_tissue",
+      "pre_saturation_fraction",
+      "early_mean_all",
+      "early_mean_tissue",
+      "early_std_tissue",
+      "early_p10_tissue",
+      "early_p50_tissue",
+      "early_p90_tissue",
+      "early_saturation_fraction",
+      "late_mean_all",
+      "late_mean_tissue",
+      "late_std_tissue",
+      "late_p10_tissue",
+      "late_p50_tissue",
+      "late_p90_tissue",
+      "late_saturation_fraction",
+      "enhancement_mean",
+      "enhancement_std",
+      "enhancement_p90",
+      "enhancement_positive_fraction",
+      "washout_mean",
+      "washout_fraction"
+    ],
+    "explained_variance_pc1": 0.29376732683762885,
+    "explained_variance_pc2": 0.2403809686854247,
+    "imputacion": "mediana global solo para visualización PCA",
+    "escalado": "z-score"
+  },
+  "casos_atipicos": [
+    {
+      "criterio": "Mayor realce medio",
+      "variable": "enhancement_mean",
+      "pid": "Breast_MRI_142",
+      "valor": 0.3355407800053209,
+      "sample_id": "Breast_MRI_142_z007"
+    },
+    {
+      "criterio": "Menor realce medio",
+      "variable": "enhancement_mean",
+      "pid": "ISPY1_1069",
+      "valor": -0.0450672846685074,
+      "sample_id": "ISPY1_1069_z012"
+    },
+    {
+      "criterio": "Mayor saturación EARLY",
+      "variable": "early_saturation_fraction",
+      "pid": "ACRIN-6698-580632",
+      "valor": 0.0559066772460937,
+      "sample_id": "ACRIN-6698-580632_z024"
+    },
+    {
+      "criterio": "Mayor fondo",
+      "variable": "background_fraction",
+      "pid": "ISPY1_1193",
+      "valor": 0.9216354370117188,
+      "sample_id": "ISPY1_1193_z010"
+    }
+  ]
+}

@@ -219,6 +219,7 @@ __marimo__/
 
 # Downloaded dataset and generated training artifacts
 /breastdcedl/
+/.codex_tmp/
 /checkpoints/
 /runs/
 *.pt

@@ -1,0 +1,180 @@
+{
+  "totales": {
+    "pacientes": 1273,
+    "cortes": 12703,
+    "imagenes_esperadas": 38109
+  },
+  "controles_metadata": [
+    {
+      "comprobacion": "Sin nulos en campos esenciales de samples.csv",
+      "ok": true,
+      "detalle": "0 valores nulos"
+    },
+    {
+      "comprobacion": "Sin identificadores de corte duplicados",
+      "ok": true,
+      "detalle": "0 duplicados"
+    },
+    {
+      "comprobacion": "Una fila por paciente en patients.csv",
+      "ok": true,
+      "detalle": "0 duplicados"
+    },
+    {
+      "comprobacion": "Etiquetas binarias",
+      "ok": true,
+      "detalle": "samples=[0, 1]; patients=[0, 1]"
+    },
+    {
+      "comprobacion": "Etiqueta constante dentro de cada paciente",
+      "ok": true,
+      "detalle": "0 pacientes inconsistentes"
+    },
+    {
+      "comprobacion": "Cada paciente pertenece a un único split",
+      "ok": true,
+      "detalle": "0 pacientes con fuga"
+    },
+    {
+      "comprobacion": "Los pacientes coinciden entre ambos CSV",
+      "ok": true,
+      "detalle": "solo samples=0; solo patients=0"
+    },
+    {
+      "comprobacion": "Split y etiqueta coinciden entre samples y patients",
+      "ok": true,
+      "detalle": "0 cortes inconsistentes"
+    },
+    {
+      "comprobacion": "Folds válidos y separados por paciente",
+      "ok": true,
+      "detalle": "train=[np.int64(0), np.int64(1), np.int64(2), np.int64(3), np.int64(4)]; test=[np.int64(-1)]"
+    }
+  ],
+  "imagenes": {
+    "cortes_inspeccionados": 12703,
+    "imagenes_inspeccionadas": 38109,
+    "faltantes": 0,
+    "errores_lectura": 0,
+    "sufijos_incorrectos": 0,
+    "formatos": {
+      "PNG": 38109
+    },
+    "modos": {
+      "L": 38109
+    },
+    "tamanos": {
+      "256x256": 38109
+    },
+    "dtypes": {
+      "uint8": 38109
+    },
+    "rangos_uint8": [
+      {
+        "fase": "PRE",
+        "min": 0,
+        "p01": 0,
+        "p05": 0,
+        "mediana": 15,
+        "p95": 116,
+        "p99": 172,
+        "max": 255,
+        "media": 32.89026324429738,
+        "desviacion": 40.74677033662904,
+        "fraccion_ceros": 0.15905344663600626
+      },
+      {
+        "fase": "EARLY",
+        "min": 0,
+        "p01": 0,
+        "p05": 0,
+        "mediana": 22,
+        "p95": 194,
+        "p99": 255,
+        "max": 255,
+        "media": 50.28864762622203,
+        "desviacion": 63.35544976670301,
+        "fraccion_ceros": 0.15532988528984604
+      },
+      {
+        "fase": "LATE",
+        "min": 0,
+        "p01": 0,
+        "p05": 0,
+        "mediana": 23,
+        "p95": 199,
+        "p99": 255,
+        "max": 255,
+        "media": 52.83854892709392,
+        "desviacion": 65.26846792626318,
+        "fraccion_ceros": 0.15486529041798688
+      }
+    ],
+    "rangos_normalizados": [
+      {
+        "fase": "PRE",
+        "min": 0.0,
+        "p01": 0.0,
+        "p05": 0.0,
+        "mediana": 0.058823529411764705,
+        "p95": 0.4549019607843137,
+        "p99": 0.6745098039215687,
+        "max": 1.0,
+        "media": 0.1289814244874407,
+        "desviacion": 0.15979125622207466,
+        "fraccion_ceros": 0.15905344663600626
+      },
+      {
+        "fase": "EARLY",
+        "min": 0.0,
+        "p01": 0.0,
+        "p05": 0.0,
+        "mediana": 0.08627450980392157,
+        "p95": 0.7607843137254902,
+        "p99": 1.0,
+        "max": 1.0,
+        "media": 0.19721038284792952,
+        "desviacion": 0.24845274418314905,
+        "fraccion_ceros": 0.15532988528984604
+      },
+      {
+        "fase": "LATE",
+        "min": 0.0,
+        "p01": 0.0,
+        "p05": 0.0,
+        "mediana": 0.09019607843137255,
+        "p95": 0.7803921568627451,
+        "p99": 1.0,
+        "max": 1.0,
+        "media": 0.20720999579252516,
+        "desviacion": 0.25595477618142426,
+        "fraccion_ceros": 0.15486529041798688
+      }
+    ],
+    "realce_early_menos_pre_uint8": {
+      "min": -255,
+      "mediana": 3,
+      "max": 255
+    },
+    "pacientes_con_media_early_mayor_pre": 1269,
+    "pacientes_con_washout_medio": 253,
+    "pacientes_evaluados_en_intensidad": 1273,
+    "primeros_faltantes": [],
+    "primeros_errores": [],
+    "primeros_sufijos_incorrectos": []
+  },
+  "ejemplos": [
+    {
+      "sample_id": "ACRIN-6698-103939_z011",
+      "patient_id": "ACRIN-6698-103939",
+      "pCR": 0,
+      "slice_index": 11
+    },
+    {
+      "sample_id": "ACRIN-6698-108969_z026",
+      "patient_id": "ACRIN-6698-108969",
+      "pCR": 1,
+      "slice_index": 26
+    }
+  ]
+}
