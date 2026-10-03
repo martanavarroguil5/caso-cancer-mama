@@ -175,6 +175,65 @@ class TestEntrenamiento(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"Configuración distinta"):
             entrenamiento.run_training(changed,"weighted",42,0,self.root,b,torch.device("cpu"))
 
+    def test_pooling_intermedio_no_cambia_la_red_historica(self):
+        model=entrenamiento.CNN({"pooling":"intermedio"})
+        self.assertEqual(entrenamiento.numero_parametros(model),551913)
+        self.assertEqual(sum(isinstance(m,torch.nn.MaxPool2d) for m in model.modules()),4)
+        shapes=[]
+        handles=[b.register_forward_hook(lambda m,i,o: shapes.append(tuple(o.shape[1:])))
+                 for b in model.features]
+        result=model(torch.rand(2,3,256,256))
+        self.assertEqual(shapes,[(24,64,64),(48,32,32),(96,16,16)])
+        torch.nn.BCEWithLogitsLoss()(result[:,0],torch.tensor([0.,1.])).backward()
+        self.assertGreater(float(model.features[0][0].weight.grad.abs().sum()),0)
+        for h in handles:
+            h.remove()
+        self.assertEqual(sum(isinstance(m,torch.nn.MaxPool2d) for m in entrenamiento.CNN().modules()),1)
+
+    def test_f1_se_calcula_por_paciente(self):
+        samples=pd.DataFrame({"patient_id":["a","a","a","b","c","d"],"pCR":[0,0,0,0,1,1]})
+        q=np.array([.1,.1,.1,.7,.6,.4])
+        metrics=entrenamiento.patient_metrics(samples,q)
+        self.assertEqual(metrics["n_patients"],4)
+        self.assertEqual(metrics["patient_f1"],.5)
+        self.assertEqual(metrics["patient_precision"],.5)
+        self.assertEqual(metrics["patient_recall"],.5)
+        self.assertEqual(metrics["patient_balanced_accuracy"],.5)
+
+    def test_cache_y_bloques_conservan_pesos_y_presupuesto(self):
+        datos_sinteticos(self.root,imagenes=True)
+        samples=entrenamiento.cargar_train(self.root)
+        cache=entrenamiento.CacheTrain(samples,self.root,self.root/"cache",workers=2)
+        row=samples.iloc[[0]]
+        plain=entrenamiento.DatasetEntrenamiento(row,self.root)[0]
+        cached=entrenamiento.DatasetEntrenamiento(row,self.root,cache)[0]
+        x,_=entrenamiento.batch_device({"image":cached["image"].unsqueeze(0),
+            "label":cached["label"].unsqueeze(0)},torch.device("cpu"))
+        self.assertTrue(torch.equal(x[0],plain["image"]))
+        config=entrenamiento.configuracion()
+        config["model"].update(channels=[2,2,2,2],hidden=4,pooling="intermedio")
+        config["training"].update(epochs=4,min_epochs=4,batch_size=2,num_workers=0,
+            cpu_threads=2,amp=False,review_interval=2)
+        a,b=self.root/"continua",self.root/"bloques"
+        args=(config,"weighted",42,0,self.root)
+        entrenamiento.run_training(*args,a,torch.device("cpu"),cache=cache)
+        first=entrenamiento.run_training(*args,b,torch.device("cpu"),until_epoch=2,cache=cache)
+        self.assertEqual(first["status"],"paused")
+        self.assertFalse(first["eligible_for_selection"])
+        final=entrenamiento.run_training(*args,b,torch.device("cpu"),until_epoch=4,cache=cache)
+        self.assertEqual(final["status"],"complete")
+        relative=Path("raw_rot90/weighted/seed_42/fold_0")
+        ca=torch.load(a/relative/"last.pt",map_location="cpu",weights_only=False)
+        cb=torch.load(b/relative/"last.pt",map_location="cpu",weights_only=False)
+        for name,value in ca["state_dict"].items():
+            self.assertTrue(torch.equal(value,cb["state_dict"][name]),name)
+        earlier=entrenamiento.run_training(*args,b,torch.device("cpu"),until_epoch=2,cache=cache)
+        self.assertEqual(earlier["epochs_completed"],2)
+        self.assertEqual(earlier["val_metrics"],first["val_metrics"])
+        self.assertTrue((b/relative/"revision_002.json").exists())
+        self.assertTrue((b/relative/"revision_004.json").exists())
+        self.assertTrue((b/relative/"curvas.png").exists())
+
     def test_comparacion_completa_y_rechazo_de_fold_ausente(self):
         datos_sinteticos(self.root,folds=range(5))
         train=entrenamiento.cargar_train(self.root)

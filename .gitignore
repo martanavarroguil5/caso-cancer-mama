@@ -231,3 +231,6 @@ __marimo__/
 
 # Nuevas ejecuciones: conservar por separado del modelo histórico
 /resultados/04_entrenamiento/ejecuciones/
+
+# Ajustes de hiperparámetros y curvas de aprendizaje
+/resultados/04_entrenamiento/ajustes/
