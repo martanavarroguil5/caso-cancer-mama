@@ -205,3 +205,41 @@ Para lanzar un entrenamiento concreto con pooling intermedio y revisar cada diez
 
 Fuentes de implementación: [MaxPool2d de PyTorch](https://docs.pytorch.org/docs/2.14/generated/torch.nn.MaxPool2d.html)
 y [definición de F1 en scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html).
+
+## Resultados de los ajustes del 03/10/2026
+
+Se ejecutaron las seis combinaciones a 30 épocas, revisando en 10/20/30,
+con semilla 42, BCE ponderada, rotaciones, lote 16 y la misma GPU. En fold 0
+se seleccionó `pool_dropout_wd`: pooling entre bloques, LR 0,0008, dropout 0,35
+y weight decay 0,001. Su mejor checkpoint fue el de la época 11; la referencia
+alcanzó su máximo en la época 12. Se comparan mejores checkpoints hasta el
+presupuesto fijado, no exclusivamente los pesos de la última época.
+
+La configuración seleccionada y la referencia se entrenaron después en folds
+1 y 2, con el mismo presupuesto. AUC y F1 son por paciente; F1 usa umbral 0,5.
+
+| Fold | AUC referencia | AUC pooling ajustado | F1 referencia | F1 pooling ajustado |
+|---|---:|---:|---:|---:|
+| 0 | 0.6292 | 0.6498 | 0.4459 | 0.5114 |
+| 1 | 0.5748 | 0.5903 | 0.3740 | 0.4683 |
+| 2 | 0.6653 | 0.6408 | 0.4810 | 0.4512 |
+| Media | 0.6231 | 0.6270 | 0.4336 | 0.4770 |
+
+La diferencia media es +0.0038 en AUC y
++0.0433 en F1. La mejora no es uniforme entre folds.
+Las curvas muestran sobreajuste: la pérdida train puede seguir bajando mientras
+sube la de validación. Por eso se conservan los mejores checkpoints, y aumentar
+épocas por sí solo no se considera una mejora.
+
+Esta comparación abarca tres de los cinco folds y una semilla. La elección de
+hiperparámetros usa fold 0 y los checkpoints usan validación. Son resultados
+exploratorios; no equivalen a una evaluación independiente ni anidada y no
+sustituyen las métricas del PDF. Los diez pesos, calibración y umbral del modelo
+histórico siguen conservados.
+
+Evidencia en `resultados/04_entrenamiento/ajustes/`:
+`comparacion.csv`, `revision_010/020/030.json`, `resultado_ajuste.json`,
+`confirmacion.csv`, `resultado_confirmacion.json`, `comparacion_curvas.png`
+y `confirmacion_curvas.png`. Cada run conserva código identificado por SHA-256,
+configuración, entorno, curvas, OOF y pesos. Se ejecutaron diez entrenamientos
+de 30 épocas en total; se cargaron cero imágenes del test reservado.
