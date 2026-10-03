@@ -1,0 +1,89 @@
+{
+  "configuration": {
+    "name": "raw_rot90",
+    "model": {
+      "representation": "raw",
+      "channels": [
+        24,
+        48,
+        96,
+        160
+      ],
+      "hidden": 64,
+      "dropout": 0.2
+    },
+    "training": {
+      "epochs": 46,
+      "min_epochs": 12,
+      "patience": 10,
+      "min_delta": 0.001,
+      "batch_size": 64,
+      "lr": 0.0008,
+      "min_lr": 1e-05,
+      "weight_decay": 0.0001,
+      "clip_grad_norm": 5.0,
+      "amp": true,
+      "num_workers": 4,
+      "cpu_threads": 8,
+      "deterministic": true
+    },
+    "augmentation": {
+      "hflip": 0.5,
+      "vflip": 0.0,
+      "rot90": true
+    },
+    "evaluation": {
+      "aggregation": "mean",
+      "threshold": 0.5,
+      "checkpoint_metric": "patient_auc"
+    },
+    "rationale": {
+      "architecture": "Cuatro bloques propios Conv-BN-ReLU, reducci\u00f3n espacial temprana y pooling global promedio+m\u00e1ximo: capacidad compacta y sin pesos externos.",
+      "representation": "PRE/EARLY/LATE con escala fija 2*x-1, sin normalizaci\u00f3n RGB ni por fase.",
+      "initialization": "Kaiming normal para Conv/Linear y BN identidad; entrenamiento desde cero.",
+      "optimization": "AdamW, LR inicial 8e-4 y descenso coseno; AMP en CUDA, batch64.",
+      "selection": "AUC de pacientes con promedio de probabilidades de cortes, m\u00ednimo12 \u00e9pocas y paciencia10; test cerrado.",
+      "ablation": "Cambio \u00fanico frente a base_raw: rotaciones exactas de 0/90/180/270 grados aplicadas a las tres fases para estudiar el sobreajuste observado. Resto id\u00e9ntico."
+    },
+    "loss": "weighted",
+    "seed": 2026,
+    "fold": 0,
+    "smoke": false,
+    "data_signature": "d5dd0e325f58f06e82085fd1c37017aa94a0ef6549b89d6ed57d941a289a0212",
+    "pos_weight": 2.4002329192546585,
+    "n_train_slices": 8759,
+    "n_val_slices": 2186,
+    "n_train_patients": 878,
+    "n_val_patients": 219
+  },
+  "loss": "weighted",
+  "seeds": [
+    42,
+    2026
+  ],
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "n_models": 10,
+  "aggregation": "mean",
+  "calibration": {
+    "method": "regularized_platt",
+    "input": "logit_patient_aggregated_probability",
+    "slope": 0.6680108289790444,
+    "intercept": -0.815361445727788,
+    "C": 1.0,
+    "clip_epsilon": 1e-07,
+    "scope": "patient",
+    "fit_data": "train_oof",
+    "nonnegative_slope_constraint": true,
+    "boundary_solution": false
+  },
+  "threshold": 0.2982406880601241,
+  "model_manifest_sha256": "97120e5b293569a7d4a8c6b78a81368873d7d976378873591bf5354007d99338",
+  "frozen_at": "2026-09-30T12:24:47.566059+00:00",
+  "test_evaluated_once": true
+}
