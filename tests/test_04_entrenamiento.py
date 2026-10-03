@@ -183,7 +183,7 @@ class TestEntrenamiento(unittest.TestCase):
         handles=[b.register_forward_hook(lambda m,i,o: shapes.append(tuple(o.shape[1:])))
                  for b in model.features]
         result=model(torch.rand(2,3,256,256))
-        self.assertEqual(shapes,[(24,64,64),(48,32,32),(96,16,16)])
+        self.assertEqual(shapes,[(24,64,64),(48,32,32),(96,16,16),(160,8,8)])
         torch.nn.BCEWithLogitsLoss()(result[:,0],torch.tensor([0.,1.])).backward()
         self.assertGreater(float(model.features[0][0].weight.grad.abs().sum()),0)
         for h in handles:
