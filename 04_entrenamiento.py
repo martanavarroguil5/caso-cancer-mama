@@ -3,6 +3,7 @@
 
 Reutiliza pipeline_datos.py del commit de Marta 69a44eb. El test reservado
 ya fue evaluado: aquí se conservan sus resultados y no se vuelve a abrir.
+La acción ajustar compara pooling e hiperparámetros en bloques de diez épocas.
 Las ejecuciones nuevas se guardan aparte del modelo final histórico.
 """
 from __future__ import annotations
@@ -11,6 +12,7 @@ import os
 os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from copy import deepcopy
 import csv
@@ -23,13 +25,14 @@ import re
 import subprocess
 import sys
 import time
+import shutil
 
 import numpy as np
 import pandas as pd
 from PIL import Image
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (roc_auc_score, average_precision_score, accuracy_score,
-                             confusion_matrix, brier_score_loss, log_loss, roc_curve)
+                             confusion_matrix, brier_score_loss, log_loss, roc_curve, f1_score)
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
@@ -54,19 +57,20 @@ def configuracion(nombre="raw_rot90"):
                      "min_delta": 0.001, "batch_size": 64, "lr": 0.0008,
                      "min_lr": 0.00001, "weight_decay": 0.0001,
                      "clip_grad_norm": 5.0, "amp": True, "num_workers": 4,
-                     "cpu_threads": 8, "deterministic": True},
+                     "cpu_threads": 8, "deterministic": True, "review_interval": 10},
         "augmentation": {"hflip": 0.5, "rot90": nombre == "raw_rot90"},
         "evaluation": {"threshold": 0.5, "checkpoint_metric": "patient_auc"},
     }
 
 
 class Bloque(nn.Sequential):
-    def __init__(self, entrada, salida, primero=False):
-        capas = [nn.Conv2d(entrada, salida, 3, stride=2, padding=1, bias=False),
+    def __init__(self, entrada, salida, primero=False, pooling="original"):
+        stride = 2 if pooling == "original" or primero else 1
+        capas = [nn.Conv2d(entrada, salida, 3, stride=stride, padding=1, bias=False),
                  nn.BatchNorm2d(salida), nn.ReLU(inplace=True),
                  nn.Conv2d(salida, salida, 3, padding=1, bias=False),
                  nn.BatchNorm2d(salida), nn.ReLU(inplace=True)]
-        if primero:
+        if primero or pooling == "intermedio":
             capas.append(nn.MaxPool2d(2))
         super().__init__(*capas)
 
@@ -78,17 +82,24 @@ class GlobalMaxPool(nn.Module):
 
 
 class CNN(nn.Module):
-    """Ocho convoluciones propias y 551.913 parámetros con la configuración final."""
+    """Ocho convoluciones y 551.913 parámetros; original o pooling intermedio.
+
+    La variante conserva las salidas 64/32/16/8. En los bloques 2-4 sustituye
+    la reducción por stride 2 por Conv stride 1 y MaxPool 2 al terminar el bloque.
+    """
     def __init__(self, config=None):
         super().__init__()
         self.config = deepcopy(config or {})
         self.config = self.config.get("model", self.config)
         if self.config.get("representation", "raw") != "raw":
             raise ValueError("Este paso utiliza las fases originales PRE/EARLY/LATE")
+        pooling = self.config.get("pooling", "original")
+        if pooling not in {"original", "intermedio"}:
+            raise ValueError("Pooling debe ser original o intermedio")
         canales = self.config.get("channels", [24, 48, 96, 160])
         if len(canales) != 4 or any(not isinstance(c, int) or c < 1 for c in canales):
             raise ValueError("Se requieren cuatro anchos de bloque positivos")
-        self.features = nn.Sequential(*[Bloque(a, b, i == 0)
+        self.features = nn.Sequential(*[Bloque(a, b, i == 0, pooling)
             for i, (a, b) in enumerate(zip([3, *canales[:-1]], canales))])
         self.avgpool = nn.AdaptiveAvgPool2d(1)
         self.maxpool = GlobalMaxPool()
@@ -176,7 +187,8 @@ def particion(samples, fold_val):
 
 class DatasetEntrenamiento(pdatos.BreastDCESliceDataset):
     """Reutiliza el cargador de Marta, sin estandarización ni aumentos de validación."""
-    def __init__(self, filas, root):
+    def __init__(self, filas, root, cache=None):
+        self.cache = cache
         if not filas.split.eq("train").all():
             raise ValueError("El entrenamiento solo admite train")
         root = Path(root).resolve()
@@ -190,6 +202,11 @@ class DatasetEntrenamiento(pdatos.BreastDCESliceDataset):
 
     def __getitem__(self, indice):
         row = self.filas.iloc[indice]
+        if self.cache is not None:
+            return {"image": self.cache.imagen(row.sample_id),
+                "label": torch.tensor(float(row.pCR),dtype=torch.float32),
+                "patient_id": str(row.patient_id), "sample_id": str(row.sample_id),
+                "slice_index": torch.tensor(int(row.slice_index),dtype=torch.int64)}
         for column in pdatos.COLUMNAS_RUTA:
             with Image.open(self.raiz/getattr(row, column)) as png:
                 if png.format != "PNG" or png.mode != "L" or png.size != (256, 256):
@@ -197,8 +214,8 @@ class DatasetEntrenamiento(pdatos.BreastDCESliceDataset):
         return super().__getitem__(indice)
 
 
-def make_loader(samples, root, batch_size, workers, generator, shuffle=False):
-    return DataLoader(DatasetEntrenamiento(samples, root), batch_size=batch_size,
+def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None):
+    return DataLoader(DatasetEntrenamiento(samples, root, cache), batch_size=batch_size,
         shuffle=shuffle, num_workers=workers, pin_memory=torch.cuda.is_available(),
         persistent_workers=False, worker_init_fn=pdatos.inicializar_worker, generator=generator)
 
@@ -218,8 +235,10 @@ def aumentar_geometria(x, generator, hflip=0.5, rot90=True):
 
 def batch_device(batch, device):
     # pipeline_datos ya convierte a float32 /255; no dividir una segunda vez.
-    return (batch["image"].to(device, non_blocking=True),
-            batch["label"].to(device, non_blocking=True))
+    x = batch["image"].to(device,non_blocking=True)
+    if x.dtype == torch.uint8:
+        x = x.float().div_(255.0)
+    return x, batch["label"].to(device,non_blocking=True)
 
 
 def sha256(path):
@@ -330,6 +349,10 @@ def patient_metrics(samples: pd.DataFrame, probabilities: np.ndarray, threshold:
     return {"patient_auc": float(roc_auc_score(truth, prob)),
             "patient_ap": float(average_precision_score(truth, prob)),
             "patient_accuracy": float(accuracy_score(truth, prob >= threshold)),
+            "patient_f1": float(f1_score(truth,prob >= threshold,zero_division=0)),
+            "patient_precision": float(tp/(tp+fp)) if tp+fp else 0.0,
+            "patient_recall": float(tp/(tp+fn)),
+            "patient_balanced_accuracy": float((tp/(tp+fn)+tn/(tn+fp))/2),
             "patient_sensitivity": float(tp / (tp + fn)),
             "patient_specificity": float(tn / (tn + fp)),
             "patient_brier": float(brier_score_loss(truth, prob)),
@@ -400,7 +423,7 @@ def config_hash(config):
 
 def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
                  out: Path, device: torch.device, smoke=False,
-                 resume="last"):
+                 resume="last", until_epoch=None, cache=None):
     config = deepcopy(config)
     config["loss"], config["seed"], config["fold"] = loss_name, seed, fold
     if loss_name not in {"normal", "weighted"}:
@@ -409,6 +432,8 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
     config["source_sha256"] = {p.name: sha256(p) for p in (Path(__file__), RAIZ/"pipeline_datos.py")}
     config["device_type"] = device.type
     tconf = config["training"]
+    if until_epoch is not None and not 1 <= until_epoch <= int(tconf["epochs"]):
+        raise ValueError("La época objetivo debe estar dentro del presupuesto fijado")
     torch.set_num_threads(int(tconf.get("cpu_threads", 8)))
     seed_everything(seed, tconf.get("deterministic", True))
     all_train = cargar_train(root)
@@ -423,6 +448,14 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
         summary = json.loads((run_dir / "summary.json").read_text())
         if summary.get("config_hash") != config_hash(config):
             raise ValueError(f"Configuración distinta para run existente: {run_dir}")
+        if until_epoch is not None and summary.get("epochs_completed",0) >= until_epoch:
+            block_path=run_dir/f"bloque_{until_epoch:03d}.json"
+            block=json.loads(block_path.read_text())
+            for name,key in ((f"inference_{until_epoch:03d}.pt","inference_sha256"),
+                             (f"oof_slices_{until_epoch:03d}.csv","oof_sha256")):
+                if sha256(run_dir/name)!=block[key]:
+                    raise ValueError("Artefacto de revisión modificado")
+            return block
         if summary.get("status") == "complete":
             for name, key in (("inference.pt", "inference_sha256"), ("oof_slices.csv", "oof_sha256")):
                 if sha256(run_dir/name) != summary[key]:
@@ -446,8 +479,10 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
     val_generator = torch.Generator().manual_seed(seed + 60000 + fold)
     workers = 0 if smoke else int(tconf["num_workers"])
     batch_size = min(8, tconf["batch_size"]) if smoke else tconf["batch_size"]
-    train_loader = make_loader(train, root, batch_size, workers, generator, shuffle=True)
-    val_loader = make_loader(val, root, batch_size, workers, val_generator)
+    train_loader = make_loader(train, root, batch_size, workers, generator, shuffle=True, cache=cache)
+    val_loader = make_loader(val, root, batch_size, workers, val_generator,cache=cache)
+    train_eval_loader = make_loader(train,root,batch_size,workers,
+        torch.Generator().manual_seed(seed+70000+fold),cache=cache)
     model = CNN(config).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=tconf["lr"], weight_decay=tconf["weight_decay"])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=tconf["epochs"], eta_min=tconf["min_lr"])
@@ -469,7 +504,7 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
     wall_start = time.perf_counter()
-    epochs_limit = 1 if smoke else int(tconf["epochs"])
+    epochs_limit = 1 if smoke else (until_epoch or int(tconf["epochs"]))
     stop_reason = "max_epochs"
     # An epoch-complete checkpoint may precede a crash while writing OOF/summary.
     already_stopped = (start_epoch >= tconf["min_epochs"] and bad_epochs >= tconf["patience"])
@@ -499,6 +534,13 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
                "val_loss": val_loss, **metrics, "epoch_seconds": elapsed,
                "peak_vram_gib": torch.cuda.max_memory_allocated(device) / 2 ** 30 if device.type == "cuda" else 0.0,
                "bad_epochs": bad_epochs, "smoke": smoke}
+        will_stop = not smoke and epoch+1 >= tconf["min_epochs"] and bad_epochs >= tconf["patience"]
+        review = (epoch+1) % int(tconf.get("review_interval",10)) == 0 or epoch+1 == epochs_limit or will_stop
+        if review:
+            train_prob, train_eval_loss = predict(model,train_eval_loader,device,False,criterion)
+            train_metrics = patient_metrics(train,train_prob,config["evaluation"]["threshold"])
+            row.update({"train_"+k:v for k,v in train_metrics.items()})
+            row["train_eval_loss"] = train_eval_loss
         history.append(row)
         if improved:
             save_checkpoint(run_dir / "best.pt", model, optimizer, scheduler, scaler, epoch, best_auc,
@@ -506,9 +548,15 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
         save_checkpoint(run_dir / "last.pt", model, optimizer, scheduler, scaler, epoch, best_auc,
                         bad_epochs, config, generator, aug_generator, history, best_epoch)
         history_write(run_dir / "history.csv", history)
+        if review:
+            json_write(run_dir/f"revision_{epoch+1:03d}.json",row)
+            graficar_historia(run_dir)
+            checkpoint = {"schema_version":SCHEMA_VERSION,"model_config":deepcopy(config["model"]),
+                "state_dict":{k:v.detach().cpu() for k,v in model.state_dict().items()}}
+            torch.save(checkpoint,run_dir/f"epoch_{epoch+1:03d}.pt")
         print(f"Epoch {epoch + 1:02d}/{epochs_limit} loss={train_loss:.4f} "
               f"valAUC={metrics['patient_auc']:.4f} best={best_auc:.4f} "
-              f"AP={metrics['patient_ap']:.4f} sens={metrics['patient_sensitivity']:.3f} "
+              f"F1={metrics['patient_f1']:.4f} AP={metrics['patient_ap']:.4f} sens={metrics['patient_sensitivity']:.3f} "
               f"spec={metrics['patient_specificity']:.3f} t={elapsed:.1f}s VRAM={row['peak_vram_gib']:.2f}GiB", flush=True)
         if not smoke and epoch + 1 >= tconf["min_epochs"] and bad_epochs >= tconf["patience"]:
             stop_reason = "early_stopping"
@@ -523,11 +571,12 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
     oof["prob"], oof["split"], oof["seed"], oof["loss"] = probabilities, "train", seed, loss_name
     oof["smoke"] = bool(smoke)
     oof.to_csv(run_dir / "oof_slices.csv", index=False)
-    summary = {"schema_version": SCHEMA_VERSION, "status": "complete", "smoke": bool(smoke),
-               "eligible_for_selection": not smoke, "config_hash": config_hash(config),
+    completed = smoke or stop_reason == "early_stopping" or len(history) >= int(tconf["epochs"])
+    summary = {"schema_version": SCHEMA_VERSION, "status": "complete" if completed else "paused", "smoke": bool(smoke),
+               "eligible_for_selection": completed and not smoke, "config_hash": config_hash(config),
                "config_name": config["name"], "loss": loss_name, "seed": seed, "fold": fold,
                "epochs_completed": len(history), "best_epoch": best_epoch + 1,
-               "stop_reason": "smoke_only" if smoke else stop_reason, "best_auc": best_auc,
+               "stop_reason": "smoke_only" if smoke else (stop_reason if completed else "bloque_completado"), "best_auc": best_auc,
                "val_metrics": metrics, "val_loss": val_loss, "parameters": numero_parametros(model),
                "total_train_seconds": sum(r["epoch_seconds"] for r in history),
                "current_session_seconds": time.perf_counter() - wall_start,
@@ -538,6 +587,10 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
     summary["inference_sha256"] = sha256(run_dir/"inference.pt")
     summary["oof_sha256"] = sha256(run_dir/"oof_slices.csv")
     json_write(run_dir / "summary.json", summary)
+    if until_epoch is not None:
+        shutil.copy2(run_dir/"inference.pt",run_dir/f"inference_{epochs_limit:03d}.pt")
+        shutil.copy2(run_dir/"oof_slices.csv",run_dir/f"oof_slices_{epochs_limit:03d}.csv")
+        json_write(run_dir/f"bloque_{epochs_limit:03d}.json",summary)
     return summary
 
 
@@ -610,6 +663,10 @@ def binary_metrics(y: np.ndarray, p: np.ndarray, threshold: float = 0.5) -> dict
         "brier": float(brier_score_loss(y, p)),
         "log_loss": float(log_loss(y, np.clip(p, EPS, 1 - EPS), labels=[0, 1])),
         "accuracy": float(accuracy_score(y, pred)),
+        "f1": float(f1_score(y,pred,zero_division=0)),
+        "precision": tp/(tp+fp) if tp+fp else 0.0,
+        "recall": tp/(tp+fn) if tp+fn else None,
+        "balanced_accuracy": float((tp/(tp+fn)+tn/(tn+fp))/2) if both else None,
         "sensitivity": tp / (tp + fn) if tp + fn else None,
         "specificity": tn / (tn + fp) if tn + fp else None,
         "threshold": float(threshold), "tn": tn, "fp": fp, "fn": fn, "tp": tp,
@@ -705,7 +762,7 @@ def comparar_ejecuciones(root, output):
                 raise ValueError(f"Artefacto modificado: {folder/name}")
         fold = int(config["fold"])
         oof = validate_oof(pd.read_csv(folder/"oof_slices.csv"), roster[roster.fold.eq(fold)])
-        if config["name"] not in {"base_raw", "raw_rot90"}:
+        if config["name"] not in {"base_raw", "raw_rot90", "base_raw_pool", "raw_rot90_pool"}:
             raise ValueError("Nombre de configuración desconocido")
         key = (config["name"], config["loss"], int(config["seed"]))
         groups.setdefault(key, {})
@@ -860,11 +917,191 @@ def predecir_cortes(path, triples):
         "notice": "Uso educativo. La calibración se ajustó con varios cortes por paciente."}
 
 
+
+class CacheTrain:
+    """Memmap uint8 de train: evita decodificar los mismos PNG en cada ensayo."""
+    def __init__(self,samples,root,folder,workers=4):
+        if not samples.split.eq("train").all():
+            raise ValueError("La caché solo admite train")
+        folder = Path(folder)
+        folder.mkdir(parents=True,exist_ok=True)
+        columns = ["sample_id","pCR","fold",*pdatos.COLUMNAS_RUTA]
+        signature = hashlib.sha256(samples[columns].to_csv(index=False).encode()).hexdigest()
+        self.path = folder/f"train_{signature[:16]}_uint8.npy"
+        shape = (len(samples),3,256,256)
+        metadata = self.path.with_suffix(".json")
+        self.index = {str(sample):i for i,sample in enumerate(samples.sample_id)}
+        # La validación de rutas también se aplica al crear la caché.
+        DatasetEntrenamiento(samples,root)
+        if not self.path.exists():
+            temporary = self.path.with_suffix(".tmp.npy")
+            array = np.lib.format.open_memmap(temporary,mode="w+",dtype=np.uint8,shape=shape)
+            def read(row):
+                channels=[]
+                for column in pdatos.COLUMNAS_RUTA:
+                    with Image.open(Path(root)/getattr(row,column)) as png:
+                        if png.format!="PNG" or png.mode!="L" or png.size!=(256,256):
+                            raise ValueError("PNG incompatible con el contrato")
+                        channels.append(np.array(png,dtype=np.uint8))
+                return np.stack(channels)
+            try:
+                with ThreadPoolExecutor(max_workers=max(1,workers)) as pool:
+                    for i,image in enumerate(pool.map(read,samples.itertuples(index=False))):
+                        array[i]=image
+                array.flush()
+                del array
+                temporary.replace(self.path)
+                json_write(metadata,{"signature":signature,"shape":list(shape),"dtype":"uint8","split":"train"})
+            except BaseException:
+                if "array" in locals():
+                    del array
+                temporary.unlink(missing_ok=True)
+                raise
+        record=json.loads(metadata.read_text())
+        if record["signature"]!=signature or record["split"]!="train":
+            raise ValueError("Caché de otro índice")
+        self.memory=np.load(self.path,mmap_mode="r")
+        if self.memory.shape!=shape or self.memory.dtype!=np.uint8:
+            raise ValueError("Caché incompleta o incompatible")
+
+    def imagen(self,sample_id):
+        return torch.from_numpy(np.array(self.memory[self.index[str(sample_id)]],copy=True))
+
+
+def pyplot():
+    # Los ficheros de matplotlib también quedan dentro de los resultados.
+    os.environ.setdefault("MPLCONFIGDIR",str(SALIDA/"ajustes"/".matplotlib"))
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    return plt
+
+
+def graficar_historia(folder):
+    plt=pyplot()
+    history=pd.read_csv(Path(folder)/"history.csv")
+    fig,axes=plt.subplots(2,2,figsize=(12,8),constrained_layout=True)
+    axes[0,0].plot(history.epoch,history.train_loss,label="Train durante aprendizaje")
+    axes[0,0].plot(history.epoch,history.val_loss,label="Validación")
+    if "train_eval_loss" in history:
+        clean=history.dropna(subset=["train_eval_loss"])
+        axes[0,0].plot(clean.epoch,clean.train_eval_loss,"o--",label="Train en evaluación")
+    axes[0,0].set(title="Pérdida BCE",ylabel="Pérdida")
+    for ax,metric,title in [(axes[0,1],"patient_auc","ROC-AUC por paciente"),
+                            (axes[1,0],"patient_f1","F1 de pCR=1 · umbral 0,5"),
+                            (axes[1,1],"patient_accuracy","Accuracy por paciente")]:
+        ax.plot(history.epoch,history[metric],label="Validación")
+        column="train_"+metric
+        if column in history:
+            clean=history.dropna(subset=[column])
+            ax.plot(clean.epoch,clean[column],"o--",label="Train en evaluación")
+        ax.set(title=title,ylim=(0,1))
+    for ax in axes.flat:
+        ax.set_xlabel("Época")
+        ax.grid(alpha=.2)
+        ax.legend(fontsize=8)
+    fig.suptitle("Aprendizaje y pérdida · "+Path(folder).parent.parent.parent.name,fontsize=14)
+    fig.savefig(Path(folder)/"curvas.png",dpi=150)
+    plt.close(fig)
+
+
+def candidatos_ajuste(epocas=30):
+    """Referencia, ablation de pooling y cuatro combinaciones de hiperparámetros."""
+    specifications=[
+        ("referencia","original",.0008,.20,.0001),
+        ("pool_intermedio","intermedio",.0008,.20,.0001),
+        ("pool_lr_baja","intermedio",.0003,.20,.0001),
+        ("pool_lr_dropout","intermedio",.0003,.35,.0001),
+        ("pool_lr_dropout_wd","intermedio",.0003,.35,.001),
+        ("pool_dropout_wd","intermedio",.0008,.35,.001),
+    ]
+    configs=[]
+    for name,pooling,lr,dropout,weight_decay in specifications:
+        config=configuracion()
+        config["name"]=name
+        config["model"].update(pooling=pooling,dropout=dropout)
+        # Presupuesto común: la revisión no reinicia pesos ni calendario coseno.
+        config["training"].update(epochs=epocas,min_epochs=epocas,patience=epocas,
+            lr=lr,weight_decay=weight_decay,review_interval=10)
+        configs.append(config)
+    return configs
+
+
+def graficar_comparacion(folder,configs,fold,seed,target=None):
+    plt=pyplot()
+    fig,axes=plt.subplots(1,3,figsize=(16,4.8),constrained_layout=True)
+    for config in configs:
+        run=Path(folder)/"ejecuciones"/config["name"]/"weighted"/f"seed_{seed}"/f"fold_{fold}"
+        if not (run/"history.csv").exists():
+            continue
+        h=pd.read_csv(run/"history.csv")
+        if target is not None:
+            h=h[h.epoch<=target]
+        for ax,column,title in zip(axes,["val_loss","patient_auc","patient_f1"],
+                                   ["Pérdida de validación","AUC de validación","F1 de validación · umbral 0,5"]):
+            ax.plot(h.epoch,h[column],label=config["name"])
+            ax.set(title=title,xlabel="Época")
+            ax.grid(alpha=.2)
+    axes[-1].legend(fontsize=7,loc="best")
+    fig.suptitle(f"Comparación de hiperparámetros · fold {fold}, semilla {seed}")
+    fig.savefig(Path(folder)/"comparacion_curvas.png",dpi=150)
+    plt.close(fig)
+
+
+def ajustar_hiperparametros(root,output,device,epocas=30,intervalo=10,fold=0,seed=42,workers=4,lote=64):
+    if epocas<intervalo or intervalo<1:
+        raise ValueError("El presupuesto debe incluir al menos un bloque")
+    output=Path(output)
+    output.mkdir(parents=True,exist_ok=True)
+    configs=candidatos_ajuste(epocas)
+    for config in configs:
+        config["training"].update(review_interval=intervalo,num_workers=workers,batch_size=lote)
+    protocol={"candidates":configs,"fold":fold,"seed":seed,"loss":"weighted",
+        "epochs":epocas,"review_every":intervalo,"selection":"Mayor AUC por paciente; desempate F1 y pérdida.",
+        "test_reserved":"Ya observado; no se abre ni se usa para ajustar.",
+        "warning":"Selección exploratoria con un fold. Confirmar en otros folds antes de declarar mejora."}
+    path=output/"protocolo.json"
+    if path.exists() and json.loads(path.read_text())!=protocol:
+        raise ValueError("Protocolo distinto: utiliza otra --salida")
+    json_write(path,protocol)
+    cache=CacheTrain(cargar_train(root),root,output/".cache",workers)
+    targets=list(range(intervalo,epocas+1,intervalo))
+    if targets[-1]!=epocas:
+        targets.append(epocas)
+    records=[]
+    for target in targets:
+        current=[]
+        for config in configs:
+            summary=run_training(config,"weighted",seed,fold,Path(root),output/"ejecuciones",device,
+                                 until_epoch=target,cache=cache)
+            metrics=summary["val_metrics"]
+            row={"revision_epoch":target,"candidate":config["name"],"epochs_completed":summary["epochs_completed"],
+                "best_epoch":summary["best_epoch"],"pooling":config["model"]["pooling"],
+                "lr":config["training"]["lr"],"dropout":config["model"]["dropout"],
+                "weight_decay":config["training"]["weight_decay"],"val_loss":summary["val_loss"],**metrics}
+            records.append(row)
+            current.append(row)
+            pd.DataFrame(records).to_csv(output/"comparacion.csv",index=False)
+        current.sort(key=lambda r:(-r["patient_auc"],-r["patient_f1"],r["val_loss"],r["candidate"]))
+        json_write(output/f"revision_{target:03d}.json",{"epoch":target,"ranking":current})
+        graficar_comparacion(output,configs,fold,seed,target)
+        print(f"REVISIÓN {target}: mejor candidato {current[0]['candidate']}, "
+              f"AUC={current[0]['patient_auc']:.4f}, F1={current[0]['patient_f1']:.4f}",flush=True)
+    baseline=next(row for row in current if row["candidate"]=="referencia")
+    best=current[0]
+    result={"status":"complete","best":best,"baseline":baseline,
+        "delta_auc":best["patient_auc"]-baseline["patient_auc"],
+        "delta_f1":best["patient_f1"]-baseline["patient_f1"],
+        "selected_config":next(c for c in configs if c["name"]==best["candidate"]),
+        "selection_warning":protocol["warning"],"test_repeated":False}
+    json_write(output/"resultado_ajuste.json",result)
+    return result
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("accion", nargs="?", choices=("verificar", "entrenar", "comparar", "predecir"), default="verificar")
+    parser.add_argument("accion", nargs="?", choices=("verificar", "entrenar", "comparar", "predecir", "ajustar"), default="verificar")
     parser.add_argument("--datos",type=Path,default=pdatos.DATOS)
-    parser.add_argument("--salida",type=Path,default=SALIDA/"ejecuciones")
+    parser.add_argument("--salida",type=Path,default=None)
     parser.add_argument("--manifest",type=Path,default=SALIDA/"modelo_final.json")
     parser.add_argument("--configuraciones",nargs="+",choices=("base_raw","raw_rot90"),default=["raw_rot90"])
     parser.add_argument("--perdidas",nargs="+",choices=("normal","ponderada"),default=["normal","ponderada"])
@@ -872,28 +1109,46 @@ def main():
     parser.add_argument("--folds",nargs="+",type=int,choices=range(5),default=list(range(5)))
     parser.add_argument("--workers",type=int,default=4)
     parser.add_argument("--lote",type=int,default=64)
-    parser.add_argument("--epocas",type=int,default=46)
+    parser.add_argument("--epocas",type=int,default=None)
+    parser.add_argument("--revision-cada",type=int,default=10)
+    parser.add_argument("--hasta-epoca",type=int)
+    parser.add_argument("--pooling",choices=("original","intermedio"),default="original")
     parser.add_argument("--dispositivo",choices=("auto","cpu","cuda"),default="auto")
     parser.add_argument("--prueba",action="store_true",help="Un lote y una época; excluido de la selección")
     for phase in ("pre","early","late"):
         parser.add_argument("--"+phase,type=Path,nargs="+")
     args = parser.parse_args()
-    if args.workers < 0 or args.lote < 1 or args.epocas < 1:
+    args.epocas = (30 if args.accion == "ajustar" else 46) if args.epocas is None else args.epocas
+    args.salida = args.salida or (SALIDA/"ajustes" if args.accion == "ajustar" else SALIDA/"ejecuciones")
+    if args.workers < 0 or args.lote < 1 or args.epocas < 1 or args.revision_cada < 1:
         parser.error("workers >= 0, lote >= 1 y epocas >= 1")
-    if args.accion == "entrenar":
+    if args.accion in {"entrenar","ajustar"}:
         device_name = ("cuda" if torch.cuda.is_available() else "cpu") if args.dispositivo == "auto" else args.dispositivo
         if device_name == "cuda" and not torch.cuda.is_available():
             parser.error("CUDA no está disponible")
+        if args.accion == "ajustar":
+            if args.prueba:
+                parser.error("Comprueba el entrenamiento con entrenar --prueba antes de ajustar")
+            if len(args.folds)!=1 or len(args.semillas)!=1:
+                parser.error("ajustar requiere un --folds y una --semillas para comparación pareada")
+            result=ajustar_hiperparametros(args.datos,args.salida,torch.device(device_name),args.epocas,
+                args.revision_cada,args.folds[0],args.semillas[0],args.workers,args.lote)
+            print(json.dumps(result,ensure_ascii=False,indent=2))
+            return
         output = args.salida/"pruebas" if args.prueba else args.salida
         for name in dict.fromkeys(args.configuraciones):
             config = configuracion(name)
+            if args.pooling == "intermedio":
+                config["model"]["pooling"]="intermedio"
+                config["name"]+="_pool"
+            config["training"]["review_interval"]=args.revision_cada
             config["training"].update(num_workers=args.workers,batch_size=args.lote,epochs=args.epocas,
                                       min_epochs=min(12,args.epocas))
             for loss in dict.fromkeys(args.perdidas):
                 for seed in dict.fromkeys(args.semillas):
                     for fold in dict.fromkeys(args.folds):
                         run_training(config,"weighted" if loss == "ponderada" else loss,seed,fold,
-                                     args.datos,output,torch.device(device_name),smoke=args.prueba)
+                                     args.datos,output,torch.device(device_name),smoke=args.prueba,until_epoch=args.hasta_epoca)
     elif args.accion == "comparar":
         result = comparar_ejecuciones(args.datos,args.salida)
         print(json.dumps(result["selected"],ensure_ascii=False,indent=2))

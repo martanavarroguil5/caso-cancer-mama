@@ -148,3 +148,60 @@ por paciente, OOF y reanudación idéntica, sin repetir el test reservado.
 El respaldo de la limpieza, con el código, ramas y experimentos previos,
 está fuera de la carpeta del proyecto. Para compartir código entre ordenadores,
 usa `git pull` antes de trabajar y revisa `git status` antes de commit/push.
+
+## Ajustes indicados por el profesor
+
+La acción `ajustar` entrena y revisa en bloques de diez épocas, reanudando pesos,
+optimizador y calendario; no comienza de cero en cada bloque. Compara seis
+configuraciones con el mismo fold, semilla, pérdida ponderada, lote y presupuesto.
+
+| Candidato | Pooling | LR | Dropout | Weight decay |
+|---|---|---:|---:|---:|
+| referencia | Original | 0,0008 | 0,20 | 0,0001 |
+| pool_intermedio | Entre bloques | 0,0008 | 0,20 | 0,0001 |
+| pool_lr_baja | Entre bloques | 0,0003 | 0,20 | 0,0001 |
+| pool_lr_dropout | Entre bloques | 0,0003 | 0,35 | 0,0001 |
+| pool_lr_dropout_wd | Entre bloques | 0,0003 | 0,35 | 0,001 |
+| pool_dropout_wd | Entre bloques | 0,0008 | 0,35 | 0,001 |
+
+La variante nueva añade MaxPool 2×2 después de cada bloque. En los bloques 2-4
+utiliza convoluciones con stride 1 y pooling para reducir la resolución. El primer
+bloque conserva su stride 2 y pooling. Así mantiene las salidas 64/32/16/8 y
+551.913 parámetros. Se entrena desde cero; los diez modelos históricos continúan
+utilizando su arquitectura original.
+
+```bash
+.venv/bin/python 04_entrenamiento.py ajustar --folds 0 --semillas 42 --epocas 30 --revision-cada 10 --lote 16 --dispositivo cuda
+```
+
+El lote 16 limita memoria cuando la GPU se comparte. Todos los candidatos usan
+el mismo tamaño para que la comparación sea pareada. En GPU exclusiva se puede
+indicar `--lote 64` y una `--salida` nueva para conservar ambos experimentos.
+
+Cada revisión (épocas 10, 20 y 30) guarda ranking JSON, CSV comparativo, curvas,
+checkpoint de esa época y mejores pesos hasta ese bloque. Las curvas muestran
+pérdida train/validación, AUC, F1 y accuracy. Las métricas train se calculan sin
+aumentos y con dropout desactivado al revisar; las de validación se calculan cada
+época. La pérdida durante aprendizaje se distingue de la pérdida train en
+modo de evaluación.
+
+F1 corresponde a la clase pCR=1 y se calcula por paciente, con umbral 0,5, junto
+con precisión, sensibilidad y accuracy equilibrada. La AUC es el criterio principal
+y F1 desempata. La comparación con un fold es exploratoria: la mejor configuración
+debe confirmarse en otros folds antes de afirmar una mejora general. El test
+reservado ya observado no participa en estos ajustes.
+
+Los resultados quedan en `resultados/04_entrenamiento/ajustes/`. Una caché uint8
+exclusiva de train evita decodificar repetidamente los mismos PNG. Tanto la caché
+como los nuevos experimentos quedan fuera de Git. Para reanudar el ajuste, vuelve
+a lanzar exactamente el mismo comando.
+
+Para lanzar un entrenamiento concreto con pooling intermedio y revisar cada diez
+épocas:
+
+```bash
+.venv/bin/python 04_entrenamiento.py entrenar --pooling intermedio --folds 0 --semillas 42 --perdidas ponderada --revision-cada 10 --dispositivo cuda
+```
+
+Fuentes de implementación: [MaxPool2d de PyTorch](https://docs.pytorch.org/docs/2.14/generated/torch.nn.MaxPool2d.html)
+y [definición de F1 en scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html).
