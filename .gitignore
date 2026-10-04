@@ -234,3 +234,6 @@ __marimo__/
 
 # Ajustes de hiperparámetros y curvas de aprendizaje
 /resultados/04_entrenamiento/ajustes/
+
+# Comparación controlada del tamaño de la CNN
+/resultados/04_entrenamiento/comparacion_tamano/
