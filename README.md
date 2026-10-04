@@ -575,3 +575,42 @@ en la carpeta del ensayo. Los pesos de la variante descartada se eliminaron.
 `verificacion_final.json` documenta las comprobaciones independientes. No hubo
 push ni publicación. Todos los commits nuevos usan
 `martanavarroguil5 <mnavagui@myuax.com>`.
+
+## Comparación de composición de lotes
+
+`comparar-lotes` compara bolsas completas de seis pacientes y cortes mezclados.
+Conserva la CNN ajustada de 551.913 parámetros, BCE ponderada por corte, LR
+0,0008, dropout 0,35, weight decay 0,001 y treinta épocas. Solo cambia qué cortes
+comparten una actualización. Ambos brazos visitan todos los cortes fit una vez
+por época, con las mismas longitudes de lote y número de pasos del optimizador.
+Las longitudes las determinan las bolsas completas (habitualmente 60 cortes).
+El lote 64 se usa al evaluar. No hay relleno ni descartes.
+
+La inicialización es idéntica por fold/semilla. Un SHA-256 de muestra, época,
+fold y semilla asigna espejo y rotación conjuntamente a las tres fases, de forma
+que cambiar el orden del lote no cambia el aumento de cada muestra. Ambos
+samplers consumen los mismos sorteos RNG y permiten reanudación por época.
+
+```bash
+.venv/bin/python -B 04_entrenamiento.py comparar-lotes --prueba --workers 2 --paralelos 2 --dispositivo cuda
+.venv/bin/python -B 04_entrenamiento.py comparar-lotes --epocas 30 --revision-cada 10 --lote 64 --workers 2 --paralelos 2 --dispositivo cuda
+```
+
+Se realizan veinte runs: dos condiciones, cinco folds y semillas 42/2026. Se
+reutiliza la separación interna 70/15/15 por cohorte y pCR; solo fit aprende y
+solo selección elige el checkpoint. Calibración y umbral se ajustan internamente.
+Todas las decisiones se congelan antes de inferir los folds externos. El criterio
+principal es la AUC cruda media por fold del ensemble de dos semillas; AP, OOF
+agrupada, métricas a 0,5, calibración y cohortes son secundarios.
+
+Resultados en `resultados/04_entrenamiento/composicion_lotes/`. El protocolo
+registra código, caché y archivos protegidos por hash. Se verifica la caché
+reutilizada contra todos los PNG train. Cada época guarda auditoría de lotes;
+antes de evaluar se comprueban exposición, tamaños, pasos, RNG, inicialización
+y aumentos idénticos. La prueba de humo queda excluida de la selección.
+
+El test histórico permanece cerrado y los pesos anteriores se conservan. Estos
+datos de desarrollo ya fueron observados; los resultados siguen siendo internos.
+Los IC bootstrap pareados condicionan a las predicciones y no incorporan toda
+la incertidumbre del entrenamiento o selección. No se promueve un modelo
+automáticamente ni se restablece la pérdida por paciente retirada.

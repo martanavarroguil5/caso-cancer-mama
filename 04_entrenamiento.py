@@ -219,10 +219,19 @@ class DatasetEntrenamiento(pdatos.BreastDCESliceDataset):
         return super().__getitem__(indice)
 
 
-def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None, patient_batch_size=None):
+def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None, patient_batch_size=None,
+                batch_policy=None, patients_per_batch=6):
     # Los lectores trabajan solo en CPU. En Linux, fork conserva el memmap compartido
     # aunque este entrenamiento se ejecute dentro de un proceso creado con spawn.
     context = ("fork" if sys.platform.startswith("linux") else "spawn") if workers else None
+    if batch_policy is not None:
+        if patient_batch_size is not None or not shuffle:
+            raise ValueError("La política pareada solo admite aprendizaje sin otro sampler")
+        return DataLoader(DatasetEntrenamiento(samples, root, cache),
+            batch_sampler=LotesPareados(samples, generator, batch_policy, patients_per_batch),
+            num_workers=workers, pin_memory=torch.cuda.is_available(),
+            worker_init_fn=pdatos.inicializar_worker, generator=generator,
+            multiprocessing_context=context)
     if patient_batch_size is not None:
         return DataLoader(DatasetPacientes(samples, root, cache), batch_size=patient_batch_size,
             shuffle=shuffle, num_workers=workers, pin_memory=torch.cuda.is_available(),
@@ -244,6 +253,27 @@ def aumentar_geometria(x, generator, hflip=0.5, rot90=True):
         for k in (1, 2, 3):
             mask = (ks == k).to(x.device)
             x[mask] = torch.rot90(x[mask], k, dims=(-2, -1))
+    return x
+
+
+def codigos_aumento_pareado(sample_ids, key, hflip=.5, rot90=True):
+    """Asignación independiente del lote, común a ambas condiciones y reanudable."""
+    codes = []
+    for sample in sample_ids:
+        digest = hashlib.sha256(f"lotes-v1/{key}/{sample}".encode()).digest()
+        flip = int.from_bytes(digest[:8], "little") / 2**64 < hflip
+        k = digest[8] % 4 if rot90 else 0
+        codes.append((flip, k))
+    return codes
+
+
+def aumentar_pareado(x, sample_ids, key, hflip=.5, rot90=True):
+    codes = codigos_aumento_pareado(sample_ids, key, hflip, rot90)
+    flips = torch.tensor([c[0] for c in codes], device=x.device)
+    x[flips] = x[flips].flip(-1)
+    for k in (1, 2, 3):
+        mask = torch.tensor([c[1] == k for c in codes], device=x.device)
+        x[mask] = torch.rot90(x[mask], k, dims=(-2, -1))
     return x
 
 
@@ -380,7 +410,7 @@ def amp_context(device, enabled):
 
 
 def train_epoch(model, loader, optimizer, scaler, criterion, device, amp, augmentation,
-                augmentation_generator, clip_norm=5.0, max_batches=None):
+                augmentation_generator, clip_norm=5.0, max_batches=None, paired_key=None):
     model.train()
     losses = torch.zeros((), device=device)
     count = 0
@@ -389,7 +419,8 @@ def train_epoch(model, loader, optimizer, scaler, criterion, device, amp, augmen
         if max_batches is not None and batch_idx >= max_batches:
             break
         x, y = batch_device(batch, device)
-        x = aumentar_geometria(x, augmentation_generator, **augmentation)
+        x = (aumentar_pareado(x, batch["sample_id"], paired_key, **augmentation)
+             if paired_key is not None else aumentar_geometria(x, augmentation_generator, **augmentation))
         optimizer.zero_grad(set_to_none=True)
         with amp_context(device, amp):
             logits = model(x).squeeze(1)
@@ -510,11 +541,24 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
     workers = 0 if smoke else int(tconf["num_workers"])
     batch_size = min(8, tconf["batch_size"]) if smoke else tconf["batch_size"]
     patient_batch_size = tconf.get("patient_batch_size")
-    train_loader = make_loader(train, root, batch_size, workers, generator, shuffle=True, cache=cache, patient_batch_size=patient_batch_size)
+    batch_policy = tconf.get("batch_policy")
+    train_loader = make_loader(train, root, batch_size, workers, generator, shuffle=True, cache=cache,
+        patient_batch_size=patient_batch_size, batch_policy=batch_policy,
+        patients_per_batch=tconf.get("patients_per_batch", 6))
     val_loader = make_loader(val, root, batch_size, workers, val_generator,cache=cache, patient_batch_size=patient_batch_size)
     train_eval_loader = make_loader(train,root,batch_size,workers,
         torch.Generator().manual_seed(seed+70000+fold),cache=cache, patient_batch_size=patient_batch_size)
     model = CNN(config).to(device)
+    if batch_policy is not None:
+        initial = hashlib.sha256()
+        for name, tensor in model.state_dict().items():
+            initial.update(name.encode())
+            initial.update(tensor.detach().cpu().numpy().tobytes())
+        record = {"seed":seed, "fold":fold, "state_sha256":initial.hexdigest()}
+        path = run_dir/"inicializacion.json"
+        if path.exists() and json.loads(path.read_text()) != record:
+            raise ValueError("Inicialización distinta al reanudar")
+        json_write(path, record)
     optimizer = torch.optim.AdamW(model.parameters(), lr=tconf["lr"], weight_decay=tconf["weight_decay"])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=tconf["epochs"], eta_min=tconf["min_lr"])
     amp = bool(tconf["amp"] and device.type == "cuda")
@@ -548,7 +592,15 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
         lr = optimizer.param_groups[0]["lr"]
         train_loss = train_epoch(model, train_loader, optimizer, scaler, criterion, device, amp,
                                  config["augmentation"], aug_generator, tconf["clip_grad_norm"],
-                                 max_batches=1 if smoke else None)
+                                 max_batches=1 if smoke else None,
+                                 paired_key=f"{seed}/{fold}/{epoch}" if tconf.get("paired_augmentation") else None)
+        if batch_policy is not None:
+            audit = deepcopy(train_loader.batch_sampler.last_audit)
+            codes = codigos_aumento_pareado(train.sample_id, f"{seed}/{fold}/{epoch}", **config["augmentation"])
+            audit["augmentation_assignment_sha256"] = hashlib.sha256(json.dumps(
+                sorted((str(s), int(f), int(k)) for s, (f, k) in zip(train.sample_id, codes))).encode()).hexdigest()
+            audit.update(epoch=epoch+1, smoke=bool(smoke))
+            json_write(run_dir/f"lotes_{epoch+1:03d}.json", audit)
         probabilities, val_loss = predict(model, val_loader, device, False, criterion)
         metrics = patient_metrics(val, probabilities, config["evaluation"]["threshold"])
         scheduler.step()
@@ -565,6 +617,9 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
                "val_loss": val_loss, **metrics, "epoch_seconds": elapsed,
                "peak_vram_gib": torch.cuda.max_memory_allocated(device) / 2 ** 30 if device.type == "cuda" else 0.0,
                "bad_epochs": bad_epochs, "smoke": smoke}
+        if batch_policy is not None:
+            row.update(mean_batch_patients=audit["mean_distinct_patients"],
+                       optimizer_steps=audit["n_batches"], mean_batch_slices=audit["mean_batch_slices"])
         will_stop = not smoke and epoch+1 >= tconf["min_epochs"] and bad_epochs >= tconf["patience"]
         review = (epoch+1) % int(tconf.get("review_interval",10)) == 0 or epoch+1 == epochs_limit or will_stop
         if review:
@@ -616,6 +671,8 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
                "peak_vram_gib": max(r["peak_vram_gib"] for r in history),
                "checkpoint": "best.pt", "test_images_loaded": 0,
                "inference_amp": False, "patient_aggregation": "mean"}
+    if batch_policy is not None:
+        summary.update(batch_policy=batch_policy, paired_augmentation=True)
     if nested:
         summary.update(prediction_role="inner_selection", outer_evaluation_used=False,
                        loss_unit="slice", patient_batch_size=patient_batch_size)
@@ -1379,6 +1436,56 @@ def comparar_tamano(root, output, device, epocas=30, intervalo=10, lote=64, work
 
 
 # Auditoría y evaluación interna separada por paciente; entrenamiento BCE por corte.
+class LotesPareados(torch.utils.data.Sampler):
+    """Mismas longitudes y exposición; únicamente cambia la composición del lote.
+
+    Ambos brazos consumen exactamente los mismos sorteos del generador. El brazo
+    completo define longitudes con seis pacientes; el mixto corta una permutación
+    de todos los cortes usando esas longitudes, sin padding ni descartes.
+    """
+    def __init__(self, samples, generator, policy, patients_per_batch=6):
+        if policy not in {"pacientes_completas", "cortes_mezclados"} or patients_per_batch < 1:
+            raise ValueError("Política de lotes pareados inválida")
+        if not samples.split.eq("train").all() or samples.sample_id.duplicated().any():
+            raise ValueError("Lotes pareados requieren muestras train únicas")
+        if not samples.patient_id.is_monotonic_increasing:
+            raise ValueError("Lotes pareados requieren filas ordenadas por paciente")
+        self.samples, self.generator, self.policy = samples, generator, policy
+        self.patients_per_batch = patients_per_batch
+        self.groups = [list(indices) for indices in samples.groupby("patient_id",sort=False).indices.values()]
+        self.last_audit = None
+
+    def __len__(self):
+        return (len(self.groups)+self.patients_per_batch-1)//self.patients_per_batch
+
+    def __iter__(self):
+        order = torch.randperm(len(self.groups),generator=self.generator).tolist()
+        complete = [[index for patient in order[i:i+self.patients_per_batch]
+                     for index in self.groups[patient]]
+                    for i in range(0,len(order),self.patients_per_batch)]
+        lengths = [len(batch) for batch in complete]
+        # También se sortea en el brazo completo para mantener idéntico RNG.
+        shuffled = torch.randperm(len(self.samples),generator=self.generator).tolist()
+        boundaries = np.cumsum([0,*lengths]).tolist()
+        mixed = [shuffled[start:end] for start,end in zip(boundaries[:-1],boundaries[1:])]
+        batches = complete if self.policy == "pacientes_completas" else mixed
+        ids = self.samples.patient_id.to_numpy()
+        distinct = [len(set(ids[batch])) for batch in batches]
+        flattened = [index for batch in batches for index in batch]
+        if sorted(flattened) != list(range(len(self.samples))):
+            raise ValueError("Exposición incompleta o repetida en lotes")
+        self.last_audit = {"policy":self.policy, "n_batches":len(batches),
+            "n_slices":len(flattened), "batch_sizes":lengths,
+            "batch_sizes_sha256":hashlib.sha256(json.dumps(lengths).encode()).hexdigest(),
+            "sample_membership_sha256":hashlib.sha256(json.dumps(sorted(
+                self.samples.iloc[flattened].sample_id.astype(str))).encode()).hexdigest(),
+            "loader_rng_sha256":hashlib.sha256(self.generator.get_state().numpy().tobytes()).hexdigest(),
+            "distinct_patients_per_batch":distinct, "mean_distinct_patients":float(np.mean(distinct)),
+            "mean_batch_slices":float(np.mean(lengths)), "min_distinct_patients":min(distinct),
+            "max_distinct_patients":max(distinct), "padding":0, "dropped_slices":0}
+        return iter(batches)
+
+
 class DatasetPacientes(torch.utils.data.Dataset):
     """Bolsas completas; no se rellenan imágenes que contaminarían BatchNorm."""
     def __init__(self, samples, root, cache=None):
@@ -1721,9 +1828,150 @@ def evaluar_generalizacion(samples, root, output, device, configs, cache, seeds=
     return result
 
 
+def configuraciones_lotes(epocas=30, intervalo=10, workers=2):
+    configs = []
+    for policy in ("pacientes_completas", "cortes_mezclados"):
+        config = configuraciones_tamano(epocas, intervalo, 64, workers)[0]
+        config["name"] = policy
+        config["training"].update(batch_policy=policy, patients_per_batch=6,
+            paired_augmentation=True, loss_unit="slice")
+        config["evaluation"]["protocol"] = "nested_holdout"
+        configs.append(config)
+    return configs
+
+
+def tarea_lotes(config, seed, fold, root, output, device, cache_folder, smoke=False):
+    root, output = Path(root), Path(output)
+    folder = output/"logs"; folder.mkdir(parents=True,exist_ok=True)
+    with (folder/f"{config['name']}_seed_{seed}_fold_{fold}.log").open("a",buffering=1) as log:
+        with redirect_stdout(log), redirect_stderr(log):
+            cache = CacheTrain(cargar_train(root), root, Path(cache_folder), config["training"]["num_workers"])
+            summary = run_training(config,"weighted",seed,fold,root,output/"ejecuciones",
+                                   torch.device(device),smoke=smoke,cache=cache)
+    return {"candidate":config["name"], "seed":seed, "fold":fold,
+            "best_epoch":summary["best_epoch"], **summary["val_metrics"]}
+
+
+def verificar_lotes_pareados(output, configs, seeds=(42,2026), folds=range(5), smoke=False):
+    """Antes de acceder a evaluación: prueba exposición, aumentos, pasos e inicio."""
+    records = []
+    for seed in seeds:
+        for fold in folds:
+            folders = [Path(output)/"ejecuciones"/c["name"]/"weighted"/f"seed_{seed}"/f"fold_{fold}" for c in configs]
+            actual = [json.loads((folder/"config.json").read_text()) for folder in folders]
+            reduced = []
+            for item in actual:
+                item = deepcopy(item); item.pop("name"); item["training"].pop("batch_policy")
+                reduced.append(item)
+            if reduced[0] != reduced[1]:
+                raise ValueError("Cambió otro factor además de la composición del lote")
+            initial = [json.loads((folder/"inicializacion.json").read_text()) for folder in folders]
+            if initial[0] != initial[1]: raise ValueError("Pesos iniciales distintos entre brazos")
+            summaries = [json.loads((folder/"summary.json").read_text()) for folder in folders]
+            for folder,summary,item in zip(folders,summaries,actual):
+                if summary["status"] != "complete" or summary["smoke"] != smoke:
+                    raise ValueError("Run incompleto o de prueba")
+                if summary["config_hash"] != config_hash(item): raise ValueError("Configuración modificada")
+                for file,key in (("inference.pt","inference_sha256"),("oof_slices.csv","oof_sha256")):
+                    if sha256(folder/file) != summary[key]: raise ValueError("Artefacto modificado")
+            n_epochs = summaries[0]["epochs_completed"]
+            if n_epochs != summaries[1]["epochs_completed"] or (not smoke and n_epochs != actual[0]["training"]["epochs"]):
+                raise ValueError("Presupuesto desigual")
+            diversity = [[],[]]
+            for epoch in range(1,n_epochs+1):
+                audits = [json.loads((folder/f"lotes_{epoch:03d}.json").read_text()) for folder in folders]
+                for key in ("n_batches","n_slices","batch_sizes","batch_sizes_sha256",
+                            "sample_membership_sha256","augmentation_assignment_sha256","loader_rng_sha256"):
+                    if audits[0][key] != audits[1][key]: raise ValueError(f"Pareado distinto: {key}")
+                if not smoke and audits[0]["n_slices"] != actual[0]["n_train_slices"]:
+                    raise ValueError("No se aprende de todos los cortes")
+                for i,audit in enumerate(audits): diversity[i].append(audit["mean_distinct_patients"])
+            records.append({"seed":seed,"fold":fold,"epochs":n_epochs,
+                "initial_state_sha256":initial[0]["state_sha256"],
+                "mean_batch_patients":dict(zip([c["name"] for c in configs],map(lambda v:float(np.mean(v)),diversity)))})
+    report = {"status":"passed","pairs":len(records),"records":records,
+        "matched":["initial_weights","fit_patients","slice_exposure","batch_sizes",
+                   "optimizer_steps","sample_augmentations","loader_rng"],"smoke":smoke}
+    json_write(Path(output)/"verificacion_pareado.json", report)
+    return report
+
+
+def comparar_lotes(root, output, device, epocas=30, intervalo=10, workers=2, paralelos=2, smoke=False):
+    if epocas < intervalo or intervalo < 1 or paralelos not in (1,2,3,4):
+        raise ValueError("Presupuesto/revisión positivos y uno a cuatro procesos")
+    root, output = Path(root), Path(output)
+    cache_folder = SALIDA/"comparacion_tamano"/".cache"
+    output = output/"pruebas" if smoke else output
+    output.mkdir(parents=True,exist_ok=True)
+    samples = cargar_train(root)
+    configs = configuraciones_lotes(epocas,intervalo,workers)
+    cache = CacheTrain(samples,root,cache_folder,workers)
+    protected = preservacion_manifest()
+    protocol = {"variants":configs,"seeds":[42,2026],"outer_folds":list(range(5)),
+        "epochs":epocas,"smoke":smoke,"parallel_processes":paralelos,
+        "only_hypothesis":"complete six-patient batches versus mixed slices, with identical batch lengths",
+        "loss":"weighted BCE per slice; N0/N1 of fit only", "augmentation":"sample/seed/fold/epoch SHA-256 assignment; joint phases",
+        "inner_split":{"fit":.70,"selection":.15,"calibration":.15,"stratification":"cohort x pCR"},
+        "checkpoint":"maximum inner-selection patient AUC; earliest on ties",
+        "primary_endpoint":"mean outer-fold raw AUC of two-seed ensemble",
+        "secondary":["AP","F1/sensitivity/specificity at .5","calibration","cohort metrics"],
+        "aggregation":"mean sigmoid probabilities across slices and two seeds",
+        "calibration":"inner-only nonnegative regularized Platt C=1 and Youden",
+        "prior_development_exposure":True,"test_used":False,
+        "cache_sha256":sha256(cache.path), "protected_sha256":protected,
+        "source_sha256":{p.name:sha256(p) for p in (Path(__file__), RAIZ/"pipeline_datos.py")}}
+    protocol_path = output/"protocolo.json"
+    if protocol_path.exists() and json.loads(protocol_path.read_text()) != protocol:
+        raise ValueError("Protocolo distinto: usa otra salida")
+    json_write(protocol_path,protocol)
+    code_folder = output/"codigo"; code_folder.mkdir(exist_ok=True)
+    for path in (Path(__file__),RAIZ/"pipeline_datos.py"):
+        shutil.copy2(path,code_folder/path.name)
+    if not smoke:
+        plans = []
+        for fold in range(5):
+            _,plan = particion_generalizacion(samples,fold);plan["outer_fold"]=fold;plans.append(plan)
+        pd.concat(plans,ignore_index=True).to_csv(output/"particiones_pacientes.csv",index=False)
+        auditar_generalizacion(samples,root,cache,output,max(1,workers))
+    seeds, folds = ([42],[0]) if smoke else ([42,2026],list(range(5)))
+    tasks = [(config,seed,fold,str(root),str(output),str(device),str(cache_folder),smoke)
+             for seed in seeds for fold in folds for config in configs]
+    rows = []
+    def progress(row):
+        rows.append(row);pd.DataFrame(rows).to_csv(output/"progreso_runs.csv",index=False)
+        json_write(output/"estado.json",{"status":"running","completed":len(rows),"total":len(tasks)})
+        print(f"COMPLETO {len(rows)}/{len(tasks)}: {row['candidate']} semilla {row['seed']} fold {row['fold']} "
+              f"AUC selección={row['patient_auc']:.4f}",flush=True)
+    json_write(output/"estado.json",{"status":"running","completed":0,"total":len(tasks)})
+    try:
+        if paralelos == 1:
+            for task in tasks: progress(tarea_lotes(*task))
+        else:
+            with ProcessPoolExecutor(max_workers=paralelos,mp_context=get_context("spawn")) as pool:
+                futures = [pool.submit(tarea_lotes,*task) for task in tasks]
+                for future in as_completed(futures): progress(future.result())
+        pairing = verificar_lotes_pareados(output,configs,seeds,folds,smoke)
+        if preservacion_manifest() != protected: raise ValueError("Archivos protegidos modificados")
+        if smoke:
+            result = {"status":"smoke_only","eligible_for_selection":False,"runs":rows,"pairing":pairing}
+            json_write(output/"resultado_prueba.json",result)
+        else:
+            result = evaluar_generalizacion(samples,root,output,device,configs,cache)
+            result["batch_pairing"] = pairing
+            result["experiment"] = "batch_composition_only"
+            json_write(output/"resultado.json",result)
+        if preservacion_manifest() != protected: raise ValueError("Archivos protegidos modificados")
+        json_write(output/"verificacion_preservacion.json",{"status":"passed","files":len(protected),"test_images_loaded":0})
+        json_write(output/"estado.json",{"status":result["status"],"completed":len(rows),"total":len(tasks)})
+        return result
+    except BaseException as error:
+        json_write(output/"estado.json",{"status":"failed","completed":len(rows),"total":len(tasks),"error":repr(error)})
+        raise
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("accion", nargs="?", choices=("verificar", "entrenar", "comparar", "predecir", "ajustar", "comparar-tamano"), default="verificar")
+    parser.add_argument("accion", nargs="?", choices=("verificar", "entrenar", "comparar", "predecir", "ajustar", "comparar-tamano", "comparar-lotes"), default="verificar")
     parser.add_argument("--datos",type=Path,default=pdatos.DATOS)
     parser.add_argument("--salida",type=Path,default=None)
     parser.add_argument("--manifest",type=Path,default=SALIDA/"modelo_final.json")
@@ -1743,15 +1991,23 @@ def main():
     for phase in ("pre","early","late"):
         parser.add_argument("--"+phase,type=Path,nargs="+")
     args = parser.parse_args()
-    args.epocas = (30 if args.accion in {"ajustar","comparar-tamano"} else 46) if args.epocas is None else args.epocas
+    args.epocas = (30 if args.accion in {"ajustar","comparar-tamano","comparar-lotes"} else 46) if args.epocas is None else args.epocas
     args.salida = args.salida or (SALIDA/"comparacion_tamano" if args.accion == "comparar-tamano" else
+        SALIDA/"composicion_lotes" if args.accion == "comparar-lotes" else
         SALIDA/"ajustes" if args.accion == "ajustar" else SALIDA/"ejecuciones")
     if args.workers < 0 or args.lote < 1 or args.epocas < 1 or args.revision_cada < 1:
         parser.error("workers >= 0, lote >= 1 y epocas >= 1")
-    if args.accion in {"entrenar","ajustar","comparar-tamano"}:
+    if args.accion in {"entrenar","ajustar","comparar-tamano","comparar-lotes"}:
         device_name = ("cuda" if torch.cuda.is_available() else "cpu") if args.dispositivo == "auto" else args.dispositivo
         if device_name == "cuda" and not torch.cuda.is_available():
             parser.error("CUDA no está disponible")
+        if args.accion == "comparar-lotes":
+            if set(args.folds)!=set(range(5)) or set(args.semillas)!={42,2026} or args.lote!=64:
+                parser.error("comparar-lotes fija cinco folds, semillas 42/2026 y lote de evaluación 64")
+            result=comparar_lotes(args.datos,args.salida,torch.device(device_name),args.epocas,
+                                 args.revision_cada,args.workers,args.paralelos,args.prueba)
+            print(json.dumps({k:v for k,v in result.items() if k != "batch_pairing"},ensure_ascii=False,indent=2))
+            return
         if args.accion == "comparar-tamano":
             if set(args.folds)!=set(range(5)) or set(args.semillas)!={42,2026}:
                 parser.error("comparar-tamano utiliza los cinco folds y las semillas 42 y 2026")
