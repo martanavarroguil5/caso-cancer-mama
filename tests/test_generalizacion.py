@@ -1,4 +1,4 @@
-"""Evaluación separada, bolsas completas, pérdida estable y reanudación real."""
+"""Evaluación separada, bolsas completas y reanudación con BCE por corte."""
 import importlib.util
 import json
 import sys
@@ -57,21 +57,6 @@ class TestGeneralizacion(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"Fuga"):
             ent.validate_roles({"fit":{"a"},"selection":{"a"}},{"a"})
 
-    def test_bce_paciente_equivale_a_bce_de_media_y_tiene_gradientes(self):
-        z=torch.tensor([-2.,1.,.2,-.4,2.],requires_grad=True)
-        y=torch.tensor([1.,1.,0.,0.,0.]); sizes=[2,3]; weight=2.4
-        expected=torch.nn.functional.binary_cross_entropy(torch.stack([z[:2].sigmoid().mean(),z[2:].sigmoid().mean()]),
-            torch.tensor([1.,0.]),weight=torch.tensor([weight,1.]))
-        actual=ent.BCEPaciente(weight)(z,y,sizes)
-        self.assertTrue(torch.allclose(actual,expected,atol=1e-7))
-        actual.backward(); self.assertTrue(torch.isfinite(z.grad).all()); self.assertTrue((z.grad!=0).all())
-        extreme=torch.tensor([1000.,-1000.,-1000.,1000.],requires_grad=True)
-        loss=ent.BCEPaciente(weight)(extreme,torch.tensor([0.,0.,1.,1.]),[2,2])
-        loss.backward(); self.assertTrue(torch.isfinite(loss)); self.assertTrue(torch.isfinite(extreme.grad).all())
-        single=ent.BCEPaciente(weight)(z.detach(),y,[1]*5)
-        reference=torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor(weight))(z.detach(),y)
-        self.assertTrue(torch.allclose(single,reference))
-
     def test_bolsas_orden_y_ausencia_de_padding(self):
         with tempfile.TemporaryDirectory() as tmp:
             samples=roster().sort_values(["patient_id","slice_index"]).reset_index(drop=True)
@@ -95,10 +80,15 @@ class TestGeneralizacion(unittest.TestCase):
                 for column in ent.pdatos.COLUMNAS_RUTA:
                     path=root/getattr(row,column);path.parent.mkdir(parents=True,exist_ok=True)
                     Image.fromarray(np.full((256,256),rng.integers(15,240),dtype=np.uint8)).save(path)
-            cfg=ent.configuraciones_tamano(2,2,64,0)[0];cfg["name"]="bce_paciente"
-            cfg["training"].update(patient_batch_size=6,loss_unit="patient",cpu_threads=2)
+            cfg=ent.configuraciones_tamano(2,2,64,0)[0];cfg["name"]="referencia_cortes"
+            cfg["training"].update(patient_batch_size=6,loss_unit="slice",cpu_threads=2)
             cfg["evaluation"]["protocol"]="nested_holdout"
             a,b=Path(tmp)/"a",Path(tmp)/"b"
+            removed=json.loads(json.dumps(cfg));removed["training"]["loss_unit"]="patient"
+            rejected=Path(tmp)/"rejected"
+            with self.assertRaisesRegex(ValueError,"retirada"):
+                ent.run_training(removed,"weighted",42,0,root,rejected,torch.device("cpu"))
+            self.assertFalse(rejected.exists())
             roles,_=ent.particion_generalizacion(samples,0)
             allowed=set(roles["fit"].patient_id)|set(roles["selection"].patient_id)
             access=[]; original=ent.DatasetEntrenamiento.__getitem__
@@ -116,7 +106,7 @@ class TestGeneralizacion(unittest.TestCase):
                     ent.run_training(cfg,"weighted",42,0,root,b,torch.device("cpu"))
                 ent.run_training(cfg,"weighted",42,0,root,b,torch.device("cpu"))
             self.assertTrue(access)
-            relative=Path("bce_paciente/weighted/seed_42/fold_0")
+            relative=Path("referencia_cortes/weighted/seed_42/fold_0")
             ca=torch.load(a/relative/"last.pt",weights_only=False);cb=torch.load(b/relative/"last.pt",weights_only=False)
             for name,value in ca["state_dict"].items(): self.assertTrue(torch.equal(value,cb["state_dict"][name]),name)
             for key in ("torch","loader","augmentation"): self.assertTrue(torch.equal(ca["rng"][key],cb["rng"][key]))
@@ -131,7 +121,7 @@ class TestGeneralizacion(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             output=Path(tmp); samples=roster(); calls=[]
             configs=ent.configuraciones_tamano(2,2,64,0)
-            for config,name in zip(configs,("referencia_cortes","bce_paciente")):
+            for config,name in zip(configs,("referencia_cortes","candidata_control")):
                 config["name"]=name
                 for fold in range(5):
                     for seed in (42,2026):
@@ -151,14 +141,14 @@ class TestGeneralizacion(unittest.TestCase):
                 result["prob"]=.2+.3*rows.pCR+rows.slice_index*.01
                 return result
             original=ent.bootstrap_generalizacion
-            with patch.object(ent,"predicciones_rol",side_effect=predictions),patch.object(ent,"graficar_generalizacion"),patch.object(ent,"bootstrap_generalizacion",side_effect=lambda p:original(p,20)):
+            with patch.object(ent,"predicciones_rol",side_effect=predictions),patch.object(ent,"graficar_generalizacion"),patch.object(ent,"bootstrap_generalizacion",side_effect=lambda p,names:original(p,names,20)):
                 result=ent.evaluar_generalizacion(samples,output,output,torch.device("cpu"),configs,None)
                 self.assertEqual(result["status"],"complete")
                 self.assertEqual(result["test_images_loaded"],0)
                 oof=pd.read_csv(output/"oof_pacientes.csv")
                 self.assertEqual(len(oof),samples.patient_id.nunique())
                 path=output/"decisiones_congeladas.json"
-                changed=json.loads(path.read_text());changed["arms"]["bce_paciente"]["0"]["threshold"]+=.01
+                changed=json.loads(path.read_text());changed["arms"]["candidata_control"]["0"]["threshold"]+=.01
                 ent.json_write(path,changed)
                 with self.assertRaisesRegex(ValueError,"Decisiones modificadas"):
                     ent.evaluar_generalizacion(samples,output,output,torch.device("cpu"),configs,None)

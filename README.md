@@ -373,9 +373,33 @@ Resultados en `resultados/04_entrenamiento/comparacion_tamano/`: `resultado.json
 `metricas_cohortes.csv`, `curvas_comparacion.png` y `roc_precision_recall.png`.
 Se conservan los logs y pesos de las veinte ejecuciones dentro de esa carpeta.
 
-## Experimento de generalización por paciente (04/10/2026)
+## Experimento de generalización por paciente: descartado (04/10/2026)
 
-La acción `generalizar` compara una sola hipótesis: aplicar BCE ponderada después
+**La variante empeoró frente a la referencia y se ha retirado.** La AUC media
+bajó de 0.5590 a 0.5404, la AUC OOF cruda de 0.5480 a 0.5011, F1 de 0.3943
+a 0.3507 y sensibilidad de 0.5155 a 0.4286. El aumento de especificidad no
+compensa estas pérdidas. El IC principal incluye cero: el descarte es una
+decisión práctica para este proyecto, no una prueba de inferioridad universal.
+
+Se eliminaron `BCEPaciente`, la selección de pérdida por paciente y la acción
+`generalizar` que ejecutaba esta comparación. Las configuraciones antiguas
+con `loss_unit=patient` se rechazan antes de crear un run. Se conservaron las
+herramientas de auditoría, partición interna, lotes completos y evaluación
+separada, con entrenamiento exclusivamente BCE por corte. La comparación
+pareada recibe ahora nombres explícitos y no contiene una variante fallida.
+
+También se eliminaron los 60 archivos de pesos/checkpoints de
+`generalizacion_paciente/ejecuciones/bce_paciente/`; se conservaron los 60 de
+la referencia. `retirada_variante.json` registra rutas, SHA-256 y bytes
+eliminados, y la verificación de los archivos conservados. El informe, las
+configuraciones, curvas, predicciones y copia del código del ensayo permanecen
+como evidencia histórica. Esa copia no forma parte del código activo. Las
+etapas 01–03, el modelo histórico, calibración y umbral permanecen intactos.
+No se vuelve a evaluar el test ni se inicia otro experimento automáticamente.
+
+El protocolo y los resultados siguientes describen el ensayo ya concluido:
+
+La acción retirada `generalizar` comparó una sola hipótesis: aplicar BCE ponderada después
 de la media de probabilidades de los cortes de una paciente, en lugar de aplicar
 BCE ponderada a cada corte. Conserva la CNN actual ajustada (551.913 parámetros),
 las fases, la escala fija, pooling entre bloques, dropout 0,35, LR 0,0008,
@@ -426,20 +450,21 @@ Protocolo fijado antes de observar los resultados nuevos:
 - No se promueve un modelo automáticamente. Se conserva la referencia si no
   hay evidencia convincente en AUC y consistencia entre cohortes.
 
+El código utilizado quedó identificado por el commit `b549915` y su copia
+en `generalizacion_paciente/codigo/`. Los comandos de ejecución se retiraron
+porque el experimento está descartado y sus pesos candidatos se han eliminado.
+Las pruebas actuales se ejecutan con:
+
 ```bash
-# Diagnóstico separado, sin posibilidad de selección:
-.venv/bin/python -B 04_entrenamiento.py generalizar --prueba --workers 2 --paralelos 2 --dispositivo cuda --salida resultados/04_entrenamiento/generalizacion_diagnostico
-# Experimento completo o reanudación, exactamente el mismo comando:
-.venv/bin/python -B 04_entrenamiento.py generalizar --epocas 30 --revision-cada 10 --lote 64 --workers 2 --paralelos 2 --dispositivo cuda
 CUDA_VISIBLE_DEVICES='' .venv/bin/python -B -m unittest discover -s tests -v
 ```
 
 Resultados en `resultados/04_entrenamiento/generalizacion_paciente/`: protocolo,
 particiones por paciente, auditoría de todos los PNG **train** contra la caché,
 inventario SHA-256 de imágenes y duplicados exactos entre pacientes de train,
-configuraciones, entornos, versiones de paquetes, copia del código, curvas, checkpoints,
-predicciones de selección/calibración/evaluación y métricas. Reanudar conserva
-optimizador, calendario, scaler y RNG. Los cambios de configuración, código,
+configuraciones, entornos, versiones de paquetes, copia histórica del código, curvas,
+checkpoints de la referencia y predicciones de selección/calibración/evaluación y métricas. El ensayo ya no
+se ejecuta ni se reanuda desde el código activo. Los cambios de configuración, código,
 datos o archivos protegidos exigen una salida nueva. `selection_slices.csv`
 identifica las predicciones internas; `oof_slices.csv` dentro de cada run se
 conserva por compatibilidad del motor y **también es selección interna**, no la
@@ -530,7 +555,7 @@ La AUC agrupada calibrada 0.4994/0.5309 tampoco sustituye al criterio principal
 crudo predefinido: combina escalas distintas y empates de los calibradores.
 
 **Decisión: conservar la CNN actual y la pérdida por corte como referencia de
-investigación; no promover BCE por paciente.** El modelo operativo histórico
+investigación; retirar BCE por paciente por su empeoramiento observado.** El modelo operativo histórico
 permanece intacto. La hipótesis es razonable, pero este ensayo no la respalda.
 El siguiente experimento recomendado es estudiar la **composición del lote**,
 comparando únicamente lotes de cortes con más pacientes distintas frente a
@@ -542,9 +567,11 @@ No se debe cambiar a la vez LR, pérdida y aumentos ni reutilizar esta evaluaci�
 como si siguiera siendo independiente. Para afirmar generalización fuera del
 desarrollo se necesita una evaluación nueva con pacientes/cohortes no observadas.
 
-Las 26 pruebas pasaron. Los 37 archivos protegidos conservan sus bytes; se abrió
-cero imágenes test. Los logs, configuraciones, curvas, checkpoints, predicciones,
-calibradores, umbrales e inventario de datos permanecen en la carpeta del ensayo.
+Las 26 pruebas del ensayo original pasaron. Tras la retirada pasan 25 pruebas,
+incluida la reanudación real de BCE por corte y el rechazo de la pérdida retirada. Los 37 archivos protegidos conservan sus bytes; se abrió
+cero imágenes test. Los logs, configuraciones, curvas, checkpoints de la
+referencia, predicciones, calibradores, umbrales e inventario de datos permanecen
+en la carpeta del ensayo. Los pesos de la variante descartada se eliminaron.
 `verificacion_final.json` documenta las comprobaciones independientes. No hubo
 push ni publicación. Todos los commits nuevos usan
 `martanavarroguil5 <mnavagui@myuax.com>`.
