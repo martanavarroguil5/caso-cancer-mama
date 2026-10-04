@@ -217,9 +217,13 @@ class DatasetEntrenamiento(pdatos.BreastDCESliceDataset):
 
 
 def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None):
+    # Los lectores trabajan solo en CPU. En Linux, fork conserva el memmap compartido
+    # aunque este entrenamiento se ejecute dentro de un proceso creado con spawn.
+    context = ("fork" if sys.platform.startswith("linux") else "spawn") if workers else None
     return DataLoader(DatasetEntrenamiento(samples, root, cache), batch_size=batch_size,
         shuffle=shuffle, num_workers=workers, pin_memory=torch.cuda.is_available(),
-        persistent_workers=False, worker_init_fn=pdatos.inicializar_worker, generator=generator)
+        persistent_workers=False, worker_init_fn=pdatos.inicializar_worker, generator=generator,
+        multiprocessing_context=context)
 
 
 def aumentar_geometria(x, generator, hflip=0.5, rot90=True):
@@ -968,6 +972,17 @@ class CacheTrain:
 
     def imagen(self,sample_id):
         return torch.from_numpy(np.array(self.memory[self.index[str(sample_id)]],copy=True))
+
+    def __getstate__(self):
+        # NumPy serializa el contenido del memmap. Reabrirlo evita copiar gigabytes
+        # cuando Windows/macOS o un lector configurado con spawn crea un worker.
+        state = self.__dict__.copy()
+        state.pop("memory", None)
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.memory = np.load(self.path, mmap_mode="r")
 
 
 def pyplot():
