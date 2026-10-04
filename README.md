@@ -465,3 +465,86 @@ Fuentes metodológicas: [selección anidada de scikit-learn](https://scikit-lear
 [BCE ponderada de PyTorch](https://docs.pytorch.org/docs/2.14/generated/torch.nn.BCEWithLogitsLoss.html)
 y [aprendizaje por bolsas de instancias, Ilse et al.](https://proceedings.mlr.press/v80/ilse18a.html).
 Esta implementación usa una media fija y no implementa la atención del artículo.
+
+### Resultado del primer experimento por paciente
+
+Se completaron veinte runs y 600 épocas con el protocolo fijado en el commit
+`b549915`. Las predicciones externas cubren las 1.097 pacientes. La verificación
+independiente confirmó pacientes/etiquetas/cohortes, selección de checkpoints,
+identidad de los pesos exportados, configuraciones pareadas y orden temporal:
+todos los modelos y decisiones internas se fijaron antes de la evaluación externa.
+
+| Métrica | Referencia por corte | BCE por paciente |
+|---|---:|---:|
+| AUC media de folds, ensemble de dos semillas (principal) | 0.5590 | 0.5404 |
+| DE de AUC entre folds | 0.0528 | 0.0501 |
+| AP media de folds, secundaria | 0.3440 | 0.3497 |
+| AUC OOF agrupada cruda | 0.5480 | 0.5011 |
+| AP OOF agrupada cruda | 0.3251 | 0.3035 |
+| F1 OOF, crudo y umbral 0.5 | 0.3943 | 0.3507 |
+| Sensibilidad OOF, cruda y umbral 0.5 | 0.5155 | 0.4286 |
+| Especificidad OOF, cruda y umbral 0.5 | 0.5432 | 0.5781 |
+| Brier OOF crudo | 0.2448 | 0.2787 |
+| Log-loss OOF crudo | 0.6829 | 0.7782 |
+
+Diferencia principal BCE paciente − referencia: **−0.0186**, IC95% condicionado
+**[−0.0544, +0.0149]**. No demuestra mejora; tampoco permite afirmar inferioridad
+poblacional concluyente en este criterio. La referencia tiene mayor AUC en cuatro
+de los cinco folds. La diferencia OOF cruda es −0.0469, IC95% [−0.0745, −0.0200],
+pero es un criterio secundario sensible a diferencias de escala entre modelos.
+La pequeña mejora de AP media por fold y la peor AP agrupada son compatibles:
+la media de métricas y la métrica de scores combinados son resúmenes diferentes.
+
+Al umbral crudo 0.5, BCE por paciente pierde 28 verdaderos positivos y reduce
+27 falsos positivos. Es un intercambio de sensibilidad por especificidad,
+acompañado de menor F1 y peor Brier. La media train/selección al final es
+0.6596/0.5262 en referencia y 0.6530/0.5194 en BCE paciente. El cambio no ha
+resuelto la discriminación ni eliminado la brecha de aprendizaje/selección.
+La magnitud de sobreajuste no se compara directamente con el ensayo anterior:
+cambian el número de pacientes que aprende y la composición del lote.
+
+| Cohorte | Pacientes | AUC OOF cruda referencia | AUC OOF cruda BCE paciente |
+|---|---:|---:|---:|
+| Duke | 209 | 0.5395 | 0.4921 |
+| I-SPY1 | 104 | 0.5178 | 0.6307 |
+| I-SPY2 | 784 | 0.5369 | 0.4806 |
+
+La mejora en I-SPY1 no compensa la falta de mejora global ni los deterioros de
+Duke e I-SPY2. Son métricas agrupadas dentro de cada cohorte, con los mismos
+límites de escalas y desarrollo previamente observado. No es validación externa.
+
+La calibración reduce Brier a 0.2076/0.2082 y log-loss a 0.6061/0.6081
+(referencia/BCE paciente). Con umbrales Youden internos congelados, F1 es
+0.3021/0.3092, sensibilidad 0.2857 en ambas y especificidad 0.7484/0.7665.
+BCE paciente obtiene los mismos 92 verdaderos positivos y 14 falsos positivos
+menos. Ese pequeño cambio en decisiones no establece una mejora de AUC.
+
+ECE de diez bins es 0.0213/0.0061, pero las probabilidades están concentradas
+cerca de la prevalencia. Un predictor constante de la prevalencia OOF tendría
+Brier 0.2074 como referencia descriptiva retrospectiva, no como modelo elegido.
+Estos errores bajos no acreditan buena discriminación. Dos calibradores de la
+referencia (folds 2/4) y uno de BCE paciente (fold 0) alcanzaron pendiente cero:
+producen probabilidades constantes, AUC 0.5 dentro de esos folds y decisiones
+negativas con umbral 0.5. Los holdouts de calibración son pequeños e inestables.
+La AUC agrupada calibrada 0.4994/0.5309 tampoco sustituye al criterio principal
+crudo predefinido: combina escalas distintas y empates de los calibradores.
+
+**Decisión: conservar la CNN actual y la pérdida por corte como referencia de
+investigación; no promover BCE por paciente.** El modelo operativo histórico
+permanece intacto. La hipótesis es razonable, pero este ensayo no la respalda.
+El siguiente experimento recomendado es estudiar la **composición del lote**,
+comparando únicamente lotes de cortes con más pacientes distintas frente a
+bolsas completas de seis pacientes, manteniendo pérdida por corte, arquitectura,
+datos, semillas y selección interna. La menor AUC de aprendizaje frente al
+protocolo anterior sugiere un posible efecto de optimización/BatchNorm y del
+número efectivo de pacientes por actualización, sin demostrar su causa.
+No se debe cambiar a la vez LR, pérdida y aumentos ni reutilizar esta evaluación
+como si siguiera siendo independiente. Para afirmar generalización fuera del
+desarrollo se necesita una evaluación nueva con pacientes/cohortes no observadas.
+
+Las 26 pruebas pasaron. Los 37 archivos protegidos conservan sus bytes; se abrió
+cero imágenes test. Los logs, configuraciones, curvas, checkpoints, predicciones,
+calibradores, umbrales e inventario de datos permanecen en la carpeta del ensayo.
+`verificacion_final.json` documenta las comprobaciones independientes. No hubo
+push ni publicación. Todos los commits nuevos usan
+`martanavarroguil5 <mnavagui@myuax.com>`.
