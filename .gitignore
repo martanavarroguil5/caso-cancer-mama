@@ -241,3 +241,6 @@ __marimo__/
 # Experimento de generalización por paciente
 /resultados/04_entrenamiento/generalizacion_paciente/
 /resultados/04_entrenamiento/generalizacion_diagnostico/
+
+# Comparación pareada de composición de lotes
+/resultados/04_entrenamiento/composicion_lotes/
