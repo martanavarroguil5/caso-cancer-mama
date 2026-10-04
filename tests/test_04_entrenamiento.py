@@ -2,6 +2,8 @@
 import hashlib
 import importlib.util
 import json
+import pickle
+import sys
 from pathlib import Path
 import tempfile
 import unittest
@@ -14,6 +16,7 @@ import torch
 
 spec = importlib.util.spec_from_file_location("entrenamiento", Path(__file__).parents[1]/"04_entrenamiento.py")
 entrenamiento = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = entrenamiento
 spec.loader.exec_module(entrenamiento)
 
 
@@ -207,6 +210,13 @@ class TestEntrenamiento(unittest.TestCase):
         row=samples.iloc[[0]]
         plain=entrenamiento.DatasetEntrenamiento(row,self.root)[0]
         cached=entrenamiento.DatasetEntrenamiento(row,self.root,cache)[0]
+        payload=pickle.dumps(cache)
+        self.assertLess(len(payload),100000)
+        restored=pickle.loads(payload)
+        self.assertTrue(torch.equal(restored.imagen(row.iloc[0].sample_id),cached["image"]))
+        if sys.platform.startswith("linux"):
+            batch=next(iter(entrenamiento.make_loader(row,self.root,1,2,torch.Generator(),cache=restored)))
+            self.assertTrue(torch.equal(batch["image"][0],cached["image"]))
         x,_=entrenamiento.batch_device({"image":cached["image"].unsqueeze(0),
             "label":cached["label"].unsqueeze(0)},torch.device("cpu"))
         self.assertTrue(torch.equal(x[0],plain["image"]))
