@@ -437,7 +437,7 @@ CUDA_VISIBLE_DEVICES='' .venv/bin/python -B -m unittest discover -s tests -v
 Resultados en `resultados/04_entrenamiento/generalizacion_paciente/`: protocolo,
 particiones por paciente, auditoría de todos los PNG **train** contra la caché,
 inventario SHA-256 de imágenes y duplicados exactos entre pacientes de train,
-configuraciones, entornos, `pip freeze`, copia del código, curvas, checkpoints,
+configuraciones, entornos, versiones de paquetes, copia del código, curvas, checkpoints,
 predicciones de selección/calibración/evaluación y métricas. Reanudar conserva
 optimizador, calendario, scaler y RNG. Los cambios de configuración, código,
 datos o archivos protegidos exigen una salida nueva. `selection_slices.csv`

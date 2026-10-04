@@ -17,6 +17,7 @@ from contextlib import nullcontext, redirect_stdout, redirect_stderr
 from copy import deepcopy
 import csv
 import hashlib
+from importlib.metadata import distributions
 import json
 from pathlib import Path
 import platform
@@ -1811,7 +1812,8 @@ def experimento_generalizacion(root, output, device, epochs=30, interval=10, bat
         shutil.copy2(file,snapshot/file.name)
     if not (output/"entorno_experimento.json").exists():
         json_write(output/"entorno_experimento.json",environment(device))
-        (snapshot/"pip_freeze.txt").write_text(subprocess.check_output([sys.executable,"-m","pip","freeze"],text=True))
+        (snapshot/"dependencias.txt").write_text("\n".join(sorted(
+            f"{d.metadata['Name']}=={d.version}" for d in distributions()))+"\n")
     if not smoke:
         # Revalidate source PNGs against cache on resume, not just metadata.
         auditar_generalizacion(samples,root,cache,output,workers)
