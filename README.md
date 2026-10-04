@@ -247,7 +247,8 @@ por paciente tras promediar las dos semillas de validación y sus cortes. El
 umbral permanece en 0,5: no se ajusta para favorecer una variante.
 
 `resultado.json` incluye AUC, average precision, F1, sensibilidad, especificidad,
-precisión, Brier y resultados por cohorte. Los intervalos de diferencias se
+precisión y Brier. `metricas_cohortes.csv` desglosa las métricas por cohorte.
+Los intervalos de diferencias se
 calculan mediante 2.000 remuestreos pareados y estratificados de pacientes.
 Están condicionados a esas predicciones OOF; no recogen toda la variación del
 entrenamiento. La selección de checkpoints usa validación y no es validación
@@ -295,3 +296,79 @@ Evidencia en `resultados/04_entrenamiento/ajustes/`:
 y `confirmacion_curvas.png`. Cada run conserva código identificado por SHA-256,
 configuración, entorno, curvas, OOF y pesos. Se ejecutaron diez entrenamientos
 de 30 épocas en total; se cargaron cero imágenes del test reservado.
+
+## Resultado de la comparación del 04/10/2026
+
+Se completaron veinte entrenamientos: dos variantes × cinco folds × semillas
+42 y 2026. Ambas utilizan lote 64 y treinta épocas con revisión en 10/20/30.
+El código del experimento es el commit `726b704`; configuración, entorno y
+SHA-256 de código, caché, pesos y predicciones están registrados. La carga de
+caché se optimizó antes del ensayo definitivo; once épocas coincidieron
+exactamente con la ejecución diagnóstica previa en ambas variantes.
+
+La CNN actual tiene 551.913 parámetros y la pequeña 310.513 (43,7 % menos).
+Los canales son la única diferencia del modelo. Se conserva cabeza de 64,
+pooling entre bloques, dropout 0,35, LR 0,0008, weight decay 0,001, BCE ponderada
+y aumentos. El checkpoint de cada run se elige por AUC de su validación.
+
+| Métrica | Actual: media ± DE | Pequeña: media ± DE | OOF actual | OOF pequeña |
+|---|---:|---:|---:|---:|
+| AUC | 0.6115 ± 0.0346 | 0.5954 ± 0.0286 | 0.5932 | 0.5922 |
+| Average precision | 0.3983 ± 0.0481 | 0.3933 ± 0.0373 | 0.3792 | 0.3840 |
+| F1 | 0.3363 ± 0.1485 | 0.3750 ± 0.0778 | 0.3571 | 0.4252 |
+| Precisión | 0.3677 ± 0.0443 | 0.3724 ± 0.0437 | 0.3947 | 0.3868 |
+| Sensibilidad | 0.3660 ± 0.2039 | 0.4394 ± 0.2306 | 0.3261 | 0.4720 |
+| Especificidad | 0.7428 ± 0.1525 | 0.6718 ± 0.2186 | 0.7923 | 0.6890 |
+| Brier | 0.2365 ± 0.0112 | 0.2471 ± 0.0269 | 0.2297 | 0.2415 |
+
+La media/DE describe las diez ejecuciones por variante. OOF combina las dos
+semillas de validación por corte y después los cortes por paciente: 1.097
+pacientes con predicciones hechas sin usarlas para aprender los pesos del run.
+Las métricas OOF y la media de runs son resúmenes distintos. F1, sensibilidad
+y especificidad usan el mismo umbral fijo de 0,5, sin calibración ni ajuste.
+
+- AUC: diferencia OOF pequeña − actual -0.0010; IC95% [-0.0372, +0.0346].
+- Average precision: diferencia OOF pequeña − actual +0.0048; IC95% [-0.0358, +0.0439].
+- F1: diferencia OOF pequeña − actual +0.0680; IC95% [+0.0183, +0.1164].
+
+La pequeña mejora AUC en 4/10 pares fold/semilla y average precision
+en 4/10. No se ha demostrado una mejora concluyente en AUC: el intervalo pareado de desarrollo incluye cero.
+
+La mejora OOF en F1 con umbral 0,5 tiene un IC pareado por encima de cero,
+condicionado a estas predicciones. La sensibilidad aumenta de
+0.3261 a 0.4720, pero la
+especificidad baja de 0.7923 a
+0.6890. La pequeña acierta
+47 positivos más y produce
+80 falsos positivos adicionales.
+La AUC media por ejecución es menor y el Brier OOF es peor: el ahorro de
+parámetros y el mayor F1 no constituyen una mejora global.
+
+La comparación por cohorte muestra diferencias que el promedio puede ocultar:
+
+| Cohorte | Pacientes | AUC OOF actual | AUC OOF pequeña |
+|---|---:|---:|---:|
+| duke | 209 | 0.6324 | 0.5209 |
+| spy1 | 104 | 0.6193 | 0.6267 |
+| spy2 | 784 | 0.5670 | 0.5908 |
+
+Persiste el sobreajuste. En la época 30, la AUC media de train/validación es
+0.9370/0.5318
+en la actual y
+0.8971/0.5287
+en la pequeña. Estas cifras describen las curvas al final del presupuesto;
+las métricas de las tablas corresponden a los mejores checkpoints de validación.
+Reducir la red no ha resuelto la generalización. Se conservan ambas variantes
+para investigación, sin promover automáticamente la pequeña.
+
+Los IC se obtienen con 2.000 remuestreos pareados y estratificados por paciente,
+condicionados a las predicciones OOF. No son una validación anidada, no incluyen
+toda la incertidumbre de entrenamiento y no demuestran rendimiento en pacientes
+de otra fuente. La elección previa de la configuración y de checkpoints utiliza
+datos de desarrollo. El test reservado no se ha abierto; el modelo histórico,
+sus pesos, calibración y umbral siguen conservados.
+
+Resultados en `resultados/04_entrenamiento/comparacion_tamano/`: `resultado.json`,
+`resumen_metricas.csv`, `comparacion_runs.csv`, `diferencias_pareadas.csv`,
+`metricas_cohortes.csv`, `curvas_comparacion.png` y `roc_precision_recall.png`.
+Se conservan los logs y pesos de las veinte ejecuciones dentro de esa carpeta.
