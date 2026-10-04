@@ -12,8 +12,8 @@ import os
 os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
 
 import argparse
-from concurrent.futures import ThreadPoolExecutor
-from contextlib import nullcontext
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
+from contextlib import nullcontext, redirect_stdout, redirect_stderr
 from copy import deepcopy
 import csv
 import hashlib
@@ -26,13 +26,15 @@ import subprocess
 import sys
 import time
 import shutil
+from multiprocessing import get_context
 
 import numpy as np
 import pandas as pd
 from PIL import Image
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (roc_auc_score, average_precision_score, accuracy_score,
-                             confusion_matrix, brier_score_loss, log_loss, roc_curve, f1_score)
+                             confusion_matrix, brier_score_loss, log_loss, roc_curve, f1_score,
+                             precision_recall_curve)
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
@@ -1097,9 +1099,243 @@ def ajustar_hiperparametros(root,output,device,epocas=30,intervalo=10,fold=0,see
     json_write(output/"resultado_ajuste.json",result)
     return result
 
+def configuraciones_tamano(epocas=30, intervalo=10, lote=64, workers=2):
+    """Comparación controlada: solo difieren nombre y canales de los bloques."""
+    actual = candidatos_ajuste(epocas)[-1]
+    actual["name"] = "cnn_actual"
+    actual["training"].update(review_interval=intervalo, batch_size=lote,
+        num_workers=workers, cpu_threads=4)
+    pequena = deepcopy(actual)
+    pequena["name"] = "cnn_pequena"
+    pequena["model"]["channels"] = [16, 32, 64, 128]
+    return [actual, pequena]
+
+
+def bootstrap_pareado(y, actual, pequena, repeticiones=2000):
+    """IC de diferencias condicionado a las predicciones OOF; unidad paciente."""
+    y, actual, pequena = np.asarray(y), np.asarray(actual), np.asarray(pequena)
+    binary_metrics(y, actual)
+    binary_metrics(y, pequena)
+    if len(np.unique(y)) != 2 or repeticiones < 1:
+        raise ValueError("Bootstrap requiere ambas clases y repeticiones positivas")
+    rng = np.random.default_rng(20261004)
+    groups = [np.flatnonzero(y == label) for label in (0, 1)]
+    deltas = {key: [] for key in ("roc_auc", "average_precision", "f1")}
+    metrics = {"roc_auc": roc_auc_score, "average_precision": average_precision_score,
+               "f1": lambda labels, p: f1_score(labels, p >= .5, zero_division=0)}
+    for _ in range(repeticiones):
+        idx = np.concatenate([rng.choice(group, len(group), replace=True) for group in groups])
+        for key, metric in metrics.items():
+            deltas[key].append(float(metric(y[idx], pequena[idx])-metric(y[idx], actual[idx])))
+    return {key: {"delta": float(metrics[key](y, pequena)-metrics[key](y, actual)),
+                  "ci95": np.quantile(values, [.025, .975]).tolist()}
+            for key, values in deltas.items()}
+
+
+def tarea_tamano(config, seed, fold, root, output, device, smoke=False):
+    """Un proceso tiene su propio RNG, contexto CUDA y registro de entrenamiento."""
+    root, output = Path(root), Path(output)
+    folder = output/"ejecuciones"/config["name"]/"weighted"/f"seed_{seed}"/f"fold_{fold}"
+    folder.mkdir(parents=True, exist_ok=True)
+    with (folder/"entrenamiento.log").open("a", buffering=1) as log:
+        with redirect_stdout(log), redirect_stderr(log):
+            cache = CacheTrain(cargar_train(root), root, output/".cache", config["training"]["num_workers"])
+            summary = run_training(config, "weighted", seed, fold, root,
+                output/"ejecuciones", torch.device(device), smoke=smoke, cache=cache)
+    return {"candidate": config["name"], "seed": seed, "fold": fold,
+        "best_epoch": summary["best_epoch"], "epochs_completed": summary["epochs_completed"],
+        "parameters": summary["parameters"], "val_loss": summary["val_loss"],
+        **summary["val_metrics"]}
+
+
+def curvas_tamano(output, configs, patients):
+    plt = pyplot()
+    colors = {"cnn_actual": "#2463a0", "cnn_pequena": "#bf5b18"}
+    names = {"cnn_actual": "Actual", "cnn_pequena": "Pequeña"}
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5), constrained_layout=True)
+    for config in configs:
+        histories = [pd.read_csv(path) for path in (Path(output)/"ejecuciones"/config["name"]).glob(
+            "weighted/seed_*/fold_*/history.csv")]
+        h = pd.concat(histories, ignore_index=True).groupby("epoch").mean(numeric_only=True)
+        for ax, val, train, title in zip(axes, ["val_loss", "patient_auc", "patient_f1"],
+            ["train_eval_loss", "train_patient_auc", "train_patient_f1"],
+            ["Pérdida BCE", "AUC por paciente", "F1 por paciente · umbral 0,5"]):
+            color, name = colors[config["name"]], names[config["name"]]
+            ax.plot(h.index, h[val], color=color, label=name+" · validación")
+            clean = h[h[train].notna()]
+            ax.plot(clean.index, clean[train], "o--", color=color, label=name+" · train sin aumentos")
+            ax.set(title=title, xlabel="Época")
+            ax.grid(alpha=.2)
+    axes[0].legend(fontsize=8)
+    axes[1].set_ylim(0, 1)
+    axes[2].set_ylim(0, 1)
+    fig.suptitle("Media de diez entrenamientos por variante · cinco folds × dos semillas")
+    fig.savefig(Path(output)/"curvas_comparacion.png", dpi=160)
+    plt.close(fig)
+    fig, axes = plt.subplots(1, 2, figsize=(11, 5), constrained_layout=True)
+    for config in configs:
+        name = config["name"]
+        y, p = patients.label.to_numpy(), patients[name].to_numpy()
+        fpr, tpr, _ = roc_curve(y, p)
+        precision, recall, _ = precision_recall_curve(y, p)
+        axes[0].plot(fpr, tpr, color=colors[name], label=names[name])
+        axes[1].plot(recall, precision, color=colors[name], label=names[name])
+    axes[0].plot([0, 1], [0, 1], "k--", alpha=.4)
+    axes[1].axhline(patients.label.mean(), color="k", linestyle="--", alpha=.4, label="Prevalencia")
+    axes[0].set(title="ROC · OOF por paciente", xlabel="Falsos positivos", ylabel="Sensibilidad")
+    axes[1].set(title="Precisión-recall · OOF por paciente", xlabel="Recall", ylabel="Precisión")
+    for ax in axes:
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.grid(alpha=.2)
+        ax.legend()
+    fig.savefig(Path(output)/"roc_precision_recall.png", dpi=160)
+    plt.close(fig)
+
+
+def evaluar_tamano(root, output, configs, repeticiones=2000, graficas=True):
+    """Exige veinte runs íntegros y OOF completos, sin consultar test."""
+    output = Path(output)
+    train = cargar_train(root)
+    roster = train.rename(columns={"pCR": "label", "dataset": "cohort"})
+    signature = hashlib.sha256(train.to_csv(index=False).encode()).hexdigest()
+    records, predictions, artifacts = [], {}, []
+    sources = {p.name:sha256(p) for p in (Path(__file__), RAIZ/"pipeline_datos.py")}
+    for config in configs:
+        expected_parameters = numero_parametros(CNN(config))
+        seeds = []
+        for seed in (42, 2026):
+            folds = []
+            for fold in range(5):
+                folder = output/"ejecuciones"/config["name"]/"weighted"/f"seed_{seed}"/f"fold_{fold}"
+                if not (folder/"summary.json").is_file():
+                    raise ValueError("Comparación incompleta: requiere veinte entrenamientos")
+                summary = json.loads((folder/"summary.json").read_text())
+                used = json.loads((folder/"config.json").read_text())
+                if (summary.get("status") != "complete" or not summary.get("eligible_for_selection")
+                    or used.get("smoke") or summary.get("test_images_loaded") != 0
+                    or summary.get("epochs_completed") != config["training"]["epochs"]):
+                    raise ValueError("Run incompleto, de prueba o con test: excluido")
+                if summary["config_hash"] != config_hash(used) or used.get("data_signature") != signature:
+                    raise ValueError("Configuración o datos de la comparación modificados")
+                if used.get("source_sha256") != sources or summary.get("parameters") != expected_parameters:
+                    raise ValueError("Código o número de parámetros incompatible con la comparación")
+                if any(used.get(key) != value for key, value in config.items()):
+                    raise ValueError("Los hiperparámetros no coinciden con el protocolo")
+                if (used.get("seed"), used.get("fold"), used.get("loss")) != (seed, fold, "weighted"):
+                    raise ValueError("Identidad del run incompatible")
+                for filename, key in (("inference.pt", "inference_sha256"), ("oof_slices.csv", "oof_sha256")):
+                    if sha256(folder/filename) != summary[key]:
+                        raise ValueError("Pesos o predicciones modificados")
+                oof = validate_oof(pd.read_csv(folder/"oof_slices.csv"), roster[roster.fold.eq(fold)])
+                grouped = aggregate_patients(oof)
+                metrics = binary_metrics(grouped.label, grouped.probability)
+                for key in ("roc_auc", "f1", "average_precision"):
+                    expected = summary["val_metrics"][{"roc_auc":"patient_auc", "f1":"patient_f1", "average_precision":"patient_ap"}[key]]
+                    if not np.isclose(metrics[key], expected, atol=1e-7, rtol=0):
+                        raise ValueError("Métricas del resumen no coinciden con OOF")
+                records.append({"candidate":config["name"], "seed":seed, "fold":fold,
+                    "best_epoch":summary["best_epoch"], "parameters":summary["parameters"],
+                    "val_loss":summary["val_loss"], **{k:v for k,v in metrics.items() if k != "confusion_matrix"}})
+                artifacts.append({"candidate":config["name"], "seed":seed, "fold":fold,
+                    "path":str(folder.relative_to(output)), "config_hash":summary["config_hash"],
+                    "source_sha256":used["source_sha256"], "environment":json.loads((folder/"environment.json").read_text()),
+                    "inference_sha256":summary["inference_sha256"], "oof_sha256":summary["oof_sha256"]})
+                folds.append(oof)
+            seeds.append(validate_oof(pd.concat(folds, ignore_index=True), roster))
+        slices = seeds[0].copy()
+        if not slices.sample_id.equals(seeds[1].sample_id):
+            raise ValueError("Índices OOF distintos entre semillas")
+        slices["probability"] = (seeds[0].probability.to_numpy()+seeds[1].probability.to_numpy())/2
+        predictions[config["name"]] = aggregate_patients(slices)
+    frame = pd.DataFrame(records)
+    frame.to_csv(output/"comparacion_runs.csv", index=False)
+    patients = predictions["cnn_actual"].rename(columns={"probability":"cnn_actual"})
+    other = predictions["cnn_pequena"]
+    if not patients.patient_id.equals(other.patient_id):
+        raise ValueError("Pacientes no alineadas")
+    patients["cnn_pequena"] = other.probability.to_numpy()
+    patients.to_csv(output/"oof_pacientes.csv", index=False)
+    metric_names = ("roc_auc", "average_precision", "f1", "precision", "sensitivity", "specificity", "balanced_accuracy", "brier")
+    aggregates, cohort_records, pairs = [], [], []
+    for config in configs:
+        name = config["name"]
+        part = frame[frame.candidate.eq(name)]
+        aggregates.append({"candidate":name, "parameters":int(part.parameters.iloc[0]),
+            "mean_runs":{k:float(part[k].mean()) for k in metric_names},
+            "std_runs":{k:float(part[k].std()) for k in metric_names},
+            "oof":binary_metrics(patients.label, patients[name])})
+        for cohort, group in patients.groupby("cohort"):
+            cohort_records.append({"candidate":name, "cohort":cohort,
+                **{k:v for k,v in binary_metrics(group.label, group[name]).items() if k != "confusion_matrix"}})
+    for seed in (42, 2026):
+        for fold in range(5):
+            pair = frame[frame.seed.eq(seed) & frame.fold.eq(fold)].set_index("candidate")
+            pairs.append({"seed":seed, "fold":fold,
+                **{"delta_"+k:float(pair.loc["cnn_pequena",k]-pair.loc["cnn_actual",k]) for k in metric_names}})
+    pd.DataFrame(pairs).to_csv(output/"diferencias_pareadas.csv", index=False)
+    pd.DataFrame(cohort_records).to_csv(output/"metricas_cohortes.csv", index=False)
+    result = {"status":"complete", "completed_runs":20, "patients":len(patients),
+        "variants":aggregates, "paired_runs":pairs,
+        "paired_bootstrap":bootstrap_pareado(patients.label.to_numpy(), patients.cnn_actual.to_numpy(),
+            patients.cnn_pequena.to_numpy(), repeticiones),
+        "bootstrap_repetitions":repeticiones, "bootstrap_unit":"patient",
+        "test_repeated":False, "historical_model_replaced":False,
+        "warning":"Desarrollo: checkpoints elegidos con validación. No es validación anidada ni evaluación externa. Los IC bootstrap están condicionados a las predicciones OOF y no incluyen toda la incertidumbre del entrenamiento.",
+        "artifacts":artifacts}
+    if graficas:
+        curvas_tamano(output, configs, patients)
+    json_write(output/"resultado.json", result)
+    return result
+
+
+def comparar_tamano(root, output, device, epocas=30, intervalo=10, lote=64, workers=2, paralelos=2, smoke=False):
+    if epocas < intervalo or intervalo < 1 or paralelos not in (1, 2, 3, 4):
+        raise ValueError("Presupuesto y revisión positivos; entre uno y cuatro procesos")
+    root, output = Path(root), Path(output)
+    output = output/"pruebas" if smoke else output
+    output.mkdir(parents=True, exist_ok=True)
+    configs = configuraciones_tamano(epocas, intervalo, lote, workers)
+    cache = CacheTrain(cargar_train(root), root, output/".cache", workers)
+    protocol = {"variants":configs, "seeds":[42,2026], "folds":list(range(5)),
+        "loss":"weighted", "threshold":.5, "parallel_processes":paralelos,
+        "smoke":smoke, "cache_sha256":sha256(cache.path),
+        "source_sha256":{p.name:sha256(p) for p in (Path(__file__), RAIZ/"pipeline_datos.py")},
+        "only_model_difference":"channels", "test_used":False}
+    path = output/"protocolo.json"
+    if path.exists() and json.loads(path.read_text()) != protocol:
+        raise ValueError("Protocolo distinto: usa otra salida")
+    json_write(path, protocol)
+    seeds, folds = ([42], [0]) if smoke else ([42,2026], list(range(5)))
+    tasks = [(config,seed,fold,str(root),str(output),str(device),smoke)
+        for seed in seeds for fold in folds for config in configs]
+    rows = []
+    def progress(row):
+        rows.append(row)
+        pd.DataFrame(rows).to_csv(output/"progreso_runs.csv", index=False)
+        json_write(output/"estado.json", {"status":"running", "completed":len(rows), "total":len(tasks)})
+        print(f"COMPLETO {len(rows)}/{len(tasks)}: {row['candidate']} semilla {row['seed']} fold {row['fold']} "
+            f"AUC={row['patient_auc']:.4f} AP={row['patient_ap']:.4f} F1={row['patient_f1']:.4f}", flush=True)
+    if paralelos == 1:
+        for task in tasks:
+            progress(tarea_tamano(*task))
+    else:
+        with ProcessPoolExecutor(max_workers=paralelos, mp_context=get_context("spawn")) as pool:
+            futures = [pool.submit(tarea_tamano, *task) for task in tasks]
+            for future in as_completed(futures):
+                progress(future.result())
+    if smoke:
+        result = {"status":"smoke_only", "eligible_for_selection":False, "runs":rows}
+        json_write(output/"resultado_prueba.json", result)
+    else:
+        result = evaluar_tamano(root, output, configs)
+    json_write(output/"estado.json", {"status":result["status"], "completed":len(rows), "total":len(tasks)})
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("accion", nargs="?", choices=("verificar", "entrenar", "comparar", "predecir", "ajustar"), default="verificar")
+    parser.add_argument("accion", nargs="?", choices=("verificar", "entrenar", "comparar", "predecir", "ajustar", "comparar-tamano"), default="verificar")
     parser.add_argument("--datos",type=Path,default=pdatos.DATOS)
     parser.add_argument("--salida",type=Path,default=None)
     parser.add_argument("--manifest",type=Path,default=SALIDA/"modelo_final.json")
@@ -1115,17 +1351,26 @@ def main():
     parser.add_argument("--pooling",choices=("original","intermedio"),default="original")
     parser.add_argument("--dispositivo",choices=("auto","cpu","cuda"),default="auto")
     parser.add_argument("--prueba",action="store_true",help="Un lote y una época; excluido de la selección")
+    parser.add_argument("--paralelos",type=int,choices=(1,2,3,4),default=2)
     for phase in ("pre","early","late"):
         parser.add_argument("--"+phase,type=Path,nargs="+")
     args = parser.parse_args()
-    args.epocas = (30 if args.accion == "ajustar" else 46) if args.epocas is None else args.epocas
-    args.salida = args.salida or (SALIDA/"ajustes" if args.accion == "ajustar" else SALIDA/"ejecuciones")
+    args.epocas = (30 if args.accion in {"ajustar","comparar-tamano"} else 46) if args.epocas is None else args.epocas
+    args.salida = args.salida or (SALIDA/"comparacion_tamano" if args.accion == "comparar-tamano" else
+        SALIDA/"ajustes" if args.accion == "ajustar" else SALIDA/"ejecuciones")
     if args.workers < 0 or args.lote < 1 or args.epocas < 1 or args.revision_cada < 1:
         parser.error("workers >= 0, lote >= 1 y epocas >= 1")
-    if args.accion in {"entrenar","ajustar"}:
+    if args.accion in {"entrenar","ajustar","comparar-tamano"}:
         device_name = ("cuda" if torch.cuda.is_available() else "cpu") if args.dispositivo == "auto" else args.dispositivo
         if device_name == "cuda" and not torch.cuda.is_available():
             parser.error("CUDA no está disponible")
+        if args.accion == "comparar-tamano":
+            if set(args.folds)!=set(range(5)) or set(args.semillas)!={42,2026}:
+                parser.error("comparar-tamano utiliza los cinco folds y las semillas 42 y 2026")
+            result = comparar_tamano(args.datos,args.salida,torch.device(device_name),args.epocas,
+                args.revision_cada,args.lote,args.workers,args.paralelos,args.prueba)
+            print(json.dumps({k:v for k,v in result.items() if k != "artifacts"},ensure_ascii=False,indent=2))
+            return
         if args.accion == "ajustar":
             if args.prueba:
                 parser.error("Comprueba el entrenamiento con entrenar --prueba antes de ajustar")

@@ -206,6 +206,58 @@ Para lanzar un entrenamiento concreto con pooling intermedio y revisar cada diez
 Fuentes de implementación: [MaxPool2d de PyTorch](https://docs.pytorch.org/docs/2.14/generated/torch.nn.MaxPool2d.html)
 y [definición de F1 en scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html).
 
+## Comparación controlada del tamaño de la CNN
+
+`comparar-tamano` compara la CNN con pooling ajustado y una variante más pequeña.
+Los canales son 24/48/96/160 frente a 16/32/64/128: 551.913 frente a 310.513
+parámetros (un 43,7 % menos). El resto del diseño y del
+entrenamiento es idéntico: pooling entre bloques, cabeza de 64 neuronas,
+dropout 0,35, LR 0,0008, weight decay 0,001, BCE ponderada y rotaciones.
+La red histórica del PDF y sus diez pesos se conservan.
+
+Se entrenan las dos variantes en los cinco folds originales y las semillas 42 y
+2026: veinte ejecuciones de treinta épocas con el mismo presupuesto. Las
+revisiones de train sin aumentos se hacen en 10/20/30 y la validación cada época.
+Se guarda el checkpoint de mayor AUC por paciente hasta ese presupuesto.
+
+```bash
+.venv/bin/python -B 04_entrenamiento.py comparar-tamano --epocas 30 --revision-cada 10 --lote 64 --workers 2 --paralelos 2 --dispositivo cuda
+```
+
+Este ensayo utiliza lote 64 en ambas variantes con la GPU disponible. Es una
+comparación nueva y no mezcla las métricas anteriores obtenidas con lote 16.
+Dos procesos independientes aprovechan la RTX 3090; cada uno conserva su RNG,
+checkpoints y registro. Se puede indicar `--paralelos 1` para ejecutar en serie.
+Volver a lanzar el mismo comando reanuda las ejecuciones pendientes.
+
+Para comprobar ambos modelos con un lote real antes de entrenar:
+
+```bash
+.venv/bin/python -B 04_entrenamiento.py comparar-tamano --prueba --workers 2 --paralelos 2 --dispositivo cuda
+```
+
+Los resultados se guardan en `resultados/04_entrenamiento/comparacion_tamano/`.
+El protocolo, código por SHA-256 y caché de train quedan identificados antes de
+entrenar. Cada run guarda configuración, entorno, pesos, curvas y predicciones OOF.
+
+La evaluación exige veinte runs completos con sus checksums y predicciones
+coincidentes con las pacientes y folds de train. Informa media y dispersión de
+las diez ejecuciones por variante, diferencias pareadas por fold/semilla y OOF
+por paciente tras promediar las dos semillas de validación y sus cortes. El
+umbral permanece en 0,5: no se ajusta para favorecer una variante.
+
+`resultado.json` incluye AUC, average precision, F1, sensibilidad, especificidad,
+precisión, Brier y resultados por cohorte. Los intervalos de diferencias se
+calculan mediante 2.000 remuestreos pareados y estratificados de pacientes.
+Están condicionados a esas predicciones OOF; no recogen toda la variación del
+entrenamiento. La selección de checkpoints usa validación y no es validación
+anidada ni externa. El test reservado no se abre.
+
+Archivos principales: `comparacion_runs.csv`, `diferencias_pareadas.csv`,
+`metricas_cohortes.csv`, `oof_pacientes.csv`, `curvas_comparacion.png`,
+`roc_precision_recall.png` y `resultado.json`. Estos resultados y la caché se
+mantienen fuera de Git, dentro de una sola carpeta de la etapa 04.
+
 ## Resultados de los ajustes del 03/10/2026
 
 Se ejecutaron las seis combinaciones a 30 épocas, revisando en 10/20/30,
