@@ -614,3 +614,46 @@ datos de desarrollo ya fueron observados; los resultados siguen siendo internos.
 Los IC bootstrap pareados condicionan a las predicciones y no incorporan toda
 la incertidumbre del entrenamiento o selección. No se promueve un modelo
 automáticamente ni se restablece la pérdida por paciente retirada.
+
+### Resultado de la comparación de lotes
+
+Se completaron veinte runs y 600 épocas con código `b40ac95`. La verificación
+independiente confirmó los 1.097 pacientes, las particiones, inicialización,
+exposición, aumentos, tamaños y actualizaciones reales del optimizador pareados,
+la selección/exportación de checkpoints y las decisiones anteriores a evaluación.
+Las 30 pruebas CPU y la prueba GPU pasaron. Los 37 archivos protegidos siguen
+intactos; se abrió cero imágenes del test.
+
+| Métrica | Pacientes completas | Cortes mezclados |
+|---|---:|---:|
+| AUC media de folds, principal | 0.5546 | 0.5213 |
+| AP media de folds | 0.3505 | 0.3350 |
+| AUC OOF agrupada cruda | 0.5545 | 0.5128 |
+| F1 OOF, umbral 0.5 | 0.4190 | 0.3407 |
+| Sensibilidad OOF, umbral 0.5 | 0.6025 | 0.3602 |
+| Especificidad OOF, umbral 0.5 | 0.4710 | 0.6865 |
+| Brier OOF crudo | 0.2497 | 0.2452 |
+
+Diferencia principal mezclados − completas: **−0.0332**, IC95% condicionado
+**[−0.0723, +0.0042]**. El ensayo no respalda el cambio y el intervalo incluye
+cero; no prueba inferioridad poblacional concluyente. La mezcla mejora AUC en
+dos de cinco folds. AUC OOF por cohorte (completas/mezclados): Duke
+0.5154/0.4629, I-SPY1 0.5027/0.5108 e I-SPY2 0.5573/0.5133.
+
+Se observaron 5.96/56.94 pacientes distintas por lote, con iguales cantidades
+de cortes. En época 30, AUC train/selección fue 0.6642/0.5380 en completas y
+0.9510/0.4979 en mezclados: la mezcla presenta mayor sobreajuste. Estas curvas
+no corresponden necesariamente al checkpoint elegido. No se puede comparar
+este ensayo como equivalente al de tamaño ni atribuir el efecto solo a BatchNorm.
+
+Con Youden interno congelado, F1 fue 0.3221/0.3636 y sensibilidad
+0.3261/0.4720, a cambio de especificidad 0.7097/0.5329. Brier calibrado fue
+0.2077/0.2105. Este intercambio no demuestra una mejora de discriminación.
+
+**Decisión: no adoptar el cambio a cortes mezclados a partir de este ensayo.**
+Se conservan código, resultados y pesos de ambos brazos como evidencia; el modelo
+histórico permanece intacto. La evaluación sigue siendo desarrollo previamente
+observado. La siguiente hipótesis propuesta es GroupNorm, que no se ejecuta
+automáticamente. Evidencia: `resultado.json`, `informe_lotes.txt`,
+`verificacion_independiente.json`, `verificacion_pareado.json`,
+`verificacion_preservacion.json`, curvas, predicciones y checkpoints.
