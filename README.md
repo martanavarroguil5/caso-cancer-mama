@@ -372,3 +372,96 @@ Resultados en `resultados/04_entrenamiento/comparacion_tamano/`: `resultado.json
 `resumen_metricas.csv`, `comparacion_runs.csv`, `diferencias_pareadas.csv`,
 `metricas_cohortes.csv`, `curvas_comparacion.png` y `roc_precision_recall.png`.
 Se conservan los logs y pesos de las veinte ejecuciones dentro de esa carpeta.
+
+## Experimento de generalización por paciente (04/10/2026)
+
+La acción `generalizar` compara una sola hipótesis: aplicar BCE ponderada después
+de la media de probabilidades de los cortes de una paciente, en lugar de aplicar
+BCE ponderada a cada corte. Conserva la CNN actual ajustada (551.913 parámetros),
+las fases, la escala fija, pooling entre bloques, dropout 0,35, LR 0,0008,
+weight decay 0,001, AdamW, calendario, clipping y aumentos. No añade módulos ni
+pesos preentrenados. El modelo histórico y las etapas 01–03 se verifican por hash.
+
+La auditoría encuentra 1.097 pacientes y 10.945 cortes, casi siempre diez por
+paciente (rango 5–10). La prevalencia por paciente y corte es prácticamente igual,
+por lo que corregir solamente el número de cortes tendría poco efecto. La hipótesis
+escogida alinea la función de coste con la agregación de inferencia y permite que
+cortes poco informativos no reciban individualmente toda la supervisión clínica.
+No presupone que esta modificación vaya a mejorar.
+
+Ambas variantes usan exactamente los mismos lotes de pacientes completas: seis
+pacientes, hasta 60 cortes con `--lote 64`. No hay relleno de imágenes. La referencia
+se vuelve a entrenar con este protocolo; por tanto, sus resultados no se comparan
+como equivalentes a los veinte runs anteriores con cortes mezclados en lotes.
+Ambas usan el mismo N0/N1 de **cortes del subconjunto que aprende**, para aislar
+la pérdida como hipótesis principal. La variante por paciente da un término por
+paciente; la referencia da un término por corte. Como casi todas aportan diez
+cortes, la diferencia de ponderación entre pacientes es pequeña. Los aumentos
+son independientes entre cortes e idénticos entre las tres fases de cada corte.
+
+Para una paciente con logits z_i, q=mean(sigmoid(z_i)). La nueva pérdida es
+`-w*y*log(q) -(1-y)*log(1-q)`, promediada por paciente. Los logaritmos se calculan
+con logsigmoid y logsumexp en float32, sin recortar probabilidades que anulen
+sus gradientes. La CNN y la inferencia siguen siendo las del proyecto.
+
+Protocolo fijado antes de observar los resultados nuevos:
+
+- Cinco folds externos originales; semillas 42 y 2026; dos variantes; 30 épocas.
+- En cada complemento externo: 70 % aprendizaje, 15 % selección de checkpoint
+  y 15 % calibración/umbral. Reparto por paciente, estratificado por cohorte × pCR,
+  con semillas de partición fijas e independientes de las semillas de entrenamiento.
+- Checkpoint de máxima AUC por paciente en selección interna; primero en empates.
+  No se utiliza el fold externo para curvas, parada o elección de épocas.
+- Media de probabilidades por corte y semilla. Platt no negativo, regularizado
+  con C=1, ajustado solamente en pacientes de calibración interna. Youden en esas
+  mismas pacientes. Ajustar ambas decisiones aquí es desarrollo interno; sus
+  resultados se evalúan exclusivamente en el fold externo.
+- Todos los modelos, calibradores y umbrales quedan fijados antes de inferir
+  los folds externos. El resultado conserva el hash de las decisiones.
+- Criterio principal: media de AUC cruda de los cinco folds externos del ensemble
+  de dos semillas. OOF agrupada es secundaria: las escalas de distintos folds
+  pueden cambiar su orden relativo. AP, métricas al umbral fijo 0,5 y al umbral
+  interno congelado, Brier, log-loss, ECE en diez bins fijos, curvas de calibración
+  y resultados por cohorte completan la comparación.
+- No se promueve un modelo automáticamente. Se conserva la referencia si no
+  hay evidencia convincente en AUC y consistencia entre cohortes.
+
+```bash
+# Diagnóstico separado, sin posibilidad de selección:
+.venv/bin/python -B 04_entrenamiento.py generalizar --prueba --workers 2 --paralelos 2 --dispositivo cuda --salida resultados/04_entrenamiento/generalizacion_diagnostico
+# Experimento completo o reanudación, exactamente el mismo comando:
+.venv/bin/python -B 04_entrenamiento.py generalizar --epocas 30 --revision-cada 10 --lote 64 --workers 2 --paralelos 2 --dispositivo cuda
+CUDA_VISIBLE_DEVICES='' .venv/bin/python -B -m unittest discover -s tests -v
+```
+
+Resultados en `resultados/04_entrenamiento/generalizacion_paciente/`: protocolo,
+particiones por paciente, auditoría de todos los PNG **train** contra la caché,
+inventario SHA-256 de imágenes y duplicados exactos entre pacientes de train,
+configuraciones, entornos, `pip freeze`, copia del código, curvas, checkpoints,
+predicciones de selección/calibración/evaluación y métricas. Reanudar conserva
+optimizador, calendario, scaler y RNG. Los cambios de configuración, código,
+datos o archivos protegidos exigen una salida nueva. `selection_slices.csv`
+identifica las predicciones internas; `oof_slices.csv` dentro de cada run se
+conserva por compatibilidad del motor y **también es selección interna**, no la
+OOF externa. La OOF externa es `oof_pacientes.csv` en la raíz del experimento.
+La caché previa se reutiliza y se verifica contra los PNG para evitar otra copia.
+
+Limitaciones: este diseño usa un holdout interno por fold, no una búsqueda completa
+de hiperparámetros en múltiples folds internos. Entrena con aproximadamente el
+56 % del desarrollo. Los hiperparámetros y la hipótesis están informados por
+análisis históricos de estas mismas pacientes: separar las decisiones nuevas
+no las convierte en una muestra independiente. Los IC de diferencias usan
+2.000 bootstrap pareados por paciente, estratificados por fold/cohorte/clase,
+con modelos, calibradores y umbrales fijos; no incorporan toda la incertidumbre
+del entrenamiento ni del desarrollo adaptativo. Los folds comparten aprendizaje.
+La calibración usa unas 132 pacientes por fold y puede ser inestable. El test
+reservado ya observado permanece cerrado. No se pueden descartar duplicados
+con test sin abrir sus imágenes, ni identidades diferentes de un mismo sujeto
+sin información adicional de las fuentes. La selección de cortes difiere entre
+Duke e I-SPY y puede introducir sesgos.
+
+Fuentes metodológicas: [selección anidada de scikit-learn](https://scikit-learn.org/stable/auto_examples/model_selection/plot_nested_cross_validation_iris.html),
+[calibración de probabilidades](https://scikit-learn.org/stable/modules/calibration.html),
+[BCE ponderada de PyTorch](https://docs.pytorch.org/docs/2.14/generated/torch.nn.BCEWithLogitsLoss.html)
+y [aprendizaje por bolsas de instancias, Ilse et al.](https://proceedings.mlr.press/v80/ilse18a.html).
+Esta implementación usa una media fija y no implementa la atención del artículo.

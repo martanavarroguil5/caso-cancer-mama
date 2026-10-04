@@ -31,10 +31,13 @@ from multiprocessing import get_context
 import numpy as np
 import pandas as pd
 from PIL import Image
+from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (roc_auc_score, average_precision_score, accuracy_score,
                              confusion_matrix, brier_score_loss, log_loss, roc_curve, f1_score,
                              precision_recall_curve)
+import sklearn
+import PIL
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
@@ -216,10 +219,15 @@ class DatasetEntrenamiento(pdatos.BreastDCESliceDataset):
         return super().__getitem__(indice)
 
 
-def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None):
+def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None, patient_batch_size=None):
     # Los lectores trabajan solo en CPU. En Linux, fork conserva el memmap compartido
     # aunque este entrenamiento se ejecute dentro de un proceso creado con spawn.
     context = ("fork" if sys.platform.startswith("linux") else "spawn") if workers else None
+    if patient_batch_size is not None:
+        return DataLoader(DatasetPacientes(samples, root, cache), batch_size=patient_batch_size,
+            shuffle=shuffle, num_workers=workers, pin_memory=torch.cuda.is_available(),
+            worker_init_fn=pdatos.inicializar_worker, generator=generator,
+            collate_fn=collate_pacientes, multiprocessing_context=context)
     return DataLoader(DatasetEntrenamiento(samples, root, cache), batch_size=batch_size,
         shuffle=shuffle, num_workers=workers, pin_memory=torch.cuda.is_available(),
         persistent_workers=False, worker_init_fn=pdatos.inicializar_worker, generator=generator,
@@ -385,7 +393,7 @@ def train_epoch(model, loader, optimizer, scaler, criterion, device, amp, augmen
         optimizer.zero_grad(set_to_none=True)
         with amp_context(device, amp):
             logits = model(x).squeeze(1)
-            loss = criterion(logits, y)
+            loss = loss_batch(criterion, logits, y, batch)
         if not torch.isfinite(loss):
             raise FloatingPointError("Pérdida no finita; no se seleccionará este run")
         scaler.scale(loss).backward()
@@ -395,8 +403,9 @@ def train_epoch(model, loader, optimizer, scaler, criterion, device, amp, augmen
         nn.utils.clip_grad_norm_(model.parameters(), clip_norm, error_if_nonfinite=not amp)
         scaler.step(optimizer)
         scaler.update()
-        losses += loss.detach() * len(y)
-        count += len(y)
+        units = len(batch["bag_sizes"]) if isinstance(criterion, BCEPaciente) else len(y)
+        losses += loss.detach() * units
+        count += units
     return float(losses / count)
 
 
@@ -410,9 +419,10 @@ def predict(model, loader, device, amp=False, criterion=None):
         with amp_context(device, amp):
             logits = model(x).squeeze(1)
             if criterion is not None:
-                loss_sum += criterion(logits, y) * len(y)
+                units = len(batch["bag_sizes"]) if isinstance(criterion, BCEPaciente) else len(y)
+                loss_sum += loss_batch(criterion, logits, y, batch) * units
         probabilities.append(torch.sigmoid(logits.float()).cpu().numpy())
-        n += len(y)
+        n += len(batch["bag_sizes"]) if isinstance(criterion, BCEPaciente) else len(y)
     return np.concatenate(probabilities), float(loss_sum / n) if criterion is not None else None
 
 
@@ -443,7 +453,13 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
     torch.set_num_threads(int(tconf.get("cpu_threads", 8)))
     seed_everything(seed, tconf.get("deterministic", True))
     all_train = cargar_train(root)
-    train, val = particion(all_train, fold)
+    nested = config["evaluation"].get("protocol") == "nested_holdout"
+    if nested:
+        roles, plan = particion_generalizacion(all_train, fold)
+        train, val = roles["fit"], roles["selection"]
+        config["partition_signature"] = hashlib.sha256(plan.to_csv(index=False).encode()).hexdigest()
+    else:
+        train, val = particion(all_train, fold)
     config["data_signature"] = hashlib.sha256(all_train.to_csv(index=False).encode()).hexdigest()
     config["pos_weight"] = pdatos.pos_weight_cortes(train) if loss_name == "weighted" else 1.0
     config["n_train_slices"], config["n_val_slices"] = len(train), len(val)
@@ -477,24 +493,32 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
         json_write(run_dir / "environment.json", environment(device))
     if smoke:
         # Include both labels and complete small groups; metrics are diagnostic only.
-        train = train.groupby("pCR", group_keys=False).head(4).reset_index(drop=True)
-        val = val.groupby("pCR", group_keys=False).head(4).reset_index(drop=True)
+        if nested:
+            def small(frame):
+                ids = frame.drop_duplicates("patient_id").groupby("pCR").head(2).patient_id
+                return frame[frame.patient_id.isin(ids)].reset_index(drop=True)
+            train, val = small(train), small(val)
+        else:
+            train = train.groupby("pCR", group_keys=False).head(4).reset_index(drop=True)
+            val = val.groupby("pCR", group_keys=False).head(4).reset_index(drop=True)
     generator = torch.Generator().manual_seed(seed + fold * 1000)
     aug_generator = torch.Generator().manual_seed(seed + fold * 1000 + 1)
     # Separate generator: validation iteration must not alter training shuffle RNG.
     val_generator = torch.Generator().manual_seed(seed + 60000 + fold)
     workers = 0 if smoke else int(tconf["num_workers"])
     batch_size = min(8, tconf["batch_size"]) if smoke else tconf["batch_size"]
-    train_loader = make_loader(train, root, batch_size, workers, generator, shuffle=True, cache=cache)
-    val_loader = make_loader(val, root, batch_size, workers, val_generator,cache=cache)
+    patient_batch_size = tconf.get("patient_batch_size")
+    train_loader = make_loader(train, root, batch_size, workers, generator, shuffle=True, cache=cache, patient_batch_size=patient_batch_size)
+    val_loader = make_loader(val, root, batch_size, workers, val_generator,cache=cache, patient_batch_size=patient_batch_size)
     train_eval_loader = make_loader(train,root,batch_size,workers,
-        torch.Generator().manual_seed(seed+70000+fold),cache=cache)
+        torch.Generator().manual_seed(seed+70000+fold),cache=cache, patient_batch_size=patient_batch_size)
     model = CNN(config).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=tconf["lr"], weight_decay=tconf["weight_decay"])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=tconf["epochs"], eta_min=tconf["min_lr"])
     amp = bool(tconf["amp"] and device.type == "cuda")
     scaler = torch.amp.GradScaler("cuda", enabled=amp, init_scale=1024.0)
-    criterion = nn.BCEWithLogitsLoss(pos_weight=torch.tensor(config["pos_weight"], device=device))
+    criterion = (BCEPaciente(config["pos_weight"]).to(device) if tconf.get("loss_unit") == "patient"
+                 else nn.BCEWithLogitsLoss(pos_weight=torch.tensor(config["pos_weight"], device=device)))
     start_epoch, best_auc, bad_epochs, history, best_epoch = 0, -1.0, 0, [], -1
     checkpoint_path = run_dir / f"{resume}.pt"
     if checkpoint_path.exists():
@@ -577,6 +601,8 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
     oof["prob"], oof["split"], oof["seed"], oof["loss"] = probabilities, "train", seed, loss_name
     oof["smoke"] = bool(smoke)
     oof.to_csv(run_dir / "oof_slices.csv", index=False)
+    if nested:
+        oof.to_csv(run_dir / "selection_slices.csv", index=False)
     completed = smoke or stop_reason == "early_stopping" or len(history) >= int(tconf["epochs"])
     summary = {"schema_version": SCHEMA_VERSION, "status": "complete" if completed else "paused", "smoke": bool(smoke),
                "eligible_for_selection": completed and not smoke, "config_hash": config_hash(config),
@@ -589,6 +615,9 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
                "peak_vram_gib": max(r["peak_vram_gib"] for r in history),
                "checkpoint": "best.pt", "test_images_loaded": 0,
                "inference_amp": False, "patient_aggregation": "mean"}
+    if nested:
+        summary.update(prediction_role="inner_selection", outer_evaluation_used=False,
+                       loss_unit=tconf["loss_unit"], patient_batch_size=patient_batch_size)
     export_inference_checkpoint(run_dir)
     summary["inference_sha256"] = sha256(run_dir/"inference.pt")
     summary["oof_sha256"] = sha256(run_dir/"oof_slices.csv")
@@ -603,6 +632,7 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
 def environment(device):
     result = {"python": platform.python_version(), "platform": platform.platform(),
         "torch": str(torch.__version__), "numpy": np.__version__, "pandas": pd.__version__,
+        "sklearn": sklearn.__version__, "pillow": PIL.__version__,
         "cuda_runtime": torch.version.cuda, "device": str(device),
         "code_sha256": {p.name: sha256(p) for p in (Path(__file__), RAIZ/"pipeline_datos.py")},
         "determinism_scope": "Mismo código, datos, entorno y hardware; reanudación por época."}
@@ -1348,9 +1378,471 @@ def comparar_tamano(root, output, device, epocas=30, intervalo=10, lote=64, work
     return result
 
 
+# Experimento controlado de generalización: misma CNN, pérdida por corte/paciente.
+class DatasetPacientes(torch.utils.data.Dataset):
+    """Bolsas completas; no se rellenan imágenes que contaminarían BatchNorm."""
+    def __init__(self, samples, root, cache=None):
+        if not samples.patient_id.is_monotonic_increasing:
+            raise ValueError("El loader de pacientes requiere filas ordenadas por patient_id")
+        self.slices = DatasetEntrenamiento(samples, root, cache)
+        self.groups = list(samples.groupby("patient_id", sort=False).indices.values())
+
+    def __len__(self):
+        return len(self.groups)
+
+    def __getitem__(self, index):
+        return [self.slices[int(i)] for i in self.groups[index]]
+
+
+def collate_pacientes(bags):
+    for bag in bags:
+        if not bag or len({r["patient_id"] for r in bag}) != 1 or len({float(r["label"]) for r in bag}) != 1:
+            raise ValueError("Bolsa con paciente/etiqueta inconsistente")
+    if len({bag[0]["patient_id"] for bag in bags}) != len(bags):
+        raise ValueError("Paciente repetida en lote")
+    result = torch.utils.data.default_collate([row for bag in bags for row in bag])
+    result["bag_sizes"] = [len(bag) for bag in bags]
+    return result
+
+
+class BCEPaciente(nn.Module):
+    """BCE ponderada de mean(sigmoid(logits)), estable incluso con logits extremos.
+
+    mean(p) y mean(1-p) se calculan en dominio log mediante logsumexp.
+    La CNN sigue produciendo un logit por corte. No se añaden parámetros.
+    """
+    def __init__(self, pos_weight):
+        super().__init__()
+        self.register_buffer("pos_weight", torch.tensor(float(pos_weight)))
+
+    def forward(self, logits, labels, sizes):
+        if sum(sizes) != len(logits) or any(n < 1 for n in sizes):
+            raise ValueError("Tamaños de bolsa inválidos")
+        losses = []
+        for z, y in zip(torch.split(logits.float(), sizes), torch.split(labels.float(), sizes)):
+            log_n = np.log(len(z))
+            log_p = torch.logsumexp(torch.nn.functional.logsigmoid(z), 0) - log_n
+            log_q = torch.logsumexp(torch.nn.functional.logsigmoid(-z), 0) - log_n
+            losses.append(-self.pos_weight * y[0] * log_p - (1-y[0]) * log_q)
+        return torch.stack(losses).mean()
+
+
+def loss_batch(criterion, logits, labels, batch):
+    if isinstance(criterion, BCEPaciente):
+        return criterion(logits, labels, batch["bag_sizes"])
+    return criterion(logits, labels)
+
+
+def particion_generalizacion(samples, outer_fold):
+    """Un holdout interno fijo para checkpoint y otro para calibración/umbral."""
+    particion(samples, outer_fold)  # Contratos generales: solo train, sin solape.
+    patients = samples.groupby("patient_id", sort=True).agg(
+        pCR=("pCR", "first"), fold=("fold", "first"), dataset=("dataset", "first")).reset_index()
+    development = patients[patients.fold.ne(outer_fold)].reset_index(drop=True)
+    strata = development.dataset + "_" + development.pCR.astype(str)
+    if strata.value_counts().min() < 4:
+        raise ValueError("Insuficientes pacientes por cohorte/clase para separación interna")
+    splitter = StratifiedShuffleSplit(n_splits=1, test_size=.30, random_state=20261004+outer_fold)
+    fit_idx, remainder_idx = next(splitter.split(development, strata))
+    remainder = development.iloc[remainder_idx].reset_index(drop=True)
+    remainder_strata = remainder.dataset + "_" + remainder.pCR.astype(str)
+    split_cal = StratifiedShuffleSplit(n_splits=1, test_size=.5, random_state=20261104+outer_fold)
+    selection_idx, calibration_idx = next(split_cal.split(remainder, remainder_strata))
+    role_ids = {"fit": set(development.iloc[fit_idx].patient_id),
+                "selection": set(remainder.iloc[selection_idx].patient_id),
+                "calibration": set(remainder.iloc[calibration_idx].patient_id),
+                "evaluation": set(patients.loc[patients.fold.eq(outer_fold), "patient_id"])}
+    validate_roles(role_ids, set(patients.patient_id))
+    lookup = {pid: role for role, ids in role_ids.items() for pid in ids}
+    patients["role"] = patients.patient_id.map(lookup)
+    roles = {role: samples[samples.patient_id.isin(ids)].sort_values(
+        ["patient_id", "slice_index"]).reset_index(drop=True) for role, ids in role_ids.items()}
+    for frame in roles.values():
+        if frame.pCR.nunique() != 2:
+            raise ValueError("Cada rol necesita ambas clases")
+    return roles, patients
+
+
+def validate_roles(role_ids, roster):
+    seen = set()
+    for ids in role_ids.values():
+        if seen & ids:
+            raise ValueError("Fuga por paciente entre roles")
+        seen.update(ids)
+    if seen != roster:
+        raise ValueError("Roles incompletos o pacientes ajenas")
+
+
+def preservacion_manifest():
+    files = [RAIZ/name for name in ("01_auditoria_datos.py", "02_eda_profesional.py",
+                                  "03_preparar_datos.py", "pipeline_datos.py")]
+    files += [SALIDA/"modelo_final.json"]
+    for folder in (SALIDA/"historico", SALIDA/"modelos", RAIZ/"resultados/03_preparacion"):
+        files += sorted(p for p in folder.rglob("*") if p.is_file())
+    return {str(p.relative_to(RAIZ)): sha256(p) for p in files}
+
+
+def auditar_generalizacion(samples, root, cache, output, workers):
+    """Solo PNG train: equivalencia con caché, hashes y duplicados entre pacientes."""
+    with (Path(root)/"metadata/patients.csv").open(newline="", encoding="utf-8") as f:
+        metadata = pd.DataFrame([r for r in csv.DictReader(f) if r["split"] == "train"])
+    if metadata.pid.duplicated().any() or set(metadata.pid) != set(samples.patient_id):
+        raise ValueError("Roster de pacientes inconsistente")
+    check = samples.merge(metadata[["pid", "pCR", "dataset"]].rename(columns={"pCR":"patient_label", "dataset":"patient_cohort"}),
+                          left_on="patient_id", right_on="pid", validate="many_to_one")
+    if not check.pCR.eq(pd.to_numeric(check.patient_label)).all() or not check.dataset.eq(check.patient_cohort).all():
+        raise ValueError("Etiqueta/cohorte no coincide con patients.csv")
+    if samples.duplicated(["patient_id", "slice_index"]).any():
+        raise ValueError("Corte duplicado por paciente")
+    def inspect(row):
+        pixels, files = [], []
+        for column in pdatos.COLUMNAS_RUTA:
+            path = Path(root)/getattr(row, column)
+            files.append(sha256(path))
+            with Image.open(path) as png:
+                if png.format != "PNG" or png.mode != "L" or png.size != (256,256):
+                    raise ValueError("PNG fuente incompatible")
+                pixels.append(np.array(png, dtype=np.uint8))
+        image = np.stack(pixels)
+        if not np.array_equal(image, cache.memory[cache.index[row.sample_id]]):
+            raise ValueError("Caché no coincide con PNG fuente")
+        return {"sample_id":row.sample_id, "patient_id":row.patient_id, "fold":int(row.fold),
+                "pixel_sha256":hashlib.sha256(image.tobytes()).hexdigest(),
+                **dict(zip(("pre_sha256", "early_sha256", "late_sha256"), files)),
+                **{f"mean_{phase.lower()}":float(image[i].mean()/255) for i,phase in enumerate(pdatos.FASES)}}
+    with ThreadPoolExecutor(max_workers=max(1,workers)) as pool:
+        inventory = pd.DataFrame(pool.map(inspect, samples.itertuples(index=False)))
+    inventory.to_csv(output/"inventario_train.csv", index=False)
+    duplicates = inventory.groupby("pixel_sha256").filter(lambda g: g.patient_id.nunique()>1)
+    duplicates.to_csv(output/"duplicados_train.csv", index=False)
+    if len(duplicates):
+        raise ValueError("Imágenes completas idénticas en pacientes distintas; revisar antes de entrenar")
+    patients = samples.groupby("patient_id").agg(pCR=("pCR","first"),cohort=("dataset","first"),
+                                                 fold=("fold","first"),n_slices=("sample_id","size"))
+    cohort = patients.groupby("cohort").agg(n_patients=("pCR","size"),prevalence=("pCR","mean"),
+                                            mean_slices=("n_slices","mean"))
+    cohort.to_csv(output/"auditoria_cohortes.csv")
+    patient_intensity = inventory.groupby("patient_id")[["mean_pre","mean_early","mean_late"]].mean()
+    patient_intensity.join(patients).groupby("cohort").mean(numeric_only=True).to_csv(output/"intensidad_cohortes.csv")
+    report = {"n_patients":len(patients), "n_slices":len(samples), "n_train_png_read":len(samples)*3,
+        "patient_prevalence":float(patients.pCR.mean()), "slice_prevalence":float(samples.pCR.mean()),
+        "slice_counts":patients.n_slices.describe().to_dict(), "test_images_loaded":0,
+        "metadata_test_labels_converted":0, "duplicate_triplets_between_patients":0,
+        "inventory_sha256":sha256(output/"inventario_train.csv"), "cache_sha256":sha256(cache.path),
+        "normalization":"uint8 /255 then 2*x-1; fixed; no estimated global statistics",
+        "augmentation":"per slice, joint PRE/EARLY/LATE; train only; hflip .5 and rot90",
+        "class_weight":"negative/positive slices of fit only; identical in both arms",
+        "aggregation":"arithmetic mean of sigmoid probabilities; then mean of seeds",
+        "limitations":["No se comprueban duplicados visuales con test, que permanece cerrado.",
+            "Identidades anonimizadas distintas o datos de origen no auditables no se pueden descartar.",
+            "Duke y I-SPY seleccionan cortes de forma diferente según la guía fuente.",
+            "Los datos de desarrollo ya se observaron históricamente; evaluación interna, no independiente."]}
+    json_write(output/"auditoria.json", report)
+    return report
+
+
+def tarea_generalizacion(config, seed, fold, root, output, device, cache_folder, smoke):
+    root, output = Path(root), Path(output)
+    folder = output/"ejecuciones"/config["name"]/"weighted"/f"seed_{seed}"/f"fold_{fold}"
+    folder.mkdir(parents=True, exist_ok=True)
+    with (folder/"entrenamiento.log").open("a", buffering=1) as log:
+        with redirect_stdout(log), redirect_stderr(log):
+            cache = CacheTrain(cargar_train(root), root, Path(cache_folder), config["training"]["num_workers"])
+            summary = run_training(config,"weighted",seed,fold,root,output/"ejecuciones",
+                                   torch.device(device),smoke=smoke,cache=cache)
+    return {"candidate":config["name"],"seed":seed,"fold":fold,"best_epoch":summary["best_epoch"],
+            "selection_auc":summary["best_auc"],"epochs_completed":summary["epochs_completed"],
+            "inference_sha256":summary["inference_sha256"],"config_hash":summary["config_hash"]}
+
+
+def predicciones_rol(config, seed, fold, role, samples, root, output, device, cache):
+    folder = output/"ejecuciones"/config["name"]/"weighted"/f"seed_{seed}"/f"fold_{fold}"
+    summary = json.loads((folder/"summary.json").read_text())
+    if summary["status"] != "complete" or summary["smoke"] or sha256(folder/"inference.pt") != summary["inference_sha256"]:
+        raise ValueError("Run incompleto o pesos modificados")
+    artifact = torch.load(folder/"inference.pt",map_location="cpu",weights_only=True)
+    model = CNN(artifact["model_config"]).to(device)
+    model.load_state_dict(artifact["state_dict"])
+    loader = make_loader(samples,root,config["training"]["batch_size"],config["training"]["num_workers"],
+                         torch.Generator().manual_seed(8080+fold),cache=cache)
+    probabilities,_ = predict(model,loader,device,False)
+    result = samples[["sample_id","patient_id","pCR","fold","dataset"]].copy()
+    result["prob"],result["seed"],result["role"] = probabilities,seed,role
+    result.to_csv(folder/f"{role}_slices.csv",index=False)
+    del model
+    return result
+
+
+def pacientes_ensemble(frames):
+    reference = frames[0].set_index("sample_id").sort_index()
+    for frame in frames[1:]:
+        other = frame.set_index("sample_id").sort_index()
+        pd.testing.assert_frame_equal(reference[["patient_id","pCR","fold","dataset"]],
+                                      other[["patient_id","pCR","fold","dataset"]])
+    reference["prob"] = np.mean([f.set_index("sample_id").sort_index().prob.to_numpy() for f in frames],axis=0)
+    return reference.groupby("patient_id",sort=True).agg(label=("pCR","first"),fold=("fold","first"),
+        cohort=("dataset","first"),probability=("prob","mean"),n_slices=("prob","size")).reset_index()
+
+
+def reliability(y, p, bins=10):
+    y,p = np.asarray(y),np.asarray(p)
+    groups = np.minimum((p*bins).astype(int), bins-1)
+    rows = []
+    for i in range(bins):
+        mask = groups == i
+        if mask.any():
+            rows.append({"bin":i,"n":int(mask.sum()),"mean_probability":float(p[mask].mean()),
+                         "observed_fraction":float(y[mask].mean())})
+    ece = sum(r["n"]*abs(r["mean_probability"]-r["observed_fraction"]) for r in rows)/len(y)
+    return {"ece_10_fixed_bins":float(ece),"mean_probability":float(p.mean()),
+            "observed_prevalence":float(y.mean()),"bins":rows}
+
+
+def metricas_con_umbral(y, p, thresholds):
+    # Permite decisiones de umbrales internos distintos en cada fold externo.
+    result = binary_metrics(y,p)
+    decisions = np.asarray(p) >= np.asarray(thresholds)
+    classification = binary_metrics(y,decisions.astype(float),.5)
+    for key in ("accuracy","f1","precision","recall","balanced_accuracy","sensitivity","specificity",
+                "tn","fp","fn","tp","confusion_matrix"):
+        result[key] = classification[key]
+    result["threshold"] = "Youden en calibración interna de cada fold"
+    result["calibration"] = reliability(y,p)
+    return result
+
+
+def bootstrap_generalizacion(patients, repetitions=2000):
+    """Diferencias pareadas; no vuelve a seleccionar ni calibrar en el bootstrap."""
+    rng = np.random.default_rng(20261004)
+    groups = [g.index.to_numpy() for _,g in patients.groupby(["fold","cohort","label"])]
+    a,b = (patients[f"{name}_raw"].to_numpy() for name in ("referencia_cortes","bce_paciente"))
+    y,folds = patients.label.to_numpy(),patients.fold.to_numpy()
+    def scores(idx):
+        auc = np.mean([roc_auc_score(y[idx][folds[idx]==f],b[idx][folds[idx]==f])-
+                       roc_auc_score(y[idx][folds[idx]==f],a[idx][folds[idx]==f]) for f in sorted(set(folds))])
+        return [float(auc),float(roc_auc_score(y[idx],b[idx])-roc_auc_score(y[idx],a[idx])),
+                float(average_precision_score(y[idx],b[idx])-average_precision_score(y[idx],a[idx]))]
+    values = np.asarray([scores(np.concatenate([rng.choice(g,len(g),replace=True) for g in groups]))
+                         for _ in range(repetitions)])
+    point = scores(np.arange(len(patients)))
+    return {key:{"delta":point[i],"ci95":np.quantile(values[:,i],[.025,.975]).tolist()}
+            for i,key in enumerate(("mean_outer_auc","pooled_raw_auc","pooled_raw_ap"))}
+
+
+def graficar_generalizacion(output, configs, patients):
+    plt = pyplot()
+    fig,axes = plt.subplots(1,3,figsize=(15,4.5))
+    for config in configs:
+        name = config["name"]
+        histories = [pd.read_csv(p) for p in (output/"ejecuciones"/name).rglob("history.csv")]
+        history = pd.concat(histories).groupby("epoch").mean(numeric_only=True)
+        axes[0].plot(history.index,history.patient_auc,label=name+" selección")
+        review = history.dropna(subset=["train_patient_auc"])
+        axes[0].plot(review.index,review.train_patient_auc,linestyle="--",label=name+" train")
+        q = patients[name+"_raw"].to_numpy(); y=patients.label.to_numpy()
+        fpr,tpr,_ = roc_curve(y,q); axes[1].plot(fpr,tpr,label=name)
+        precision,recall,_ = precision_recall_curve(y,q); axes[2].plot(recall,precision,label=name)
+    axes[0].set(xlabel="Época",ylabel="AUC por paciente",title="Train y selección interna")
+    axes[1].plot([0,1],[0,1],color="gray",linestyle="--")
+    axes[1].set(xlabel="1 - especificidad",ylabel="Sensibilidad",title="OOF externo interno: ROC cruda")
+    axes[2].axhline(patients.label.mean(),color="gray",linestyle="--")
+    axes[2].set(xlabel="Sensibilidad",ylabel="Precisión",title="OOF: precisión - sensibilidad")
+    for ax in axes: ax.legend(fontsize=7); ax.grid(alpha=.2)
+    fig.tight_layout(); fig.savefig(output/"curvas_generalizacion.png",dpi=170); plt.close(fig)
+    fig,axes = plt.subplots(1,2,figsize=(10,4.5))
+    for ax,scale in zip(axes,("raw","calibrated")):
+        for config in configs:
+            name=config["name"]; bins=reliability(patients.label,patients[name+"_"+scale])["bins"]
+            ax.plot([r["mean_probability"] for r in bins],[r["observed_fraction"] for r in bins],"o-",label=name)
+        ax.plot([0,1],[0,1],"--",color="gray"); ax.set(xlim=(0,1),ylim=(0,1),xlabel="Probabilidad media",
+            ylabel="Fracción pCR",title="Calibración: "+scale); ax.legend(fontsize=8); ax.grid(alpha=.2)
+    fig.tight_layout(); fig.savefig(output/"calibracion.png",dpi=170); plt.close(fig)
+
+
+def evaluar_generalizacion(samples, root, output, device, configs, cache, seeds=(42,2026)):
+    """Congela TODAS las decisiones internas antes de inferir/evaluar folds externos."""
+    decisions_path = output/"decisiones_congeladas.json"
+    if decisions_path.exists():
+        decisions = json.loads(decisions_path.read_text())
+        result_path = output/"resultado.json"
+        if result_path.exists() and json.loads(result_path.read_text())["decisions_sha256"] != sha256(decisions_path):
+            raise ValueError("Decisiones modificadas después de evaluación")
+        for name, folds in decisions["arms"].items():
+            for fold, decision in folds.items():
+                if sha256(output/"calibracion"/name/f"fold_{fold}.csv") != decision["prediction_sha256"]:
+                    raise ValueError("Predicciones de calibración modificadas")
+    else:
+        decisions = {"fit_data":"inner_calibration_only", "evaluation_accessed":False,"arms":{}}
+        for config in configs:
+            name=config["name"]; decisions["arms"][name]={}
+            for fold in range(5):
+                roles,_ = particion_generalizacion(samples,fold)
+                frames = [predicciones_rol(config,seed,fold,"calibration",roles["calibration"],root,output,device,cache) for seed in seeds]
+                patients = pacientes_ensemble(frames)
+                calibration = fit_platt(patients.label.to_numpy(),patients.probability.to_numpy())
+                calibration["fit_data"] = "inner_calibration_only"
+                calibrated = apply_calibration(patients.probability.to_numpy(),calibration)
+                threshold = youden_threshold(patients.label.to_numpy(),calibrated)
+                patients["calibrated"] = calibrated
+                folder=output/"calibracion"/name; folder.mkdir(parents=True,exist_ok=True)
+                patients.to_csv(folder/f"fold_{fold}.csv",index=False)
+                decisions["arms"][name][str(fold)] = {"calibration":calibration,"threshold":threshold,
+                    "n_calibration_patients":len(patients), "prediction_sha256":sha256(folder/f"fold_{fold}.csv"),
+                    "models":{str(seed):sha256(output/"ejecuciones"/name/"weighted"/f"seed_{seed}"/f"fold_{fold}"/"inference.pt") for seed in seeds}}
+        json_write(decisions_path, decisions)
+    fold_rows, cohort_rows, assembled, run_rows = [],[],{},[]
+    for config in configs:
+        name=config["name"]; parts=[]
+        for fold in range(5):
+            decision=decisions["arms"][name][str(fold)]
+            for seed in seeds:
+                path=output/"ejecuciones"/name/"weighted"/f"seed_{seed}"/f"fold_{fold}"/"inference.pt"
+                if sha256(path) != decision["models"][str(seed)]: raise ValueError("Pesos cambiaron después de congelar")
+            roles,_ = particion_generalizacion(samples,fold)
+            frames=[predicciones_rol(config,seed,fold,"evaluation",roles["evaluation"],root,output,device,cache) for seed in seeds]
+            for seed,frame in zip(seeds,frames):
+                indiv=pacientes_ensemble([frame]); metrics=binary_metrics(indiv.label,indiv.probability)
+                run_rows.append({"candidate":name,"fold":fold,"seed":seed,**{k:v for k,v in metrics.items() if not isinstance(v,list)}})
+            patients=pacientes_ensemble(frames)
+            patients[name+"_raw"] = patients.pop("probability")
+            patients[name+"_calibrated"] = apply_calibration(patients[name+"_raw"],decision["calibration"])
+            patients[name+"_threshold"] = decision["threshold"]
+            patients[name+"_decision"] = (patients[name+"_calibrated"] >= decision["threshold"]).astype(int)
+            for scale in ("raw","calibrated"):
+                m = (binary_metrics(patients.label,patients[name+"_raw"],.5) if scale=="raw" else
+                     metricas_con_umbral(patients.label,patients[name+"_calibrated"],patients[name+"_threshold"]))
+                fold_rows.append({"candidate":name,"fold":fold,"scale":scale,**{k:v for k,v in m.items() if not isinstance(v,(list,dict))}})
+            parts.append(patients)
+        assembled[name]=pd.concat(parts,ignore_index=True).sort_values("patient_id").reset_index(drop=True)
+    names=[c["name"] for c in configs]
+    patients=assembled[names[0]]
+    for name in names[1:]:
+        other=assembled[name]
+        pd.testing.assert_frame_equal(patients[["patient_id","label","fold","cohort","n_slices"]],other[["patient_id","label","fold","cohort","n_slices"]])
+        for col in other.columns:
+            if col.startswith(name+"_"): patients[col]=other[col]
+    if len(patients)!=samples.patient_id.nunique() or patients.patient_id.duplicated().any():
+        raise ValueError("OOF por paciente incompleto")
+    fold_frame=pd.DataFrame(fold_rows); metrics={}
+    for name in names:
+        metrics[name]={}
+        for scale in ("raw","calibrated"):
+            pooled=(binary_metrics(patients.label,patients[name+"_raw"],.5) if scale=="raw" else
+                    metricas_con_umbral(patients.label,patients[name+"_calibrated"],patients[name+"_threshold"]))
+            pooled["calibration"]=reliability(patients.label,patients[name+"_"+scale])
+            metrics[name][scale]=pooled
+            for cohort,g in patients.groupby("cohort"):
+                m=(binary_metrics(g.label,g[name+"_raw"],.5) if scale=="raw" else
+                   metricas_con_umbral(g.label,g[name+"_calibrated"],g[name+"_threshold"]))
+                cohort_rows.append({"candidate":name,"cohort":cohort,"scale":scale,
+                                   **{k:v for k,v in m.items() if not isinstance(v,(list,dict))}})
+        selected=fold_frame[fold_frame.candidate.eq(name)&fold_frame.scale.eq("raw")]
+        metrics[name]["mean_outer_auc"]=float(selected.roc_auc.mean())
+        metrics[name]["std_outer_auc"]=float(selected.roc_auc.std(ddof=1))
+    patients.to_csv(output/"oof_pacientes.csv",index=False)
+    fold_frame.to_csv(output/"metricas_folds.csv",index=False)
+    pd.DataFrame(cohort_rows).to_csv(output/"metricas_cohortes.csv",index=False)
+    pd.DataFrame(run_rows).to_csv(output/"metricas_runs.csv",index=False)
+    differences=bootstrap_generalizacion(patients)
+    result={"status":"complete","primary_endpoint":"mean outer-fold AUC of two-seed ensemble, raw scores",
+        "metrics":metrics,"paired_differences":differences,"test_images_loaded":0,
+        "decisions_sha256":sha256(decisions_path),"oof_sha256":sha256(output/"oof_pacientes.csv"),
+        "promotion":"none; retain reference and historical model",
+        "limitations":["Evaluación interna en datos de desarrollo previamente observados.",
+            "Un único holdout interno por fold; se entrena con aproximadamente 56% del desarrollo.",
+            "IC bootstrap condicionados a modelos/predicciones; no incluyen incertidumbre total de selección/entrenamiento.",
+            "Cinco folds comparten pacientes de aprendizaje; no son cinco experimentos independientes.",
+            "AUC OOF agrupada puede cambiar por escalas distintas entre folds; criterio principal es media de AUC por fold.",
+            "Calibración/umbral estimados en unas 132 pacientes por fold, con incertidumbre considerable."]}
+    graficar_generalizacion(output,configs,patients)
+    json_write(output/"resultado.json",result)
+    return result
+
+
+def experimento_generalizacion(root, output, device, epochs=30, interval=10, batch_size=64, workers=2, parallel=2, smoke=False):
+    root,output = Path(root),Path(output)
+    if smoke: output=output/"pruebas"
+    output.mkdir(parents=True,exist_ok=True)
+    samples=cargar_train(root)
+    max_slices=int(samples.groupby("patient_id").size().max())
+    if batch_size < max_slices or parallel not in (1,2):
+        raise ValueError("Lote debe admitir una paciente completa; uno o dos procesos")
+    reference=configuraciones_tamano(epochs,interval,batch_size,workers)[0]
+    reference["name"]="referencia_cortes"
+    reference["training"].update(patient_batch_size=batch_size//max_slices,loss_unit="slice")
+    reference["evaluation"]["protocol"]="nested_holdout"
+    candidate=deepcopy(reference); candidate["name"]="bce_paciente"; candidate["training"]["loss_unit"]="patient"
+    configs=[reference,candidate]
+    cache_folder=SALIDA/"comparacion_tamano/.cache"
+    cache=CacheTrain(samples,root,cache_folder,workers)
+    cache_hash=sha256(cache.path)
+    for config in configs:
+        config["input_cache_sha256"] = cache_hash
+    preserved=preservacion_manifest()
+    preservation_path=output/"preservacion.json"
+    if preservation_path.exists() and json.loads(preservation_path.read_text()) != preserved:
+        raise ValueError("Cambió un archivo protegido")
+    json_write(preservation_path,preserved)
+    plans=[]
+    for fold in range(5):
+        _,plan=particion_generalizacion(samples,fold)
+        plan["outer_fold"]=fold; plans.append(plan)
+    full_plan=pd.concat(plans,ignore_index=True)
+    protocol={"variants":configs,"seeds":[42,2026],"outer_folds":list(range(5)),"parallel":parallel,"smoke":smoke,
+        "only_hypothesis":"weighted BCE after patient probability mean versus weighted BCE per slice",
+        "batch_policy":"same complete patient bags in both arms; no padded slices; shared slice pos_weight from fit",
+        "inner_split":{"fit":.70,"selection":.15,"calibration":.15,"stratification":"cohort x pCR","seed_base":20261004},
+        "checkpoint":"max selection patient AUC, earliest on ties; no outer predictions during training",
+        "aggregation":"fixed mean slice probabilities, then two seeds",
+        "calibration":"regularized nonnegative Platt C=1, inner calibration patients only",
+        "threshold":"Youden on same inner calibration patients; evaluated only in outer fold",
+        "primary_endpoint":"mean outer-fold raw AUC of two-seed ensemble",
+        "prior_development_exposure":True,"test_used":False,
+        "plan_sha256":hashlib.sha256(full_plan.to_csv(index=False).encode()).hexdigest(),
+        "cache_sha256":cache_hash,"preservation_sha256":sha256(preservation_path),
+        "source_sha256":{p.name:sha256(p) for p in (Path(__file__),RAIZ/"pipeline_datos.py")}}
+    protocol_path=output/"protocolo.json"
+    if protocol_path.exists() and json.loads(protocol_path.read_text())!=protocol:
+        raise ValueError("Protocolo distinto: usar otra salida")
+    json_write(protocol_path,protocol)
+    full_plan.to_csv(output/"particiones_pacientes.csv",index=False)
+    snapshot=output/"codigo"; snapshot.mkdir(exist_ok=True)
+    for file in (Path(__file__),RAIZ/"pipeline_datos.py",RAIZ/"requirements.txt"):
+        shutil.copy2(file,snapshot/file.name)
+    if not (output/"entorno_experimento.json").exists():
+        json_write(output/"entorno_experimento.json",environment(device))
+        (snapshot/"pip_freeze.txt").write_text(subprocess.check_output([sys.executable,"-m","pip","freeze"],text=True))
+    if not smoke:
+        # Revalidate source PNGs against cache on resume, not just metadata.
+        auditar_generalizacion(samples,root,cache,output,workers)
+    seeds,folds=([42],[0]) if smoke else ([42,2026],list(range(5)))
+    tasks=[(c,s,f,str(root),str(output),str(device),str(cache_folder),smoke) for s in seeds for f in folds for c in configs]
+    rows=[]
+    def progress(row):
+        rows.append(row); pd.DataFrame(rows).to_csv(output/"progreso_runs.csv",index=False)
+        json_write(output/"estado.json",{"status":"training","completed":len(rows),"total":len(tasks),"outer_evaluation_accessed":False})
+        print(f"COMPLETO {len(rows)}/{len(tasks)} {row['candidate']} seed={row['seed']} fold={row['fold']} selección AUC={row['selection_auc']:.4f}",flush=True)
+    if parallel==1:
+        for task in tasks: progress(tarea_generalizacion(*task))
+    else:
+        with ProcessPoolExecutor(max_workers=parallel,mp_context=get_context("spawn")) as pool:
+            futures=[pool.submit(tarea_generalizacion,*task) for task in tasks]
+            for future in as_completed(futures): progress(future.result())
+    if smoke:
+        result={"status":"smoke_only","eligible_for_selection":False,"runs":rows}
+    else:
+        print("Todos los checkpoints fijados; calibración interna y después evaluación externa interna",flush=True)
+        torch.set_num_threads(4)
+        result=evaluar_generalizacion(samples,root,output,device,configs,cache)
+    if preservacion_manifest()!=preserved: raise ValueError("Se modificó un archivo protegido")
+    json_write(output/"verificacion_preservacion.json",{"unchanged":True,"files":len(preserved),"test_images_loaded":0})
+    json_write(output/"estado.json",{"status":result["status"],"completed":len(rows),"total":len(tasks)})
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("accion", nargs="?", choices=("verificar", "entrenar", "comparar", "predecir", "ajustar", "comparar-tamano"), default="verificar")
+    parser.add_argument("accion", nargs="?", choices=("verificar", "entrenar", "comparar", "predecir", "ajustar", "comparar-tamano", "generalizar"), default="verificar")
     parser.add_argument("--datos",type=Path,default=pdatos.DATOS)
     parser.add_argument("--salida",type=Path,default=None)
     parser.add_argument("--manifest",type=Path,default=SALIDA/"modelo_final.json")
@@ -1370,15 +1862,22 @@ def main():
     for phase in ("pre","early","late"):
         parser.add_argument("--"+phase,type=Path,nargs="+")
     args = parser.parse_args()
-    args.epocas = (30 if args.accion in {"ajustar","comparar-tamano"} else 46) if args.epocas is None else args.epocas
-    args.salida = args.salida or (SALIDA/"comparacion_tamano" if args.accion == "comparar-tamano" else
+    args.epocas = (30 if args.accion in {"ajustar","comparar-tamano","generalizar"} else 46) if args.epocas is None else args.epocas
+    args.salida = args.salida or (SALIDA/"generalizacion_paciente" if args.accion == "generalizar" else SALIDA/"comparacion_tamano" if args.accion == "comparar-tamano" else
         SALIDA/"ajustes" if args.accion == "ajustar" else SALIDA/"ejecuciones")
     if args.workers < 0 or args.lote < 1 or args.epocas < 1 or args.revision_cada < 1:
         parser.error("workers >= 0, lote >= 1 y epocas >= 1")
-    if args.accion in {"entrenar","ajustar","comparar-tamano"}:
+    if args.accion in {"entrenar","ajustar","comparar-tamano","generalizar"}:
         device_name = ("cuda" if torch.cuda.is_available() else "cpu") if args.dispositivo == "auto" else args.dispositivo
         if device_name == "cuda" and not torch.cuda.is_available():
             parser.error("CUDA no está disponible")
+        if args.accion == "generalizar":
+            if set(args.folds) != set(range(5)) or set(args.semillas) != {42, 2026}:
+                parser.error("generalizar requiere cinco folds y semillas 42/2026")
+            result = experimento_generalizacion(args.datos, args.salida, torch.device(device_name),
+                args.epocas, args.revision_cada, args.lote, args.workers, args.paralelos, args.prueba)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return
         if args.accion == "comparar-tamano":
             if set(args.folds)!=set(range(5)) or set(args.semillas)!={42,2026}:
                 parser.error("comparar-tamano utiliza los cinco folds y las semillas 42 y 2026")
