@@ -237,3 +237,7 @@ __marimo__/
 
 # Comparación controlada del tamaño de la CNN
 /resultados/04_entrenamiento/comparacion_tamano/
+
+# Experimento de generalización por paciente
+/resultados/04_entrenamiento/generalizacion_paciente/
+/resultados/04_entrenamiento/generalizacion_diagnostico/
