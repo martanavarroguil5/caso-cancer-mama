@@ -69,12 +69,20 @@ def configuracion(nombre="raw_rot90"):
 
 
 class Bloque(nn.Sequential):
-    def __init__(self, entrada, salida, primero=False, pooling="original"):
+    def __init__(self, entrada, salida, primero=False, pooling="original", normalization="batch", norm_groups=8):
+        if normalization == "batch":
+            norm = lambda: nn.BatchNorm2d(salida)
+        elif normalization == "group":
+            if not isinstance(norm_groups, int) or norm_groups < 1 or salida % norm_groups:
+                raise ValueError("Los grupos deben dividir los canales de cada bloque")
+            norm = lambda: nn.GroupNorm(norm_groups, salida, eps=1e-5, affine=True)
+        else:
+            raise ValueError("Normalización debe ser batch o group")
         stride = 2 if pooling == "original" or primero else 1
         capas = [nn.Conv2d(entrada, salida, 3, stride=stride, padding=1, bias=False),
-                 nn.BatchNorm2d(salida), nn.ReLU(inplace=True),
+                 norm(), nn.ReLU(inplace=True),
                  nn.Conv2d(salida, salida, 3, padding=1, bias=False),
-                 nn.BatchNorm2d(salida), nn.ReLU(inplace=True)]
+                 norm(), nn.ReLU(inplace=True)]
         if primero or pooling == "intermedio":
             capas.append(nn.MaxPool2d(2))
         super().__init__(*capas)
@@ -104,7 +112,9 @@ class CNN(nn.Module):
         canales = self.config.get("channels", [24, 48, 96, 160])
         if len(canales) != 4 or any(not isinstance(c, int) or c < 1 for c in canales):
             raise ValueError("Se requieren cuatro anchos de bloque positivos")
-        self.features = nn.Sequential(*[Bloque(a, b, i == 0, pooling)
+        normalization = self.config.get("normalization", "batch")
+        norm_groups = self.config.get("norm_groups", 8)
+        self.features = nn.Sequential(*[Bloque(a, b, i == 0, pooling, normalization, norm_groups)
             for i, (a, b) in enumerate(zip([3, *canales[:-1]], canales))])
         self.avgpool = nn.AdaptiveAvgPool2d(1)
         self.maxpool = GlobalMaxPool()
@@ -120,7 +130,7 @@ class CNN(nn.Module):
             nn.init.kaiming_normal_(capa.weight, mode="fan_in", nonlinearity="relu")
             if capa.bias is not None:
                 nn.init.zeros_(capa.bias)
-        elif isinstance(capa, nn.BatchNorm2d):
+        elif isinstance(capa, (nn.BatchNorm2d, nn.GroupNorm)):
             nn.init.ones_(capa.weight)
             nn.init.zeros_(capa.bias)
 
@@ -555,6 +565,13 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
             initial.update(name.encode())
             initial.update(tensor.detach().cpu().numpy().tobytes())
         record = {"seed":seed, "fold":fold, "state_sha256":initial.hexdigest()}
+        # BN tiene buffers de estadísticas; GN no. Se parean los parámetros
+        # aprendibles, incluida la inicialización afín de las ocho normas.
+        parameters = hashlib.sha256()
+        for name, tensor in model.named_parameters():
+            parameters.update(name.encode())
+            parameters.update(tensor.detach().cpu().numpy().tobytes())
+        record["parameters_sha256"] = parameters.hexdigest()
         path = run_dir/"inicializacion.json"
         if path.exists() and json.loads(path.read_text()) != record:
             raise ValueError("Inicialización distinta al reanudar")
@@ -1479,6 +1496,8 @@ class LotesPareados(torch.utils.data.Sampler):
             "batch_sizes_sha256":hashlib.sha256(json.dumps(lengths).encode()).hexdigest(),
             "sample_membership_sha256":hashlib.sha256(json.dumps(sorted(
                 self.samples.iloc[flattened].sample_id.astype(str))).encode()).hexdigest(),
+            "batch_order_sha256":hashlib.sha256(json.dumps([
+                self.samples.iloc[batch].sample_id.astype(str).tolist() for batch in batches]).encode()).hexdigest(),
             "loader_rng_sha256":hashlib.sha256(self.generator.get_state().numpy().tobytes()).hexdigest(),
             "distinct_patients_per_batch":distinct, "mean_distinct_patients":float(np.mean(distinct)),
             "mean_batch_slices":float(np.mean(lengths)), "min_distinct_patients":min(distinct),
@@ -1711,7 +1730,7 @@ def graficar_generalizacion(output, configs, patients):
         precision,recall,_ = precision_recall_curve(y,q); axes[2].plot(recall,precision,label=name)
     axes[0].set(xlabel="Época",ylabel="AUC por paciente",title="Train y selección interna")
     axes[1].plot([0,1],[0,1],color="gray",linestyle="--")
-    axes[1].set(xlabel="1 - especificidad",ylabel="Sensibilidad",title="OOF externo interno: ROC cruda")
+    axes[1].set(xlabel="1 - especificidad",ylabel="Sensibilidad",title="Evaluación interna: ROC cruda")
     axes[2].axhline(patients.label.mean(),color="gray",linestyle="--")
     axes[2].set(xlabel="Sensibilidad",ylabel="Precisión",title="OOF: precisión - sensibilidad")
     for ax in axes: ax.legend(fontsize=7); ax.grid(alpha=.2)
@@ -1852,7 +1871,7 @@ def tarea_lotes(config, seed, fold, root, output, device, cache_folder, smoke=Fa
             "best_epoch":summary["best_epoch"], **summary["val_metrics"]}
 
 
-def verificar_lotes_pareados(output, configs, seeds=(42,2026), folds=range(5), smoke=False):
+def verificar_lotes_pareados(output, configs, seeds=(42,2026), folds=range(5), smoke=False, normalization=False):
     """Antes de acceder a evaluación: prueba exposición, aumentos, pasos e inicio."""
     records = []
     for seed in seeds:
@@ -1861,12 +1880,21 @@ def verificar_lotes_pareados(output, configs, seeds=(42,2026), folds=range(5), s
             actual = [json.loads((folder/"config.json").read_text()) for folder in folders]
             reduced = []
             for item in actual:
-                item = deepcopy(item); item.pop("name"); item["training"].pop("batch_policy")
+                item = deepcopy(item); item.pop("name")
+                if normalization:
+                    item["model"].pop("normalization")
+                else:
+                    item["training"].pop("batch_policy")
                 reduced.append(item)
             if reduced[0] != reduced[1]:
-                raise ValueError("Cambió otro factor además de la composición del lote")
+                raise ValueError("Cambió otro factor además de la hipótesis pareada")
+            if normalization and ([c["model"]["normalization"] for c in actual] != ["batch", "group"]
+                                  or any(c["model"]["norm_groups"] != 8 for c in actual)):
+                raise ValueError("Se requiere BatchNorm frente a GroupNorm de ocho grupos")
             initial = [json.loads((folder/"inicializacion.json").read_text()) for folder in folders]
-            if initial[0] != initial[1]: raise ValueError("Pesos iniciales distintos entre brazos")
+            initial_key = "parameters_sha256" if normalization else "state_sha256"
+            if initial[0][initial_key] != initial[1][initial_key]:
+                raise ValueError("Pesos iniciales distintos entre brazos")
             summaries = [json.loads((folder/"summary.json").read_text()) for folder in folders]
             for folder,summary,item in zip(folders,summaries,actual):
                 if summary["status"] != "complete" or summary["smoke"] != smoke:
@@ -1883,20 +1911,45 @@ def verificar_lotes_pareados(output, configs, seeds=(42,2026), folds=range(5), s
                 for key in ("n_batches","n_slices","batch_sizes","batch_sizes_sha256",
                             "sample_membership_sha256","augmentation_assignment_sha256","loader_rng_sha256"):
                     if audits[0][key] != audits[1][key]: raise ValueError(f"Pareado distinto: {key}")
+                if normalization and audits[0] != audits[1]:
+                    raise ValueError("Composición/orden de lotes distinto entre normalizaciones")
                 if not smoke and audits[0]["n_slices"] != actual[0]["n_train_slices"]:
                     raise ValueError("No se aprende de todos los cortes")
                 for i,audit in enumerate(audits): diversity[i].append(audit["mean_distinct_patients"])
+            if normalization:
+                for folder in folders:
+                    checkpoint = torch.load(folder/"last.pt", map_location="cpu", weights_only=False)
+                    steps = {int(state["step"].item()) for state in checkpoint["optimizer"]["state"].values()}
+                    expected_steps = sum(row["optimizer_steps"] for row in checkpoint["history"])
+                    if steps != {expected_steps}:
+                        raise ValueError("AMP omitió actualizaciones: presupuesto efectivo no pareado")
             records.append({"seed":seed,"fold":fold,"epochs":n_epochs,
-                "initial_state_sha256":initial[0]["state_sha256"],
+                "initial_parameters_sha256" if normalization else "initial_state_sha256":initial[0][initial_key],
                 "mean_batch_patients":dict(zip([c["name"] for c in configs],map(lambda v:float(np.mean(v)),diversity)))})
     report = {"status":"passed","pairs":len(records),"records":records,
         "matched":["initial_weights","fit_patients","slice_exposure","batch_sizes",
                    "optimizer_steps","sample_augmentations","loader_rng"],"smoke":smoke}
+    if normalization:
+        report["matched"].append("exact_batch_composition_and_order")
     json_write(Path(output)/"verificacion_pareado.json", report)
     return report
 
 
-def comparar_lotes(root, output, device, epocas=30, intervalo=10, workers=2, paralelos=2, smoke=False):
+def configuraciones_normalizacion(epocas=30, intervalo=10, workers=2):
+    configs = []
+    for name, norm in (("batchnorm", "batch"), ("groupnorm", "group")):
+        config = configuraciones_lotes(epocas, intervalo, workers)[0]
+        config["name"] = name
+        config["model"].update(normalization=norm, norm_groups=8)
+        configs.append(config)
+    return configs
+
+
+def comparar_normalizacion(root, output, device, epocas=30, intervalo=10, workers=2, paralelos=2, smoke=False):
+    return comparar_lotes(root, output, device, epocas, intervalo, workers, paralelos, smoke, normalization=True)
+
+
+def comparar_lotes(root, output, device, epocas=30, intervalo=10, workers=2, paralelos=2, smoke=False, normalization=False):
     if epocas < intervalo or intervalo < 1 or paralelos not in (1,2,3,4):
         raise ValueError("Presupuesto/revisión positivos y uno a cuatro procesos")
     root, output = Path(root), Path(output)
@@ -1904,12 +1957,14 @@ def comparar_lotes(root, output, device, epocas=30, intervalo=10, workers=2, par
     output = output/"pruebas" if smoke else output
     output.mkdir(parents=True,exist_ok=True)
     samples = cargar_train(root)
-    configs = configuraciones_lotes(epocas,intervalo,workers)
+    factory = configuraciones_normalizacion if normalization else configuraciones_lotes
+    configs = factory(epocas,intervalo,workers)
     cache = CacheTrain(samples,root,cache_folder,workers)
     protected = preservacion_manifest()
     protocol = {"variants":configs,"seeds":[42,2026],"outer_folds":list(range(5)),
         "epochs":epocas,"smoke":smoke,"parallel_processes":paralelos,
-        "only_hypothesis":"complete six-patient batches versus mixed slices, with identical batch lengths",
+        "only_hypothesis":("BatchNorm2d versus GroupNorm with 8 groups; identical complete-patient batches"
+                           if normalization else "complete six-patient batches versus mixed slices, with identical batch lengths"),
         "loss":"weighted BCE per slice; N0/N1 of fit only", "augmentation":"sample/seed/fold/epoch SHA-256 assignment; joint phases",
         "inner_split":{"fit":.70,"selection":.15,"calibration":.15,"stratification":"cohort x pCR"},
         "checkpoint":"maximum inner-selection patient AUC; earliest on ties",
@@ -1950,7 +2005,7 @@ def comparar_lotes(root, output, device, epocas=30, intervalo=10, workers=2, par
             with ProcessPoolExecutor(max_workers=paralelos,mp_context=get_context("spawn")) as pool:
                 futures = [pool.submit(tarea_lotes,*task) for task in tasks]
                 for future in as_completed(futures): progress(future.result())
-        pairing = verificar_lotes_pareados(output,configs,seeds,folds,smoke)
+        pairing = verificar_lotes_pareados(output,configs,seeds,folds,smoke,normalization=normalization)
         if preservacion_manifest() != protected: raise ValueError("Archivos protegidos modificados")
         if smoke:
             result = {"status":"smoke_only","eligible_for_selection":False,"runs":rows,"pairing":pairing}
@@ -1958,7 +2013,7 @@ def comparar_lotes(root, output, device, epocas=30, intervalo=10, workers=2, par
         else:
             result = evaluar_generalizacion(samples,root,output,device,configs,cache)
             result["batch_pairing"] = pairing
-            result["experiment"] = "batch_composition_only"
+            result["experiment"] = "normalization_only" if normalization else "batch_composition_only"
             json_write(output/"resultado.json",result)
         if preservacion_manifest() != protected: raise ValueError("Archivos protegidos modificados")
         json_write(output/"verificacion_preservacion.json",{"status":"passed","files":len(protected),"test_images_loaded":0})
@@ -1971,7 +2026,7 @@ def comparar_lotes(root, output, device, epocas=30, intervalo=10, workers=2, par
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("accion", nargs="?", choices=("verificar", "entrenar", "comparar", "predecir", "ajustar", "comparar-tamano", "comparar-lotes"), default="verificar")
+    parser.add_argument("accion", nargs="?", choices=("verificar", "entrenar", "comparar", "predecir", "ajustar", "comparar-tamano", "comparar-lotes", "comparar-normalizacion"), default="verificar")
     parser.add_argument("--datos",type=Path,default=pdatos.DATOS)
     parser.add_argument("--salida",type=Path,default=None)
     parser.add_argument("--manifest",type=Path,default=SALIDA/"modelo_final.json")
@@ -1991,20 +2046,22 @@ def main():
     for phase in ("pre","early","late"):
         parser.add_argument("--"+phase,type=Path,nargs="+")
     args = parser.parse_args()
-    args.epocas = (30 if args.accion in {"ajustar","comparar-tamano","comparar-lotes"} else 46) if args.epocas is None else args.epocas
+    args.epocas = (30 if args.accion in {"ajustar","comparar-tamano","comparar-lotes","comparar-normalizacion"} else 46) if args.epocas is None else args.epocas
     args.salida = args.salida or (SALIDA/"comparacion_tamano" if args.accion == "comparar-tamano" else
         SALIDA/"composicion_lotes" if args.accion == "comparar-lotes" else
+        SALIDA/"normalizacion" if args.accion == "comparar-normalizacion" else
         SALIDA/"ajustes" if args.accion == "ajustar" else SALIDA/"ejecuciones")
     if args.workers < 0 or args.lote < 1 or args.epocas < 1 or args.revision_cada < 1:
         parser.error("workers >= 0, lote >= 1 y epocas >= 1")
-    if args.accion in {"entrenar","ajustar","comparar-tamano","comparar-lotes"}:
+    if args.accion in {"entrenar","ajustar","comparar-tamano","comparar-lotes","comparar-normalizacion"}:
         device_name = ("cuda" if torch.cuda.is_available() else "cpu") if args.dispositivo == "auto" else args.dispositivo
         if device_name == "cuda" and not torch.cuda.is_available():
             parser.error("CUDA no está disponible")
-        if args.accion == "comparar-lotes":
+        if args.accion in {"comparar-lotes", "comparar-normalizacion"}:
             if set(args.folds)!=set(range(5)) or set(args.semillas)!={42,2026} or args.lote!=64:
-                parser.error("comparar-lotes fija cinco folds, semillas 42/2026 y lote de evaluación 64")
-            result=comparar_lotes(args.datos,args.salida,torch.device(device_name),args.epocas,
+                parser.error("Esta comparación fija cinco folds, semillas 42/2026 y lote de evaluación 64")
+            compare = comparar_normalizacion if args.accion == "comparar-normalizacion" else comparar_lotes
+            result=compare(args.datos,args.salida,torch.device(device_name),args.epocas,
                                  args.revision_cada,args.workers,args.paralelos,args.prueba)
             print(json.dumps({k:v for k,v in result.items() if k != "batch_pairing"},ensure_ascii=False,indent=2))
             return
