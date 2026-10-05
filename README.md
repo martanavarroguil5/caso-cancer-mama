@@ -181,6 +181,15 @@ con esa misma salida. Para `base_raw` y `raw_rot90` se mantienen ambas pérdidas
 del diseño del informe. Esa comparación sigue siendo desarrollo interno y
 usa validación para seleccionar checkpoints.
 
+## Investigación de próximas mejoras
+
+[Investigación de mejoras de la CNN](docs/mejoras_cnn/INVESTIGACION_MEJORAS.md)
+recoge la revisión del enunciado, curvas, metadatos y fuentes primarias realizada
+el 05/10/2026. Prioriza una prueba aislada de Dropout2d en las características
+convolucionales, seguida de regularización y aumentos suaves. Son propuestas
+pendientes de ensayo; esta revisión no modifica el entrenador ni inicia runs.
+Se conservan los pasos 01–03 y la CNN 2D desde cero exigida por la práctica.
+
 ## Experimentos descartados y limpieza
 
 [EXPERIMENTOS_DESCARTADOS.md](EXPERIMENTOS_DESCARTADOS.md) registra hipótesis,
