@@ -699,3 +699,72 @@ Fuentes: [GroupNorm en PyTorch](https://docs.pytorch.org/docs/2.14/generated/tor
 y [Wu y He, Group Normalization (ECCV 2018)](https://arxiv.org/abs/1803.08494).
 GroupNorm estima estadísticas por muestra y usa el mismo cálculo al entrenar
 y evaluar. Su utilidad en este proyecto es una hipótesis que se contrasta.
+
+### Resultado de GroupNorm
+
+Se completaron veinte entrenamientos y 600 épocas con código `4321b0b`.
+Ambos brazos usan los mismos lotes, parámetros iniciales y condiciones de
+aprendizaje. Los diez controles BatchNorm reproducen exactamente los pesos
+seleccionados y las predicciones del brazo de pacientes completas del ensayo
+anterior. La evaluación compara los mejores checkpoints de selección interna.
+
+| Métrica | BatchNorm | GroupNorm (8 grupos) |
+|---|---:|---:|
+| AUC media de folds, principal | 0.5546 | 0.4801 |
+| AP media de folds | 0.3505 | 0.2890 |
+| AUC OOF agrupada cruda | 0.5545 | 0.4702 |
+| AP OOF agrupada cruda | 0.3359 | 0.2707 |
+| F1 OOF, umbral 0.5 | 0.4190 | 0.4120 |
+| Sensibilidad OOF, umbral 0.5 | 0.6025 | 0.7671 |
+| Especificidad OOF, umbral 0.5 | 0.4710 | 0.1871 |
+| Brier OOF crudo | 0.2497 | 0.2508 |
+
+Diferencia principal GroupNorm − BatchNorm: **−0.0744**, IC95% condicionado
+**[−0.1232, −0.0260]**. El intervalo queda por debajo de cero en este ensayo,
+condicionado a los modelos y predicciones; no acredita inferioridad universal
+ni incluye toda la incertidumbre del desarrollo. GroupNorm mejora AUC solo en
+uno de cinco folds. AUC OOF por cohorte (BatchNorm/GroupNorm): Duke
+0.5154/0.4857, I-SPY1 0.5027/0.5750 e I-SPY2 0.5573/0.4529.
+
+La mayor sensibilidad a 0.5 viene con 53 verdaderos positivos adicionales y
+220 falsos positivos más; la especificidad cae de 0.4710 a 0.1871.
+Con Platt y Youden internos congelados, F1 cae de 0.3221 a 0.1818 y sensibilidad
+de 0.3261 a 0.1398; especificidad sube de 0.7097 a 0.8348.
+Ninguno de esos intercambios compensa el empeoramiento de discriminación.
+
+El diagnóstico posterior confirma que nueve de los diez modelos GroupNorm
+al final del presupuesto producen exactamente la misma probabilidad en todos
+los cortes de selección interna: las 64 unidades ReLU de la cabeza están
+inactivas para esas muestras. Los checkpoints elegidos suelen tener pocas
+unidades activas y scores casi constantes. Esto es falta de aprendizaje con
+esta configuración; no equivale al mayor sobreajuste del ensayo de lotes
+mezclados ni demuestra que GroupNorm falle con cualquier hiperparámetro.
+
+También se auditó la precisión de inferencia. Entrenamiento/selección desactiva
+TF32 y fija determinismo; el coordinador de evaluación con procesos paralelos
+conserva defaults de PyTorch (cuDNN TF32 activo, matmul TF32 inactivo,
+determinismo no forzado). Un análisis posterior, separado, con los mismos
+pesos congelados y FP32 estricto/determinismo da AUC media 0.5546/0.4798,
+diferencia −0.0748: mantiene la conclusión. No reemplaza el resultado principal
+ni selecciona o recalibra modelos. Las futuras comparaciones deben fijar
+explícitamente la política de precisión del coordinador también.
+
+**Decisión: conservar BatchNorm como referencia y no adoptar GroupNorm con esta
+configuración.** Se conservan pesos, código y resultados de ambos brazos.
+No se promueve ni se elimina un modelo automáticamente. La arquitectura sigue
+siendo sencilla y la inferencia del histórico conserva BatchNorm.
+
+Pasaron 35 pruebas CPU, prueba GPU y verificación independiente de los veinte
+runs, 600 auditorías y 1.097 pacientes. Se comprobaron las actualizaciones
+reales del optimizador sin omisiones AMP, decisiones previas a evaluación,
+selección/exportación de checkpoints, agregaciones y métricas. Los 37 archivos
+protegidos permanecen intactos y los diez modelos históricos cargan correctamente.
+Se abrió cero imágenes test. La evaluación sigue siendo desarrollo previamente
+observado, con los límites de selección adaptativa y bootstrap condicionado.
+
+Evidencia en `resultados/04_entrenamiento/normalizacion/`: `resultado.json`,
+`informe_groupnorm.txt`, `verificacion_independiente.json`,
+`verificacion_referencia.json`, `diagnostico_activaciones.csv`,
+`auditoria_precision.json`, `precision_inferencia/`, curvas, configuraciones,
+particiones, predicciones y checkpoints. Los scripts de verificación, diagnóstico
+y gráficos se conservan en `codigo/`; estos análisis no entrenan modelos.
