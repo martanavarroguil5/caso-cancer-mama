@@ -244,79 +244,22 @@ class TestEntrenamiento(unittest.TestCase):
         self.assertTrue((b/relative/"revision_004.json").exists())
         self.assertTrue((b/relative/"curvas.png").exists())
 
-    def test_variante_pequena_solo_cambia_canales_y_conserva_gradientes(self):
-        actual, pequena = entrenamiento.configuraciones_tamano()
-        left, right = json.loads(json.dumps(actual)), json.loads(json.dumps(pequena))
-        left.pop("name"); right.pop("name")
-        left["model"].pop("channels"); right["model"].pop("channels")
-        self.assertEqual(left, right)
-        model = entrenamiento.CNN(pequena)
-        self.assertLess(entrenamiento.numero_parametros(model), 551913)
-        shapes = []
-        handles = [block.register_forward_hook(lambda m,i,o: shapes.append(tuple(o.shape[1:]))) for block in model.features]
-        output = model(torch.rand(2,3,256,256))
-        self.assertEqual(shapes, [(16,64,64),(32,32,32),(64,16,16),(128,8,8)])
-        torch.nn.BCEWithLogitsLoss()(output[:,0],torch.tensor([0.,1.])).backward()
-        self.assertTrue(all(p.grad is not None and torch.isfinite(p.grad).all() for p in model.parameters()))
-        for handle in handles:
-            handle.remove()
 
-    def test_bootstrap_pareado_conserva_identidad_y_direccion(self):
-        y=np.array([0,0,0,1,1,1])
-        a=np.array([.2,.7,.3,.4,.8,.5])
-        b=np.array([.1,.2,.3,.7,.8,.9])
-        same=entrenamiento.bootstrap_pareado(y,a,a,30)
-        self.assertTrue(all(v["delta"]==0 and v["ci95"]==[0.,0.] for v in same.values()))
-        forward=entrenamiento.bootstrap_pareado(y,a,b,30)
-        reverse=entrenamiento.bootstrap_pareado(y,b,a,30)
-        for key in forward:
-            self.assertAlmostEqual(forward[key]["delta"],-reverse[key]["delta"])
-            np.testing.assert_allclose(forward[key]["ci95"],[-reverse[key]["ci95"][1],-reverse[key]["ci95"][0]])
-        with self.assertRaisesRegex(ValueError,"ambas clases"):
-            entrenamiento.bootstrap_pareado(np.zeros(6),a,b,30)
 
-    def test_evaluacion_tamano_exige_oof_completos_y_artefactos_integros(self):
-        datos_sinteticos(self.root,folds=range(5))
-        train=entrenamiento.cargar_train(self.root)
-        signature=hashlib.sha256(train.to_csv(index=False).encode()).hexdigest()
-        configs=entrenamiento.configuraciones_tamano()
-        output=self.root/"tamano"
-        omitted=None
-        for config in configs:
-            parameters=entrenamiento.numero_parametros(entrenamiento.CNN(config))
-            for seed in (42,2026):
-                for fold in range(5):
-                    folder=output/"ejecuciones"/config["name"]/"weighted"/f"seed_{seed}"/f"fold_{fold}"
-                    folder.mkdir(parents=True)
-                    used=json.loads(json.dumps(config))
-                    used.update(loss="weighted",seed=seed,fold=fold,smoke=False,data_signature=signature,
-                        source_sha256={p.name:entrenamiento.sha256(p) for p in
-                            (Path(entrenamiento.__file__),entrenamiento.RAIZ/"pipeline_datos.py")})
-                    oof=train[train.fold.eq(fold)].copy()
-                    oof["prob"]=np.where(oof.pCR.eq(1),.8,.2)
-                    if config["name"]=="cnn_actual" and fold==0:
-                        oof["prob"]=1-oof["prob"]
-                    oof.to_csv(folder/"oof_slices.csv",index=False)
-                    (folder/"inference.pt").write_bytes(b"fixture: not loaded")
-                    (folder/"config.json").write_text(json.dumps(used))
-                    (folder/"environment.json").write_text(json.dumps({"git_commit":"fixture"}))
-                    summary={"status":"complete","eligible_for_selection":True,"epochs_completed":30,
-                        "test_images_loaded":0,"best_epoch":1,"parameters":parameters,"val_loss":.7,
-                        "config_hash":entrenamiento.config_hash(used),
-                        "val_metrics":entrenamiento.patient_metrics(oof,oof.prob.to_numpy()),
-                        "oof_sha256":entrenamiento.sha256(folder/"oof_slices.csv"),
-                        "inference_sha256":entrenamiento.sha256(folder/"inference.pt")}
-                    (folder/"summary.json").write_text(json.dumps(summary))
-                    omitted=folder/"summary.json"
-        report=entrenamiento.evaluar_tamano(self.root,output,configs,30,graficas=False)
-        self.assertEqual(report["completed_runs"],20)
-        self.assertEqual(report["patients"],10)
-        self.assertGreater(report["paired_bootstrap"]["roc_auc"]["delta"],0)
-        self.assertFalse(report["test_repeated"])
-        self.assertFalse(report["historical_model_replaced"])
-        omitted.unlink()
-        with self.assertRaisesRegex(ValueError,"veinte"):
-            entrenamiento.evaluar_tamano(self.root,output,configs,30,graficas=False)
+
+    def test_no_reinterpreta_configuraciones_retiradas(self):
+        with self.assertRaisesRegex(ValueError,"BatchNorm"):
+            entrenamiento.CNN({"normalization":"group"})
+        changes=[{"loss_unit":"patient"},{"batch_policy":"pacientes_completas"},
+                 {"patient_batch_size":6},{"paired_augmentation":True}]
+        for change in changes:
+            config=entrenamiento.configuracion();config["training"].update(change)
+            with self.assertRaises(ValueError):
+                entrenamiento.run_training(config,"weighted",42,0,self.root,self.root/"salida",torch.device("cpu"))
+        config=entrenamiento.configuracion();config["evaluation"]["protocol"]="nested_holdout"
+        with self.assertRaisesRegex(ValueError,"retirada"):
+            entrenamiento.run_training(config,"weighted",42,0,self.root,self.root/"salida",torch.device("cpu"))
+        self.assertFalse((self.root/"salida").exists())
 
     def test_comparacion_completa_y_rechazo_de_fold_ausente(self):
         datos_sinteticos(self.root,folds=range(5))
@@ -324,8 +267,9 @@ class TestEntrenamiento(unittest.TestCase):
         output=self.root/"ejecuciones"
         signature=hashlib.sha256(train.to_csv(index=False).encode()).hexdigest()
         omitted=None
-        for name in ("base_raw","raw_rot90"):
-            for loss in ("normal","weighted"):
+        for name in ("base_raw","raw_rot90","pool_dropout_wd"):
+            losses=("weighted",) if name=="pool_dropout_wd" else ("normal","weighted")
+            for loss in losses:
                 for seed in (42,2026):
                     for fold in range(5):
                         folder=output/name/loss/f"seed_{seed}"/f"fold_{fold}"
