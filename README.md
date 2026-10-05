@@ -55,21 +55,21 @@ N0/N1, contando cortes solamente en el subconjunto que aprende cada fold.
 Para probar un lote sin entrenar el experimento completo:
 
 ```bash
-.venv/bin/python 04_entrenamiento.py entrenar --prueba --folds 0 --semillas 42 --perdidas ponderada --dispositivo cpu --workers 0
+.venv/bin/python 04_entrenamiento.py entrenar --prueba --folds 0 --semillas 42 --perdidas ponderada --dispositivo cpu --workers 0 --salida resultados/04_entrenamiento/entrenamiento_actual
 ```
 
 Para una ejecución concreta en la RTX 3090:
 
 ```bash
-.venv/bin/python 04_entrenamiento.py entrenar --folds 0 --semillas 42 --perdidas ponderada --dispositivo cuda
+.venv/bin/python 04_entrenamiento.py entrenar --folds 0 --semillas 42 --perdidas ponderada --dispositivo cuda --salida resultados/04_entrenamiento/entrenamiento_actual
 ```
 
 Para reproducir las 40 ejecuciones del diseño del informe (dos configuraciones,
 dos pérdidas, dos semillas y cinco folds):
 
 ```bash
-.venv/bin/python 04_entrenamiento.py entrenar --configuraciones base_raw raw_rot90 --dispositivo cuda
-.venv/bin/python 04_entrenamiento.py comparar
+.venv/bin/python 04_entrenamiento.py entrenar --configuraciones base_raw raw_rot90 --dispositivo cuda --salida resultados/04_entrenamiento/entrenamiento_actual
+.venv/bin/python 04_entrenamiento.py comparar --salida resultados/04_entrenamiento/entrenamiento_actual
 ```
 
 `base_raw` conserva solo el espejo horizontal; `raw_rot90` añade las rotaciones.
@@ -149,622 +149,65 @@ El respaldo de la limpieza, con el código, ramas y experimentos previos,
 está fuera de la carpeta del proyecto. Para compartir código entre ordenadores,
 usa `git pull` antes de trabajar y revisa `git status` antes de commit/push.
 
-## Ajustes indicados por el profesor
+## Configuración ajustada conservada
 
-La acción `ajustar` entrena y revisa en bloques de diez épocas, reanudando pesos,
-optimizador y calendario; no comienza de cero en cada bloque. Compara seis
-configuraciones con el mismo fold, semilla, pérdida ponderada, lote y presupuesto.
+Se mantiene `pool_dropout_wd`: la misma CNN de 551.913 parámetros con MaxPool
+entre bloques, LR 0,0008, dropout 0,35 y weight decay 0,001. Conserva los cuatro
+bloques, ocho convoluciones y salidas 64/32/16/8. Se inicializa desde cero y
+utiliza BatchNorm y BCE por corte. Es una configuración directa del entrenamiento;
+no lanza una búsqueda ni compara variantes descartadas.
 
-| Candidato | Pooling | LR | Dropout | Weight decay |
-|---|---|---:|---:|---:|
-| referencia | Original | 0,0008 | 0,20 | 0,0001 |
-| pool_intermedio | Entre bloques | 0,0008 | 0,20 | 0,0001 |
-| pool_lr_baja | Entre bloques | 0,0003 | 0,20 | 0,0001 |
-| pool_lr_dropout | Entre bloques | 0,0003 | 0,35 | 0,0001 |
-| pool_lr_dropout_wd | Entre bloques | 0,0003 | 0,35 | 0,001 |
-| pool_dropout_wd | Entre bloques | 0,0008 | 0,35 | 0,001 |
-
-La variante nueva añade MaxPool 2×2 después de cada bloque. En los bloques 2-4
-utiliza convoluciones con stride 1 y pooling para reducir la resolución. El primer
-bloque conserva su stride 2 y pooling. Así mantiene las salidas 64/32/16/8 y
-551.913 parámetros. Se entrena desde cero; los diez modelos históricos continúan
-utilizando su arquitectura original.
+La selección previa en tres folds obtuvo AUC media 0.6270 frente a 0.6231 de
+referencia y F1 0.4770 frente a 0.4336. Fue exploratoria, con una semilla;
+no demuestra una mejora general ni sustituye al modelo histórico del informe.
+La arquitectura original continúa disponible para reproducir ese diseño y
+cargar sus diez pesos.
 
 ```bash
-.venv/bin/python 04_entrenamiento.py ajustar --folds 0 --semillas 42 --epocas 30 --revision-cada 10 --lote 16 --dispositivo cuda
+.venv/bin/python -B 04_entrenamiento.py entrenar --configuraciones pool_dropout_wd --perdidas ponderada --folds 0 --semillas 42 --epocas 30 --revision-cada 10 --lote 64 --dispositivo cuda --salida resultados/04_entrenamiento/entrenamiento_pool
 ```
 
-El lote 16 limita memoria cuando la GPU se comparte. Todos los candidatos usan
-el mismo tamaño para que la comparación sea pareada. En GPU exclusiva se puede
-indicar `--lote 64` y una `--salida` nueva para conservar ambos experimentos.
-
-Cada revisión (épocas 10, 20 y 30) guarda ranking JSON, CSV comparativo, curvas,
-checkpoint de esa época y mejores pesos hasta ese bloque. Las curvas muestran
-pérdida train/validación, AUC, F1 y accuracy. Las métricas train se calculan sin
-aumentos y con dropout desactivado al revisar; las de validación se calculan cada
-época. La pérdida durante aprendizaje se distingue de la pérdida train en
-modo de evaluación.
-
-F1 corresponde a la clase pCR=1 y se calcula por paciente, con umbral 0,5, junto
-con precisión, sensibilidad y accuracy equilibrada. La AUC es el criterio principal
-y F1 desempata. La comparación con un fold es exploratoria: la mejor configuración
-debe confirmarse en otros folds antes de afirmar una mejora general. El test
-reservado ya observado no participa en estos ajustes.
-
-Los resultados quedan en `resultados/04_entrenamiento/ajustes/`. Una caché uint8
-exclusiva de train evita decodificar repetidamente los mismos PNG. Tanto la caché
-como los nuevos experimentos quedan fuera de Git. Para reanudar el ajuste, vuelve
-a lanzar exactamente el mismo comando.
-
-Para lanzar un entrenamiento concreto con pooling intermedio y revisar cada diez
-épocas:
-
-```bash
-.venv/bin/python 04_entrenamiento.py entrenar --pooling intermedio --folds 0 --semillas 42 --perdidas ponderada --revision-cada 10 --dispositivo cuda
-```
-
-Fuentes de implementación: [MaxPool2d de PyTorch](https://docs.pytorch.org/docs/2.14/generated/torch.nn.MaxPool2d.html)
-y [definición de F1 en scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html).
-
-## Comparación controlada del tamaño de la CNN
-
-`comparar-tamano` compara la CNN con pooling ajustado y una variante más pequeña.
-Los canales son 24/48/96/160 frente a 16/32/64/128: 551.913 frente a 310.513
-parámetros (un 43,7 % menos). El resto del diseño y del
-entrenamiento es idéntico: pooling entre bloques, cabeza de 64 neuronas,
-dropout 0,35, LR 0,0008, weight decay 0,001, BCE ponderada y rotaciones.
-La red histórica del PDF y sus diez pesos se conservan.
-
-Se entrenan las dos variantes en los cinco folds originales y las semillas 42 y
-2026: veinte ejecuciones de treinta épocas con el mismo presupuesto. Las
-revisiones de train sin aumentos se hacen en 10/20/30 y la validación cada época.
-Se guarda el checkpoint de mayor AUC por paciente hasta ese presupuesto.
-
-```bash
-.venv/bin/python -B 04_entrenamiento.py comparar-tamano --epocas 30 --revision-cada 10 --lote 64 --workers 2 --paralelos 2 --dispositivo cuda
-```
-
-Este ensayo utiliza lote 64 en ambas variantes con la GPU disponible. Es una
-comparación nueva y no mezcla las métricas anteriores obtenidas con lote 16.
-Dos procesos independientes aprovechan la RTX 3090; cada uno conserva su RNG,
-checkpoints y registro. Se puede indicar `--paralelos 1` para ejecutar en serie.
-Volver a lanzar el mismo comando reanuda las ejecuciones pendientes.
-
-Para comprobar ambos modelos con un lote real antes de entrenar:
-
-```bash
-.venv/bin/python -B 04_entrenamiento.py comparar-tamano --prueba --workers 2 --paralelos 2 --dispositivo cuda
-```
-
-Los resultados se guardan en `resultados/04_entrenamiento/comparacion_tamano/`.
-El protocolo, código por SHA-256 y caché de train quedan identificados antes de
-entrenar. Cada run guarda configuración, entorno, pesos, curvas y predicciones OOF.
-
-La evaluación exige veinte runs completos con sus checksums y predicciones
-coincidentes con las pacientes y folds de train. Informa media y dispersión de
-las diez ejecuciones por variante, diferencias pareadas por fold/semilla y OOF
-por paciente tras promediar las dos semillas de validación y sus cortes. El
-umbral permanece en 0,5: no se ajusta para favorecer una variante.
-
-`resultado.json` incluye AUC, average precision, F1, sensibilidad, especificidad,
-precisión y Brier. `metricas_cohortes.csv` desglosa las métricas por cohorte.
-Los intervalos de diferencias se
-calculan mediante 2.000 remuestreos pareados y estratificados de pacientes.
-Están condicionados a esas predicciones OOF; no recogen toda la variación del
-entrenamiento. La selección de checkpoints usa validación y no es validación
-anidada ni externa. El test reservado no se abre.
-
-Archivos principales: `comparacion_runs.csv`, `diferencias_pareadas.csv`,
-`metricas_cohortes.csv`, `oof_pacientes.csv`, `curvas_comparacion.png`,
-`roc_precision_recall.png` y `resultado.json`. Estos resultados y la caché se
-mantienen fuera de Git, dentro de una sola carpeta de la etapa 04.
-
-## Resultados de los ajustes del 03/10/2026
-
-Se ejecutaron las seis combinaciones a 30 épocas, revisando en 10/20/30,
-con semilla 42, BCE ponderada, rotaciones, lote 16 y la misma GPU. En fold 0
-se seleccionó `pool_dropout_wd`: pooling entre bloques, LR 0,0008, dropout 0,35
-y weight decay 0,001. Su mejor checkpoint fue el de la época 11; la referencia
-alcanzó su máximo en la época 12. Se comparan mejores checkpoints hasta el
-presupuesto fijado, no exclusivamente los pesos de la última época.
-
-La configuración seleccionada y la referencia se entrenaron después en folds
-1 y 2, con el mismo presupuesto. AUC y F1 son por paciente; F1 usa umbral 0,5.
-
-| Fold | AUC referencia | AUC pooling ajustado | F1 referencia | F1 pooling ajustado |
-|---|---:|---:|---:|---:|
-| 0 | 0.6292 | 0.6498 | 0.4459 | 0.5114 |
-| 1 | 0.5748 | 0.5903 | 0.3740 | 0.4683 |
-| 2 | 0.6653 | 0.6408 | 0.4810 | 0.4512 |
-| Media | 0.6231 | 0.6270 | 0.4336 | 0.4770 |
-
-La diferencia media es +0.0038 en AUC y
-+0.0433 en F1. La mejora no es uniforme entre folds.
-Las curvas muestran sobreajuste: la pérdida train puede seguir bajando mientras
-sube la de validación. Por eso se conservan los mejores checkpoints, y aumentar
-épocas por sí solo no se considera una mejora.
-
-Esta comparación abarca tres de los cinco folds y una semilla. La elección de
-hiperparámetros usa fold 0 y los checkpoints usan validación. Son resultados
-exploratorios; no equivalen a una evaluación independiente ni anidada y no
-sustituyen las métricas del PDF. Los diez pesos, calibración y umbral del modelo
-histórico siguen conservados.
-
-Evidencia en `resultados/04_entrenamiento/ajustes/`:
-`comparacion.csv`, `revision_010/020/030.json`, `resultado_ajuste.json`,
-`confirmacion.csv`, `resultado_confirmacion.json`, `comparacion_curvas.png`
-y `confirmacion_curvas.png`. Cada run conserva código identificado por SHA-256,
-configuración, entorno, curvas, OOF y pesos. Se ejecutaron diez entrenamientos
-de 30 épocas en total; se cargaron cero imágenes del test reservado.
-
-## Resultado de la comparación del 04/10/2026
-
-Se completaron veinte entrenamientos: dos variantes × cinco folds × semillas
-42 y 2026. Ambas utilizan lote 64 y treinta épocas con revisión en 10/20/30.
-El código del experimento es el commit `726b704`; configuración, entorno y
-SHA-256 de código, caché, pesos y predicciones están registrados. La carga de
-caché se optimizó antes del ensayo definitivo; once épocas coincidieron
-exactamente con la ejecución diagnóstica previa en ambas variantes.
-
-La CNN actual tiene 551.913 parámetros y la pequeña 310.513 (43,7 % menos).
-Los canales son la única diferencia del modelo. Se conserva cabeza de 64,
-pooling entre bloques, dropout 0,35, LR 0,0008, weight decay 0,001, BCE ponderada
-y aumentos. El checkpoint de cada run se elige por AUC de su validación.
-
-| Métrica | Actual: media ± DE | Pequeña: media ± DE | OOF actual | OOF pequeña |
-|---|---:|---:|---:|---:|
-| AUC | 0.6115 ± 0.0346 | 0.5954 ± 0.0286 | 0.5932 | 0.5922 |
-| Average precision | 0.3983 ± 0.0481 | 0.3933 ± 0.0373 | 0.3792 | 0.3840 |
-| F1 | 0.3363 ± 0.1485 | 0.3750 ± 0.0778 | 0.3571 | 0.4252 |
-| Precisión | 0.3677 ± 0.0443 | 0.3724 ± 0.0437 | 0.3947 | 0.3868 |
-| Sensibilidad | 0.3660 ± 0.2039 | 0.4394 ± 0.2306 | 0.3261 | 0.4720 |
-| Especificidad | 0.7428 ± 0.1525 | 0.6718 ± 0.2186 | 0.7923 | 0.6890 |
-| Brier | 0.2365 ± 0.0112 | 0.2471 ± 0.0269 | 0.2297 | 0.2415 |
-
-La media/DE describe las diez ejecuciones por variante. OOF combina las dos
-semillas de validación por corte y después los cortes por paciente: 1.097
-pacientes con predicciones hechas sin usarlas para aprender los pesos del run.
-Las métricas OOF y la media de runs son resúmenes distintos. F1, sensibilidad
-y especificidad usan el mismo umbral fijo de 0,5, sin calibración ni ajuste.
-
-- AUC: diferencia OOF pequeña − actual -0.0010; IC95% [-0.0372, +0.0346].
-- Average precision: diferencia OOF pequeña − actual +0.0048; IC95% [-0.0358, +0.0439].
-- F1: diferencia OOF pequeña − actual +0.0680; IC95% [+0.0183, +0.1164].
-
-La pequeña mejora AUC en 4/10 pares fold/semilla y average precision
-en 4/10. No se ha demostrado una mejora concluyente en AUC: el intervalo pareado de desarrollo incluye cero.
-
-La mejora OOF en F1 con umbral 0,5 tiene un IC pareado por encima de cero,
-condicionado a estas predicciones. La sensibilidad aumenta de
-0.3261 a 0.4720, pero la
-especificidad baja de 0.7923 a
-0.6890. La pequeña acierta
-47 positivos más y produce
-80 falsos positivos adicionales.
-La AUC media por ejecución es menor y el Brier OOF es peor: el ahorro de
-parámetros y el mayor F1 no constituyen una mejora global.
-
-La comparación por cohorte muestra diferencias que el promedio puede ocultar:
-
-| Cohorte | Pacientes | AUC OOF actual | AUC OOF pequeña |
-|---|---:|---:|---:|
-| duke | 209 | 0.6324 | 0.5209 |
-| spy1 | 104 | 0.6193 | 0.6267 |
-| spy2 | 784 | 0.5670 | 0.5908 |
-
-Persiste el sobreajuste. En la época 30, la AUC media de train/validación es
-0.9370/0.5318
-en la actual y
-0.8971/0.5287
-en la pequeña. Estas cifras describen las curvas al final del presupuesto;
-las métricas de las tablas corresponden a los mejores checkpoints de validación.
-Reducir la red no ha resuelto la generalización. Se conservan ambas variantes
-para investigación, sin promover automáticamente la pequeña.
-
-Los IC se obtienen con 2.000 remuestreos pareados y estratificados por paciente,
-condicionados a las predicciones OOF. No son una validación anidada, no incluyen
-toda la incertidumbre de entrenamiento y no demuestran rendimiento en pacientes
-de otra fuente. La elección previa de la configuración y de checkpoints utiliza
-datos de desarrollo. El test reservado no se ha abierto; el modelo histórico,
-sus pesos, calibración y umbral siguen conservados.
-
-Resultados en `resultados/04_entrenamiento/comparacion_tamano/`: `resultado.json`,
-`resumen_metricas.csv`, `comparacion_runs.csv`, `diferencias_pareadas.csv`,
-`metricas_cohortes.csv`, `curvas_comparacion.png` y `roc_precision_recall.png`.
-Se conservan los logs y pesos de las veinte ejecuciones dentro de esa carpeta.
-
-## Experimento de generalización por paciente: descartado (04/10/2026)
-
-**La variante empeoró frente a la referencia y se ha retirado.** La AUC media
-bajó de 0.5590 a 0.5404, la AUC OOF cruda de 0.5480 a 0.5011, F1 de 0.3943
-a 0.3507 y sensibilidad de 0.5155 a 0.4286. El aumento de especificidad no
-compensa estas pérdidas. El IC principal incluye cero: el descarte es una
-decisión práctica para este proyecto, no una prueba de inferioridad universal.
-
-Se eliminaron `BCEPaciente`, la selección de pérdida por paciente y la acción
-`generalizar` que ejecutaba esta comparación. Las configuraciones antiguas
-con `loss_unit=patient` se rechazan antes de crear un run. Se conservaron las
-herramientas de auditoría, partición interna, lotes completos y evaluación
-separada, con entrenamiento exclusivamente BCE por corte. La comparación
-pareada recibe ahora nombres explícitos y no contiene una variante fallida.
-
-También se eliminaron los 60 archivos de pesos/checkpoints de
-`generalizacion_paciente/ejecuciones/bce_paciente/`; se conservaron los 60 de
-la referencia. `retirada_variante.json` registra rutas, SHA-256 y bytes
-eliminados, y la verificación de los archivos conservados. El informe, las
-configuraciones, curvas, predicciones y copia del código del ensayo permanecen
-como evidencia histórica. Esa copia no forma parte del código activo. Las
-etapas 01–03, el modelo histórico, calibración y umbral permanecen intactos.
-No se vuelve a evaluar el test ni se inicia otro experimento automáticamente.
-
-El protocolo y los resultados siguientes describen el ensayo ya concluido:
-
-La acción retirada `generalizar` comparó una sola hipótesis: aplicar BCE ponderada después
-de la media de probabilidades de los cortes de una paciente, en lugar de aplicar
-BCE ponderada a cada corte. Conserva la CNN actual ajustada (551.913 parámetros),
-las fases, la escala fija, pooling entre bloques, dropout 0,35, LR 0,0008,
-weight decay 0,001, AdamW, calendario, clipping y aumentos. No añade módulos ni
-pesos preentrenados. El modelo histórico y las etapas 01–03 se verifican por hash.
-
-La auditoría encuentra 1.097 pacientes y 10.945 cortes, casi siempre diez por
-paciente (rango 5–10). La prevalencia por paciente y corte es prácticamente igual,
-por lo que corregir solamente el número de cortes tendría poco efecto. La hipótesis
-escogida alinea la función de coste con la agregación de inferencia y permite que
-cortes poco informativos no reciban individualmente toda la supervisión clínica.
-No presupone que esta modificación vaya a mejorar.
-
-Ambas variantes usan exactamente los mismos lotes de pacientes completas: seis
-pacientes, hasta 60 cortes con `--lote 64`. No hay relleno de imágenes. La referencia
-se vuelve a entrenar con este protocolo; por tanto, sus resultados no se comparan
-como equivalentes a los veinte runs anteriores con cortes mezclados en lotes.
-Ambas usan el mismo N0/N1 de **cortes del subconjunto que aprende**, para aislar
-la pérdida como hipótesis principal. La variante por paciente da un término por
-paciente; la referencia da un término por corte. Como casi todas aportan diez
-cortes, la diferencia de ponderación entre pacientes es pequeña. Los aumentos
-son independientes entre cortes e idénticos entre las tres fases de cada corte.
-
-Para una paciente con logits z_i, q=mean(sigmoid(z_i)). La nueva pérdida es
-`-w*y*log(q) -(1-y)*log(1-q)`, promediada por paciente. Los logaritmos se calculan
-con logsigmoid y logsumexp en float32, sin recortar probabilidades que anulen
-sus gradientes. La CNN y la inferencia siguen siendo las del proyecto.
-
-Protocolo fijado antes de observar los resultados nuevos:
-
-- Cinco folds externos originales; semillas 42 y 2026; dos variantes; 30 épocas.
-- En cada complemento externo: 70 % aprendizaje, 15 % selección de checkpoint
-  y 15 % calibración/umbral. Reparto por paciente, estratificado por cohorte × pCR,
-  con semillas de partición fijas e independientes de las semillas de entrenamiento.
-- Checkpoint de máxima AUC por paciente en selección interna; primero en empates.
-  No se utiliza el fold externo para curvas, parada o elección de épocas.
-- Media de probabilidades por corte y semilla. Platt no negativo, regularizado
-  con C=1, ajustado solamente en pacientes de calibración interna. Youden en esas
-  mismas pacientes. Ajustar ambas decisiones aquí es desarrollo interno; sus
-  resultados se evalúan exclusivamente en el fold externo.
-- Todos los modelos, calibradores y umbrales quedan fijados antes de inferir
-  los folds externos. El resultado conserva el hash de las decisiones.
-- Criterio principal: media de AUC cruda de los cinco folds externos del ensemble
-  de dos semillas. OOF agrupada es secundaria: las escalas de distintos folds
-  pueden cambiar su orden relativo. AP, métricas al umbral fijo 0,5 y al umbral
-  interno congelado, Brier, log-loss, ECE en diez bins fijos, curvas de calibración
-  y resultados por cohorte completan la comparación.
-- No se promueve un modelo automáticamente. Se conserva la referencia si no
-  hay evidencia convincente en AUC y consistencia entre cohortes.
-
-El código utilizado quedó identificado por el commit `b549915` y su copia
-en `generalizacion_paciente/codigo/`. Los comandos de ejecución se retiraron
-porque el experimento está descartado y sus pesos candidatos se han eliminado.
-Las pruebas actuales se ejecutan con:
-
-```bash
-CUDA_VISIBLE_DEVICES='' .venv/bin/python -B -m unittest discover -s tests -v
-```
-
-Resultados en `resultados/04_entrenamiento/generalizacion_paciente/`: protocolo,
-particiones por paciente, auditoría de todos los PNG **train** contra la caché,
-inventario SHA-256 de imágenes y duplicados exactos entre pacientes de train,
-configuraciones, entornos, versiones de paquetes, copia histórica del código, curvas,
-checkpoints de la referencia y predicciones de selección/calibración/evaluación y métricas. El ensayo ya no
-se ejecuta ni se reanuda desde el código activo. Los cambios de configuración, código,
-datos o archivos protegidos exigen una salida nueva. `selection_slices.csv`
-identifica las predicciones internas; `oof_slices.csv` dentro de cada run se
-conserva por compatibilidad del motor y **también es selección interna**, no la
-OOF externa. La OOF externa es `oof_pacientes.csv` en la raíz del experimento.
-La caché previa se reutiliza y se verifica contra los PNG para evitar otra copia.
-
-Limitaciones: este diseño usa un holdout interno por fold, no una búsqueda completa
-de hiperparámetros en múltiples folds internos. Entrena con aproximadamente el
-56 % del desarrollo. Los hiperparámetros y la hipótesis están informados por
-análisis históricos de estas mismas pacientes: separar las decisiones nuevas
-no las convierte en una muestra independiente. Los IC de diferencias usan
-2.000 bootstrap pareados por paciente, estratificados por fold/cohorte/clase,
-con modelos, calibradores y umbrales fijos; no incorporan toda la incertidumbre
-del entrenamiento ni del desarrollo adaptativo. Los folds comparten aprendizaje.
-La calibración usa unas 132 pacientes por fold y puede ser inestable. El test
-reservado ya observado permanece cerrado. No se pueden descartar duplicados
-con test sin abrir sus imágenes, ni identidades diferentes de un mismo sujeto
-sin información adicional de las fuentes. La selección de cortes difiere entre
-Duke e I-SPY y puede introducir sesgos.
-
-Fuentes metodológicas: [selección anidada de scikit-learn](https://scikit-learn.org/stable/auto_examples/model_selection/plot_nested_cross_validation_iris.html),
-[calibración de probabilidades](https://scikit-learn.org/stable/modules/calibration.html),
-[BCE ponderada de PyTorch](https://docs.pytorch.org/docs/2.14/generated/torch.nn.BCEWithLogitsLoss.html)
-y [aprendizaje por bolsas de instancias, Ilse et al.](https://proceedings.mlr.press/v80/ilse18a.html).
-Esta implementación usa una media fija y no implementa la atención del artículo.
-
-### Resultado del primer experimento por paciente
-
-Se completaron veinte runs y 600 épocas con el protocolo fijado en el commit
-`b549915`. Las predicciones externas cubren las 1.097 pacientes. La verificación
-independiente confirmó pacientes/etiquetas/cohortes, selección de checkpoints,
-identidad de los pesos exportados, configuraciones pareadas y orden temporal:
-todos los modelos y decisiones internas se fijaron antes de la evaluación externa.
-
-| Métrica | Referencia por corte | BCE por paciente |
-|---|---:|---:|
-| AUC media de folds, ensemble de dos semillas (principal) | 0.5590 | 0.5404 |
-| DE de AUC entre folds | 0.0528 | 0.0501 |
-| AP media de folds, secundaria | 0.3440 | 0.3497 |
-| AUC OOF agrupada cruda | 0.5480 | 0.5011 |
-| AP OOF agrupada cruda | 0.3251 | 0.3035 |
-| F1 OOF, crudo y umbral 0.5 | 0.3943 | 0.3507 |
-| Sensibilidad OOF, cruda y umbral 0.5 | 0.5155 | 0.4286 |
-| Especificidad OOF, cruda y umbral 0.5 | 0.5432 | 0.5781 |
-| Brier OOF crudo | 0.2448 | 0.2787 |
-| Log-loss OOF crudo | 0.6829 | 0.7782 |
-
-Diferencia principal BCE paciente − referencia: **−0.0186**, IC95% condicionado
-**[−0.0544, +0.0149]**. No demuestra mejora; tampoco permite afirmar inferioridad
-poblacional concluyente en este criterio. La referencia tiene mayor AUC en cuatro
-de los cinco folds. La diferencia OOF cruda es −0.0469, IC95% [−0.0745, −0.0200],
-pero es un criterio secundario sensible a diferencias de escala entre modelos.
-La pequeña mejora de AP media por fold y la peor AP agrupada son compatibles:
-la media de métricas y la métrica de scores combinados son resúmenes diferentes.
-
-Al umbral crudo 0.5, BCE por paciente pierde 28 verdaderos positivos y reduce
-27 falsos positivos. Es un intercambio de sensibilidad por especificidad,
-acompañado de menor F1 y peor Brier. La media train/selección al final es
-0.6596/0.5262 en referencia y 0.6530/0.5194 en BCE paciente. El cambio no ha
-resuelto la discriminación ni eliminado la brecha de aprendizaje/selección.
-La magnitud de sobreajuste no se compara directamente con el ensayo anterior:
-cambian el número de pacientes que aprende y la composición del lote.
-
-| Cohorte | Pacientes | AUC OOF cruda referencia | AUC OOF cruda BCE paciente |
-|---|---:|---:|---:|
-| Duke | 209 | 0.5395 | 0.4921 |
-| I-SPY1 | 104 | 0.5178 | 0.6307 |
-| I-SPY2 | 784 | 0.5369 | 0.4806 |
-
-La mejora en I-SPY1 no compensa la falta de mejora global ni los deterioros de
-Duke e I-SPY2. Son métricas agrupadas dentro de cada cohorte, con los mismos
-límites de escalas y desarrollo previamente observado. No es validación externa.
-
-La calibración reduce Brier a 0.2076/0.2082 y log-loss a 0.6061/0.6081
-(referencia/BCE paciente). Con umbrales Youden internos congelados, F1 es
-0.3021/0.3092, sensibilidad 0.2857 en ambas y especificidad 0.7484/0.7665.
-BCE paciente obtiene los mismos 92 verdaderos positivos y 14 falsos positivos
-menos. Ese pequeño cambio en decisiones no establece una mejora de AUC.
-
-ECE de diez bins es 0.0213/0.0061, pero las probabilidades están concentradas
-cerca de la prevalencia. Un predictor constante de la prevalencia OOF tendría
-Brier 0.2074 como referencia descriptiva retrospectiva, no como modelo elegido.
-Estos errores bajos no acreditan buena discriminación. Dos calibradores de la
-referencia (folds 2/4) y uno de BCE paciente (fold 0) alcanzaron pendiente cero:
-producen probabilidades constantes, AUC 0.5 dentro de esos folds y decisiones
-negativas con umbral 0.5. Los holdouts de calibración son pequeños e inestables.
-La AUC agrupada calibrada 0.4994/0.5309 tampoco sustituye al criterio principal
-crudo predefinido: combina escalas distintas y empates de los calibradores.
-
-**Decisión: conservar la CNN actual y la pérdida por corte como referencia de
-investigación; retirar BCE por paciente por su empeoramiento observado.** El modelo operativo histórico
-permanece intacto. La hipótesis es razonable, pero este ensayo no la respalda.
-El siguiente experimento recomendado es estudiar la **composición del lote**,
-comparando únicamente lotes de cortes con más pacientes distintas frente a
-bolsas completas de seis pacientes, manteniendo pérdida por corte, arquitectura,
-datos, semillas y selección interna. La menor AUC de aprendizaje frente al
-protocolo anterior sugiere un posible efecto de optimización/BatchNorm y del
-número efectivo de pacientes por actualización, sin demostrar su causa.
-No se debe cambiar a la vez LR, pérdida y aumentos ni reutilizar esta evaluación
-como si siguiera siendo independiente. Para afirmar generalización fuera del
-desarrollo se necesita una evaluación nueva con pacientes/cohortes no observadas.
-
-Las 26 pruebas del ensayo original pasaron. Tras la retirada pasan 25 pruebas,
-incluida la reanudación real de BCE por corte y el rechazo de la pérdida retirada. Los 37 archivos protegidos conservan sus bytes; se abrió
-cero imágenes test. Los logs, configuraciones, curvas, checkpoints de la
-referencia, predicciones, calibradores, umbrales e inventario de datos permanecen
-en la carpeta del ensayo. Los pesos de la variante descartada se eliminaron.
-`verificacion_final.json` documenta las comprobaciones independientes. No hubo
-push ni publicación. Todos los commits nuevos usan
-`martanavarroguil5 <mnavagui@myuax.com>`.
-
-## Comparación de composición de lotes
-
-`comparar-lotes` compara bolsas completas de seis pacientes y cortes mezclados.
-Conserva la CNN ajustada de 551.913 parámetros, BCE ponderada por corte, LR
-0,0008, dropout 0,35, weight decay 0,001 y treinta épocas. Solo cambia qué cortes
-comparten una actualización. Ambos brazos visitan todos los cortes fit una vez
-por época, con las mismas longitudes de lote y número de pasos del optimizador.
-Las longitudes las determinan las bolsas completas (habitualmente 60 cortes).
-El lote 64 se usa al evaluar. No hay relleno ni descartes.
-
-La inicialización es idéntica por fold/semilla. Un SHA-256 de muestra, época,
-fold y semilla asigna espejo y rotación conjuntamente a las tres fases, de forma
-que cambiar el orden del lote no cambia el aumento de cada muestra. Ambos
-samplers consumen los mismos sorteos RNG y permiten reanudación por época.
-
-```bash
-.venv/bin/python -B 04_entrenamiento.py comparar-lotes --prueba --workers 2 --paralelos 2 --dispositivo cuda
-.venv/bin/python -B 04_entrenamiento.py comparar-lotes --epocas 30 --revision-cada 10 --lote 64 --workers 2 --paralelos 2 --dispositivo cuda
-```
-
-Se realizan veinte runs: dos condiciones, cinco folds y semillas 42/2026. Se
-reutiliza la separación interna 70/15/15 por cohorte y pCR; solo fit aprende y
-solo selección elige el checkpoint. Calibración y umbral se ajustan internamente.
-Todas las decisiones se congelan antes de inferir los folds externos. El criterio
-principal es la AUC cruda media por fold del ensemble de dos semillas; AP, OOF
-agrupada, métricas a 0,5, calibración y cohortes son secundarios.
-
-Resultados en `resultados/04_entrenamiento/composicion_lotes/`. El protocolo
-registra código, caché y archivos protegidos por hash. Se verifica la caché
-reutilizada contra todos los PNG train. Cada época guarda auditoría de lotes;
-antes de evaluar se comprueban exposición, tamaños, pasos, RNG, inicialización
-y aumentos idénticos. La prueba de humo queda excluida de la selección.
-
-El test histórico permanece cerrado y los pesos anteriores se conservan. Estos
-datos de desarrollo ya fueron observados; los resultados siguen siendo internos.
-Los IC bootstrap pareados condicionan a las predicciones y no incorporan toda
-la incertidumbre del entrenamiento o selección. No se promueve un modelo
-automáticamente ni se restablece la pérdida por paciente retirada.
-
-### Resultado de la comparación de lotes
-
-Se completaron veinte runs y 600 épocas con código `b40ac95`. La verificación
-independiente confirmó los 1.097 pacientes, las particiones, inicialización,
-exposición, aumentos, tamaños y actualizaciones reales del optimizador pareados,
-la selección/exportación de checkpoints y las decisiones anteriores a evaluación.
-Las 30 pruebas CPU y la prueba GPU pasaron. Los 37 archivos protegidos siguen
-intactos; se abrió cero imágenes del test.
-
-| Métrica | Pacientes completas | Cortes mezclados |
-|---|---:|---:|
-| AUC media de folds, principal | 0.5546 | 0.5213 |
-| AP media de folds | 0.3505 | 0.3350 |
-| AUC OOF agrupada cruda | 0.5545 | 0.5128 |
-| F1 OOF, umbral 0.5 | 0.4190 | 0.3407 |
-| Sensibilidad OOF, umbral 0.5 | 0.6025 | 0.3602 |
-| Especificidad OOF, umbral 0.5 | 0.4710 | 0.6865 |
-| Brier OOF crudo | 0.2497 | 0.2452 |
-
-Diferencia principal mezclados − completas: **−0.0332**, IC95% condicionado
-**[−0.0723, +0.0042]**. El ensayo no respalda el cambio y el intervalo incluye
-cero; no prueba inferioridad poblacional concluyente. La mezcla mejora AUC en
-dos de cinco folds. AUC OOF por cohorte (completas/mezclados): Duke
-0.5154/0.4629, I-SPY1 0.5027/0.5108 e I-SPY2 0.5573/0.5133.
-
-Se observaron 5.96/56.94 pacientes distintas por lote, con iguales cantidades
-de cortes. En época 30, AUC train/selección fue 0.6642/0.5380 en completas y
-0.9510/0.4979 en mezclados: la mezcla presenta mayor sobreajuste. Estas curvas
-no corresponden necesariamente al checkpoint elegido. No se puede comparar
-este ensayo como equivalente al de tamaño ni atribuir el efecto solo a BatchNorm.
-
-Con Youden interno congelado, F1 fue 0.3221/0.3636 y sensibilidad
-0.3261/0.4720, a cambio de especificidad 0.7097/0.5329. Brier calibrado fue
-0.2077/0.2105. Este intercambio no demuestra una mejora de discriminación.
-
-**Decisión: no adoptar el cambio a cortes mezclados a partir de este ensayo.**
-Se conservan código, resultados y pesos de ambos brazos como evidencia; el modelo
-histórico permanece intacto. La evaluación sigue siendo desarrollo previamente
-observado. La siguiente hipótesis propuesta es GroupNorm, que no se ejecuta
-automáticamente. Evidencia: `resultado.json`, `informe_lotes.txt`,
-`verificacion_independiente.json`, `verificacion_pareado.json`,
-`verificacion_preservacion.json`, curvas, predicciones y checkpoints.
-
-## Comparación controlada de normalización (05/10/2026)
-
-`comparar-normalizacion` cambia exclusivamente las ocho capas BatchNorm2d por
-GroupNorm con ocho grupos, epsilon 1e-5 y transformación afín. Los canales
-24/48/96/160 son divisibles por ocho y ambos brazos conservan 551.913 parámetros.
-Se mantiene la CNN ajustada: pooling entre bloques, dropout 0,35, LR 0,0008,
-weight decay 0,001, BCE ponderada por corte y aumentos conjuntos de las fases.
-La opción por defecto de `CNN` sigue siendo BatchNorm para cargar los pesos históricos.
-
-Se vuelven a entrenar BatchNorm y GroupNorm con lotes completos de seis
-pacientes; no se combina este ensayo con el cambio a cortes mezclados descartado.
-Los parámetros iniciales son idénticos por fold/semilla. Los buffers de
-estadísticas de BatchNorm no existen en GroupNorm. Se registran por separado
-hashes de estado y de parámetros. Cada época comprueba exposición, composición
-y orden exactos de los lotes, aumentos por muestra, RNG y número de pasos.
-
-```bash
-.venv/bin/python -B 04_entrenamiento.py comparar-normalizacion --prueba --workers 2 --paralelos 2 --dispositivo cuda
-.venv/bin/python -B 04_entrenamiento.py comparar-normalizacion --epocas 30 --revision-cada 10 --lote 64 --workers 2 --paralelos 2 --dispositivo cuda
-```
-
-El protocolo mantiene cinco folds, semillas 42/2026, treinta épocas y separación
-interna 70/15/15 por paciente, cohorte y pCR. Solo selección interna elige el
-checkpoint. Calibración y Youden internos quedan congelados en ambos brazos
-antes de evaluar los folds exteriores. El criterio principal es la AUC cruda
-media de los cinco folds del ensemble de dos semillas; OOF agrupada, AP,
-métricas al umbral 0,5, calibración y cohortes son secundarios. No se eligen
-número de grupos ni otros hiperparámetros usando los resultados del ensayo.
-
-Resultados y pesos se guardan aparte en `resultados/04_entrenamiento/normalizacion/`.
-El código, protocolo, particiones, caché, predicciones, entorno y archivos
-protegidos quedan identificados por SHA-256. El comando reanuda solo ejecuciones
-con el mismo código, datos y configuración. No se promueve un modelo
-automáticamente. La evaluación es interna en datos previamente observados;
-los IC bootstrap condicionados a las predicciones no incorporan toda la
-incertidumbre del entrenamiento y selección. El test histórico permanece cerrado.
-
-Fuentes: [GroupNorm en PyTorch](https://docs.pytorch.org/docs/2.14/generated/torch.nn.modules.normalization.GroupNorm.html)
-y [Wu y He, Group Normalization (ECCV 2018)](https://arxiv.org/abs/1803.08494).
-GroupNorm estima estadísticas por muestra y usa el mismo cálculo al entrenar
-y evaluar. Su utilidad en este proyecto es una hipótesis que se contrasta.
-
-### Resultado de GroupNorm
-
-Se completaron veinte entrenamientos y 600 épocas con código `4321b0b`.
-Ambos brazos usan los mismos lotes, parámetros iniciales y condiciones de
-aprendizaje. Los diez controles BatchNorm reproducen exactamente los pesos
-seleccionados y las predicciones del brazo de pacientes completas del ensayo
-anterior. La evaluación compara los mejores checkpoints de selección interna.
-
-| Métrica | BatchNorm | GroupNorm (8 grupos) |
-|---|---:|---:|
-| AUC media de folds, principal | 0.5546 | 0.4801 |
-| AP media de folds | 0.3505 | 0.2890 |
-| AUC OOF agrupada cruda | 0.5545 | 0.4702 |
-| AP OOF agrupada cruda | 0.3359 | 0.2707 |
-| F1 OOF, umbral 0.5 | 0.4190 | 0.4120 |
-| Sensibilidad OOF, umbral 0.5 | 0.6025 | 0.7671 |
-| Especificidad OOF, umbral 0.5 | 0.4710 | 0.1871 |
-| Brier OOF crudo | 0.2497 | 0.2508 |
-
-Diferencia principal GroupNorm − BatchNorm: **−0.0744**, IC95% condicionado
-**[−0.1232, −0.0260]**. El intervalo queda por debajo de cero en este ensayo,
-condicionado a los modelos y predicciones; no acredita inferioridad universal
-ni incluye toda la incertidumbre del desarrollo. GroupNorm mejora AUC solo en
-uno de cinco folds. AUC OOF por cohorte (BatchNorm/GroupNorm): Duke
-0.5154/0.4857, I-SPY1 0.5027/0.5750 e I-SPY2 0.5573/0.4529.
-
-La mayor sensibilidad a 0.5 viene con 53 verdaderos positivos adicionales y
-220 falsos positivos más; la especificidad cae de 0.4710 a 0.1871.
-Con Platt y Youden internos congelados, F1 cae de 0.3221 a 0.1818 y sensibilidad
-de 0.3261 a 0.1398; especificidad sube de 0.7097 a 0.8348.
-Ninguno de esos intercambios compensa el empeoramiento de discriminación.
-
-El diagnóstico posterior confirma que nueve de los diez modelos GroupNorm
-al final del presupuesto producen exactamente la misma probabilidad en todos
-los cortes de selección interna: las 64 unidades ReLU de la cabeza están
-inactivas para esas muestras. Los checkpoints elegidos suelen tener pocas
-unidades activas y scores casi constantes. Esto es falta de aprendizaje con
-esta configuración; no equivale al mayor sobreajuste del ensayo de lotes
-mezclados ni demuestra que GroupNorm falle con cualquier hiperparámetro.
-
-También se auditó la precisión de inferencia. Entrenamiento/selección desactiva
-TF32 y fija determinismo; el coordinador de evaluación con procesos paralelos
-conserva defaults de PyTorch (cuDNN TF32 activo, matmul TF32 inactivo,
-determinismo no forzado). Un análisis posterior, separado, con los mismos
-pesos congelados y FP32 estricto/determinismo da AUC media 0.5546/0.4798,
-diferencia −0.0748: mantiene la conclusión. No reemplaza el resultado principal
-ni selecciona o recalibra modelos. Las futuras comparaciones deben fijar
-explícitamente la política de precisión del coordinador también.
-
-**Decisión: conservar BatchNorm como referencia y no adoptar GroupNorm con esta
-configuración.** Se conservan pesos, código y resultados de ambos brazos.
-No se promueve ni se elimina un modelo automáticamente. La arquitectura sigue
-siendo sencilla y la inferencia del histórico conserva BatchNorm.
-
-Pasaron 35 pruebas CPU, prueba GPU y verificación independiente de los veinte
-runs, 600 auditorías y 1.097 pacientes. Se comprobaron las actualizaciones
-reales del optimizador sin omisiones AMP, decisiones previas a evaluación,
-selección/exportación de checkpoints, agregaciones y métricas. Los 37 archivos
-protegidos permanecen intactos y los diez modelos históricos cargan correctamente.
-Se abrió cero imágenes test. La evaluación sigue siendo desarrollo previamente
-observado, con los límites de selección adaptativa y bootstrap condicionado.
-
-Evidencia en `resultados/04_entrenamiento/normalizacion/`: `resultado.json`,
-`informe_groupnorm.txt`, `verificacion_independiente.json`,
-`verificacion_referencia.json`, `diagnostico_activaciones.csv`,
-`auditoria_precision.json`, `precision_inferencia/`, curvas, configuraciones,
-particiones, predicciones y checkpoints. Los scripts de verificación, diagnóstico
-y gráficos se conservan en `codigo/`; estos análisis no entrenan modelos.
+Cada revisión guarda pérdida, AUC, F1, accuracy y predicciones por paciente.
+Las métricas train de las revisiones se calculan sin aumentos ni dropout.
+El entrenamiento habitual sigue usando cortes barajados y los folds originales;
+no utiliza los lotes de pacientes completas ni el holdout anidado de los ensayos
+retirados. Se conserva la reanudación, el calendario coseno y el checkpoint de
+mayor AUC de validación. `--hasta-epoca` permite revisar un bloque y continuar
+con el mismo presupuesto y RNG; no reinicia el aprendizaje.
+
+Para completar una evaluación OOF de esta configuración, entrenar los cinco
+folds con semillas 42/2026 y pérdida ponderada, y después ejecutar `comparar`
+con esa misma salida. Para `base_raw` y `raw_rot90` se mantienen ambas pérdidas
+del diseño del informe. Esa comparación sigue siendo desarrollo interno y
+usa validación para seleccionar checkpoints.
+
+## Experimentos descartados y limpieza
+
+[EXPERIMENTOS_DESCARTADOS.md](EXPERIMENTOS_DESCARTADOS.md) registra hipótesis,
+protocolos, resultados, límites y decisiones. Los comparadores de tamaño,
+composición de lotes, GroupNorm y búsqueda de ajustes se retiraron del código
+activo. También se eliminaron los samplers, aumentos pareados, particiones y
+calibración anidada específicos de esos ensayos y sus pruebas exclusivas.
+
+El paso 04 ofrece únicamente `verificar`, `entrenar`, `comparar` y `predecir`.
+No incorpora GroupNorm ni BCE por paciente. Las configuraciones de experimentos
+retirados se rechazan; no se reinterpretan como entrenamiento habitual.
+Las opciones originales del informe y el perfil ajustado conservado siguen
+funcionando. El valor por defecto de entrenamiento continúa siendo `raw_rot90`.
+
+Los informes, predicciones, curvas y pesos existentes permanecen como evidencia
+en sus carpetas de resultados. La copia anterior del código y documentación
+queda en `resultados/04_entrenamiento/limpieza_20261005/codigo_anterior/`, fuera
+del código activo, y Git conserva su historial. No se ejecutan ni se reanudan
+ensayos descartados desde el archivo actual. Para reconstruir un ensayo histórico
+hay que usar su código, configuración y entorno registrados, no mezclarlos con
+esta versión. Al cambiar el código, usar una salida nueva para futuros runs.
+
+Los archivos numerados 01–03, `pipeline_datos.py`, datos fuente, manifiesto,
+pesos, calibración y umbral históricos se conservan. La limpieza solo ejecuta
+pruebas CPU y de humo; no inicia nuevos ensayos ni repite el test reservado. Sus comprobaciones quedan en
+`resultados/04_entrenamiento/limpieza_20261005/`.
+
+La regla de trabajo es conservar en el entrenador las opciones del proyecto y
+los cambios adoptados. Un ensayo que no se adopta se retira del código activo
+y se documenta en Markdown, conservando su evidencia fuera del entrenador.
