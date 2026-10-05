@@ -1,0 +1,437 @@
+{
+  "date": "2026-10-05",
+  "source_commit": "5e846d0a771d7de5df94517c31cd40a0f08e1593",
+  "scope": "read-only audit; train metadata and existing development predictions only",
+  "training_launched": false,
+  "test_images_loaded": 0,
+  "private_validation_images_loaded": 0,
+  "test_labels_converted": 0,
+  "n_patients": 1097,
+  "n_slices": 10945,
+  "slice_counts": {
+    "count": 1097.0,
+    "mean": 9.977210574293528,
+    "std": 0.3116214136344413,
+    "min": 5.0,
+    "25%": 10.0,
+    "50%": 10.0,
+    "75%": 10.0,
+    "max": 10.0
+  },
+  "cohort_prevalence": [
+    {
+      "dataset": "duke",
+      "n": 209,
+      "n_positive": 44,
+      "prevalence": 0.21052631578947367
+    },
+    {
+      "dataset": "spy1",
+      "n": 104,
+      "n_positive": 26,
+      "prevalence": 0.25
+    },
+    {
+      "dataset": "spy2",
+      "n": 784,
+      "n_positive": 252,
+      "prevalence": 0.32142857142857145
+    }
+  ],
+  "subtype_prevalence": [
+    {
+      "HR": 0.0,
+      "HER2": 0.0,
+      "n": 354,
+      "n_positive": 134,
+      "prevalence": 0.3785310734463277
+    },
+    {
+      "HR": 0.0,
+      "HER2": 1.0,
+      "n": 108,
+      "n_positive": 62,
+      "prevalence": 0.5740740740740741
+    },
+    {
+      "HR": 0.0,
+      "HER2": null,
+      "n": 1,
+      "n_positive": 1,
+      "prevalence": 1.0
+    },
+    {
+      "HR": 1.0,
+      "HER2": 0.0,
+      "n": 453,
+      "n_positive": 64,
+      "prevalence": 0.141280353200883
+    },
+    {
+      "HR": 1.0,
+      "HER2": 1.0,
+      "n": 179,
+      "n_positive": 61,
+      "prevalence": 0.3407821229050279
+    },
+    {
+      "HR": null,
+      "HER2": null,
+      "n": 2,
+      "n_positive": 0,
+      "prevalence": 0.0
+    }
+  ],
+  "historical_oof_subtypes": [
+    {
+      "HR": 0.0,
+      "HER2": 0.0,
+      "n": 354,
+      "n_positive": 134,
+      "prevalence": 0.3785310734463277,
+      "auc": 0.5863975576662144,
+      "ap": 0.4717492892063014
+    },
+    {
+      "HR": 0.0,
+      "HER2": 1.0,
+      "n": 108,
+      "n_positive": 62,
+      "prevalence": 0.5740740740740741,
+      "auc": 0.7166900420757363,
+      "ap": 0.7896076339190827
+    },
+    {
+      "HR": 0.0,
+      "HER2": null,
+      "n": 1,
+      "n_positive": 1,
+      "prevalence": 1.0
+    },
+    {
+      "HR": 1.0,
+      "HER2": 0.0,
+      "n": 453,
+      "n_positive": 64,
+      "prevalence": 0.141280353200883,
+      "auc": 0.509318766066838,
+      "ap": 0.14959065664059695
+    },
+    {
+      "HR": 1.0,
+      "HER2": 1.0,
+      "n": 179,
+      "n_positive": 61,
+      "prevalence": 0.3407821229050279,
+      "auc": 0.6297582661850514,
+      "ap": 0.4501972998683813
+    },
+    {
+      "HR": null,
+      "HER2": null,
+      "n": 2,
+      "n_positive": 0,
+      "prevalence": 0.0
+    }
+  ],
+  "adjustment_runs": [
+    {
+      "configuration": "pool_dropout_wd",
+      "fold": 0,
+      "seed": 42,
+      "lr": 0.0008,
+      "batch_size": 16,
+      "dropout": 0.35,
+      "weight_decay": 0.001,
+      "best_epoch": 11,
+      "best_auc": 0.6497983870967743
+    },
+    {
+      "configuration": "pool_intermedio",
+      "fold": 0,
+      "seed": 42,
+      "lr": 0.0008,
+      "batch_size": 16,
+      "dropout": 0.2,
+      "weight_decay": 0.0001,
+      "best_epoch": 13,
+      "best_auc": 0.6322580645161291
+    },
+    {
+      "configuration": "pool_lr_baja",
+      "fold": 0,
+      "seed": 42,
+      "lr": 0.0003,
+      "batch_size": 16,
+      "dropout": 0.2,
+      "weight_decay": 0.0001,
+      "best_epoch": 3,
+      "best_auc": 0.5823588709677419
+    },
+    {
+      "configuration": "pool_lr_dropout",
+      "fold": 0,
+      "seed": 42,
+      "lr": 0.0003,
+      "batch_size": 16,
+      "dropout": 0.35,
+      "weight_decay": 0.0001,
+      "best_epoch": 7,
+      "best_auc": 0.5913306451612902
+    },
+    {
+      "configuration": "pool_lr_dropout_wd",
+      "fold": 0,
+      "seed": 42,
+      "lr": 0.0003,
+      "batch_size": 16,
+      "dropout": 0.35,
+      "weight_decay": 0.001,
+      "best_epoch": 6,
+      "best_auc": 0.5966733870967742
+    },
+    {
+      "configuration": "referencia",
+      "fold": 0,
+      "seed": 42,
+      "lr": 0.0008,
+      "batch_size": 16,
+      "dropout": 0.2,
+      "weight_decay": 0.0001,
+      "best_epoch": 12,
+      "best_auc": 0.629233870967742
+    }
+  ],
+  "adjustment_confirmation": {
+    "status": "complete",
+    "selected_on_fold": 0,
+    "additional_folds": [
+      1,
+      2
+    ],
+    "seed": 42,
+    "means": [
+      {
+        "candidate": "referencia",
+        "folds": [
+          0,
+          1,
+          2
+        ],
+        "seed": 42,
+        "mean_auc": 0.6231188206406207,
+        "mean_f1": 0.4336187568922371,
+        "mean_val_loss": 0.9453505476315817
+      },
+      {
+        "candidate": "pool_dropout_wd",
+        "folds": [
+          0,
+          1,
+          2
+        ],
+        "seed": 42,
+        "mean_auc": 0.6269682387976648,
+        "mean_f1": 0.4769586104951959,
+        "mean_val_loss": 0.941178023815155
+      }
+    ],
+    "paired": [
+      {
+        "fold": 0,
+        "delta_auc": 0.020564516129032318,
+        "delta_f1": 0.06550376375217137
+      },
+      {
+        "fold": 1,
+        "delta_auc": 0.01551263612081355,
+        "delta_f1": 0.09430894308943094
+      },
+      {
+        "fold": 2,
+        "delta_auc": -0.024528897778713588,
+        "delta_f1": -0.029793146032726148
+      }
+    ],
+    "delta_mean_auc": 0.0038494181570440933,
+    "delta_mean_f1": 0.04333985360295878,
+    "auc_better_in_each_fold": false,
+    "f1_better_in_each_fold": false,
+    "test_repeated": false,
+    "historical_model_replaced": false,
+    "limit": "Comparación exploratoria de tres folds, una semilla. Checkpoints elegidos con validación; no es evaluación independiente ni validación anidada."
+  },
+  "size_trial_epoch30": {
+    "cnn_actual": {
+      "train_patient_auc": 0.9369761097891975,
+      "patient_auc": 0.5318158170956778,
+      "train_eval_loss": 0.5458449423313141,
+      "val_loss": 1.5290738940238953
+    },
+    "cnn_pequena": {
+      "train_patient_auc": 0.8970899174411582,
+      "patient_auc": 0.5286915060805921,
+      "train_eval_loss": 0.64236781001091,
+      "val_loss": 1.3324720501899718
+    }
+  },
+  "size_trial_cohorts": [
+    {
+      "candidate": "cnn_actual",
+      "cohort": "duke",
+      "n_patients": 209,
+      "n_positive": 44,
+      "prevalence": 0.2105263157894736,
+      "roc_auc": 0.6323691460055096,
+      "average_precision": 0.3188010106206606,
+      "brier": 0.202577207696257,
+      "log_loss": 0.5955694869841998,
+      "accuracy": 0.7416267942583732,
+      "f1": 0.2894736842105263,
+      "precision": 0.34375,
+      "recall": 0.25,
+      "balanced_accuracy": 0.5613636363636363,
+      "sensitivity": 0.25,
+      "specificity": 0.8727272727272727,
+      "threshold": 0.5,
+      "tn": 144,
+      "fp": 21,
+      "fn": 33,
+      "tp": 11
+    },
+    {
+      "candidate": "cnn_actual",
+      "cohort": "spy1",
+      "n_patients": 104,
+      "n_positive": 26,
+      "prevalence": 0.25,
+      "roc_auc": 0.6193293885601577,
+      "average_precision": 0.4401446976371294,
+      "brier": 0.2095999358248925,
+      "log_loss": 0.611289351569382,
+      "accuracy": 0.7692307692307693,
+      "f1": 0.4285714285714285,
+      "precision": 0.5625,
+      "recall": 0.3461538461538461,
+      "balanced_accuracy": 0.6282051282051282,
+      "sensitivity": 0.3461538461538461,
+      "specificity": 0.9102564102564102,
+      "threshold": 0.5,
+      "tn": 71,
+      "fp": 7,
+      "fn": 17,
+      "tp": 9
+    },
+    {
+      "candidate": "cnn_actual",
+      "cohort": "spy2",
+      "n_patients": 784,
+      "n_positive": 252,
+      "prevalence": 0.3214285714285714,
+      "roc_auc": 0.5670276882682898,
+      "average_precision": 0.3903700889190616,
+      "brier": 0.2395313098544775,
+      "log_loss": 0.6723147273106306,
+      "accuracy": 0.6173469387755102,
+      "f1": 0.3617021276595745,
+      "precision": 0.3899082568807339,
+      "recall": 0.3373015873015873,
+      "balanced_accuracy": 0.5436507936507937,
+      "sensitivity": 0.3373015873015873,
+      "specificity": 0.75,
+      "threshold": 0.5,
+      "tn": 399,
+      "fp": 133,
+      "fn": 167,
+      "tp": 85
+    },
+    {
+      "candidate": "cnn_pequena",
+      "cohort": "duke",
+      "n_patients": 209,
+      "n_positive": 44,
+      "prevalence": 0.2105263157894736,
+      "roc_auc": 0.5209366391184573,
+      "average_precision": 0.2588269506117313,
+      "brier": 0.2372144970990476,
+      "log_loss": 0.6782047156645445,
+      "accuracy": 0.6507177033492823,
+      "f1": 0.2626262626262626,
+      "precision": 0.2363636363636363,
+      "recall": 0.2954545454545454,
+      "balanced_accuracy": 0.5204545454545455,
+      "sensitivity": 0.2954545454545454,
+      "specificity": 0.7454545454545455,
+      "threshold": 0.5,
+      "tn": 123,
+      "fp": 42,
+      "fn": 31,
+      "tp": 13
+    },
+    {
+      "candidate": "cnn_pequena",
+      "cohort": "spy1",
+      "n_patients": 104,
+      "n_positive": 26,
+      "prevalence": 0.25,
+      "roc_auc": 0.6267258382642997,
+      "average_precision": 0.3559983382984199,
+      "brier": 0.2203466072727127,
+      "log_loss": 0.6314017010259345,
+      "accuracy": 0.7211538461538461,
+      "f1": 0.4081632653061224,
+      "precision": 0.4347826086956521,
+      "recall": 0.3846153846153846,
+      "balanced_accuracy": 0.608974358974359,
+      "sensitivity": 0.3846153846153846,
+      "specificity": 0.8333333333333334,
+      "threshold": 0.5,
+      "tn": 65,
+      "fp": 13,
+      "fn": 16,
+      "tp": 10
+    },
+    {
+      "candidate": "cnn_pequena",
+      "cohort": "spy2",
+      "n_patients": 784,
+      "n_positive": 252,
+      "prevalence": 0.3214285714285714,
+      "roc_auc": 0.5908073755818117,
+      "average_precision": 0.4138364786210107,
+      "brier": 0.245442706202597,
+      "log_loss": 0.6865385909360024,
+      "accuracy": 0.6058673469387755,
+      "f1": 0.455026455026455,
+      "precision": 0.4095238095238095,
+      "recall": 0.5119047619047619,
+      "balanced_accuracy": 0.581140350877193,
+      "sensitivity": 0.5119047619047619,
+      "specificity": 0.650375939849624,
+      "threshold": 0.5,
+      "tn": 346,
+      "fp": 186,
+      "fn": 123,
+      "tp": 129
+    }
+  ],
+  "sources_sha256": {
+    "01_auditoria_datos.py": "6b083be9730ed066943e8eb0313b41da16160450149fe06248aced5a612a791f",
+    "02_eda_profesional.py": "ecd5b1fd1f0119b74632d8e28091e014ee1ffa17d84edf69faa5d2c794d94177",
+    "03_preparar_datos.py": "b7d490839574cb4fb12e218486bc70e4561a74b5219377d31169eedbb2669cda",
+    "pipeline_datos.py": "2a6bd21c29f3bed9292f7d9ceb821e1116737ec58af55a7dcc6dae807a1a36d0",
+    "04_entrenamiento.py": "6c952b5e08dcade126afaea8c2bb4ca339852b54deea3956d17caed00f8459b5",
+    "README.md": "38527ecf0cdae4246864d8202c3624ad6d54ad74316890d444a9dc61f8e6de40",
+    "EXPERIMENTOS_DESCARTADOS.md": "a90a860c5f3d0d624eccab2b842b4f209b67f6b07fdd0917ca80ce8463442905",
+    "breastdcedl/documentation/caso_breastdcedl.pdf": "1ec66c7e6402d9e9e1a4788626c3539d43247a88b7dce789cc47d520ab5b0901",
+    "resultados/04_entrenamiento/ajustes/resultado_confirmacion.json": "718b35583f8bbde5219047d5c53bcb44c178159b59cb72e6540b068270059cad",
+    "resultados/04_entrenamiento/comparacion_tamano/resumen_resultado.json": "a33df6683bd467831672a11116d53fc82e4b9a59c6b393c1b990b433883b01ba",
+    "resultados/04_entrenamiento/normalizacion/auditoria.json": "6480f35d244515d6e6f7167611bb0e1a4f2e43b6e0c71e3cebfa018545078411",
+    "resultados/04_entrenamiento/historico/oof_pacientes.csv": "5fb5b9394c7a7af6badb4f9f7dc2352bf76f88fe6051eb3cd648cf640fcb7c23"
+  },
+  "limits": [
+    "Subtype and cohort analyses are exploratory; development data were already observed.",
+    "Epoch30 metrics and selected checkpoint metrics describe different timepoints.",
+    "Previous trials use different training partitions and batch sizes; their AUCs cannot be directly compared."
+  ]
+}
