@@ -1,6 +1,8 @@
 # Investigación de mejoras de la CNN para predecir pCR
 
-Revisión del 05/10/2026 sobre el código posterior a la limpieza. La siguiente prueba recomendada es añadir `Dropout2d(0.10)` después del último bloque convolucional. La hipótesis es reducir la dependencia de mapas de características concretos y mejorar la generalización, conservando la CNN sencilla. Es una propuesta pendiente de ensayo; no se ha demostrado una mejora.
+Revisión del 05/10/2026 sobre el código posterior a la limpieza. **Las cuatro propuestas ya se ensayaron y ninguna cumple todos los criterios fijados de adopción.** Dropout2d obtuvo la mayor señal con BCE ponderada (AUC media 0,5504 → 0,5729), pero su intervalo pareado incluye cero y con BCE normal la diferencia es −0,0075. Los [resultados completos](RESULTADOS_CUATRO_MEJORAS.md) y el [protocolo previo](PROTOCOLO_CUATRO_MEJORAS.md) contienen la decisión y evidencia.
+
+Se conserva a continuación el razonamiento y plan anteriores al ensayo. Sus hipótesis y prioridades no son mejoras demostradas. El entrenador sigue sin los cuatro candidatos experimentales; se documentan como inconcluyentes en `EXPERIMENTOS_DESCARTADOS.md`.
 
 Se revisaron el enunciado docente, README, entrenador, ensayos cerrados, curvas y metadatos de desarrollo. El [diagnóstico reproducible](diagnostico.json) identifica el commit, los archivos fuente y sus SHA-256. Esta investigación no entrena modelos ni abre imágenes de test o de la validación privada.
 
