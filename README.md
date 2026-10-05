@@ -657,3 +657,45 @@ observado. La siguiente hipótesis propuesta es GroupNorm, que no se ejecuta
 automáticamente. Evidencia: `resultado.json`, `informe_lotes.txt`,
 `verificacion_independiente.json`, `verificacion_pareado.json`,
 `verificacion_preservacion.json`, curvas, predicciones y checkpoints.
+
+## Comparación controlada de normalización (05/10/2026)
+
+`comparar-normalizacion` cambia exclusivamente las ocho capas BatchNorm2d por
+GroupNorm con ocho grupos, epsilon 1e-5 y transformación afín. Los canales
+24/48/96/160 son divisibles por ocho y ambos brazos conservan 551.913 parámetros.
+Se mantiene la CNN ajustada: pooling entre bloques, dropout 0,35, LR 0,0008,
+weight decay 0,001, BCE ponderada por corte y aumentos conjuntos de las fases.
+La opción por defecto de `CNN` sigue siendo BatchNorm para cargar los pesos históricos.
+
+Se vuelven a entrenar BatchNorm y GroupNorm con lotes completos de seis
+pacientes; no se combina este ensayo con el cambio a cortes mezclados descartado.
+Los parámetros iniciales son idénticos por fold/semilla. Los buffers de
+estadísticas de BatchNorm no existen en GroupNorm. Se registran por separado
+hashes de estado y de parámetros. Cada época comprueba exposición, composición
+y orden exactos de los lotes, aumentos por muestra, RNG y número de pasos.
+
+```bash
+.venv/bin/python -B 04_entrenamiento.py comparar-normalizacion --prueba --workers 2 --paralelos 2 --dispositivo cuda
+.venv/bin/python -B 04_entrenamiento.py comparar-normalizacion --epocas 30 --revision-cada 10 --lote 64 --workers 2 --paralelos 2 --dispositivo cuda
+```
+
+El protocolo mantiene cinco folds, semillas 42/2026, treinta épocas y separación
+interna 70/15/15 por paciente, cohorte y pCR. Solo selección interna elige el
+checkpoint. Calibración y Youden internos quedan congelados en ambos brazos
+antes de evaluar los folds exteriores. El criterio principal es la AUC cruda
+media de los cinco folds del ensemble de dos semillas; OOF agrupada, AP,
+métricas al umbral 0,5, calibración y cohortes son secundarios. No se eligen
+número de grupos ni otros hiperparámetros usando los resultados del ensayo.
+
+Resultados y pesos se guardan aparte en `resultados/04_entrenamiento/normalizacion/`.
+El código, protocolo, particiones, caché, predicciones, entorno y archivos
+protegidos quedan identificados por SHA-256. El comando reanuda solo ejecuciones
+con el mismo código, datos y configuración. No se promueve un modelo
+automáticamente. La evaluación es interna en datos previamente observados;
+los IC bootstrap condicionados a las predicciones no incorporan toda la
+incertidumbre del entrenamiento y selección. El test histórico permanece cerrado.
+
+Fuentes: [GroupNorm en PyTorch](https://docs.pytorch.org/docs/2.14/generated/torch.nn.modules.normalization.GroupNorm.html)
+y [Wu y He, Group Normalization (ECCV 2018)](https://arxiv.org/abs/1803.08494).
+GroupNorm estima estadísticas por muestra y usa el mismo cálculo al entrenar
+y evaluar. Su utilidad en este proyecto es una hipótesis que se contrasta.
