@@ -16,6 +16,10 @@ El código y README anteriores a esta limpieza quedan en
 | BCE por paciente | AUC media 0.5590 → 0.5404 | Variante retirada antes de esta limpieza; retirar ahora también sus auxiliares de bolsas y evaluación anidada |
 | Cortes mezclados en lotes pareados | AUC media 0.5546 → 0.5213 | Retirar el ensayo, samplers y aumentos pareados; conservar el loader habitual original |
 | GroupNorm con ocho grupos | AUC media 0.5546 → 0.4801 | Retirar GroupNorm, su configuración y comparador; conservar BatchNorm |
+| Dropout2d p=0,10 | AUC media 0.5504 → 0.5729; IC pareado incluye cero | Inconcluyente; no incorporar al entrenador |
+| Weight decay 0,003 | AUC media 0.5504 → 0.5542; Δ menor que +0,01 | Inconcluyente; mantener weight decay 0,001 del perfil ajustado |
+| Aumentos afines suaves | AUC media 0.5504 → 0.5667; IC pareado incluye cero | Inconcluyente; no incorporar traslación/escala |
+| EMA 0,99 con BN recalculada | AUC media 0.5504 → 0.5562; Δ menor que +0,01 | Inconcluyente; no incorporar EMA ni su recalculación de BN |
 
 Las decisiones son específicas de este proyecto y las condiciones ensayadas.
 No prueban que esos métodos sean inferiores con cualquier dato o hiperparámetro.
@@ -125,6 +129,61 @@ Se retiran GroupNorm y `comparar-normalizacion`, junto con el protocolo anidado
 y sus coordinadores de entrenamiento, calibración y evaluación. Evidencia y
 pesos de ambos brazos: `normalizacion/`, incluido `informe_groupnorm.txt`,
 `diagnostico_activaciones.csv` y `auditoria_precision.json`.
+
+## Cuatro ensayos de generalización: no adoptados (05/10/2026)
+
+Protocolo fijado en `3623227`, antes de ejecutar la matriz. Se compararon el
+control `pool_dropout_wd` y cuatro cambios independientes: Dropout2d p=0,10
+tras el último bloque, weight decay 0,003, traslaciones ±3%/escala 0,95–1,05,
+y EMA de parámetros con decaimiento 0,99. La arquitectura conserva ocho
+convoluciones, BatchNorm y 551.913 parámetros. No se combinaron candidatos.
+
+Ochenta jobs y 1.431 épocas físicas: cinco folds originales, semillas 42/2026,
+BCE normal y ponderada, máximo treinta épocas, lote 64 y LR 0,0008. Cien
+evaluaciones principales y veinte diagnósticos de BN. EMA y el control con BN
+recalculada comparten la trayectoria del control, con checkpoint y parada propios.
+Dentro de los cuatro folds disponibles se separa fit/selección 85/15 por paciente
+y cohorte × pCR. El fold exterior solo evalúa, sin seleccionar épocas ni umbral.
+
+El criterio principal es AUC cruda media de folds del ensemble de dos semillas
+con BCE ponderada. Los controles se reentrenaron con este protocolo.
+
+| Cambio | AUC media | ΔAUC | IC98,75% pareado de ΔAUC | ΔAUC con BCE normal |
+|---|---:|---:|---|---:|
+| Control | 0.5504 | — | — | — |
+| Dropout2d | 0.5729 | +0.0225 | [−0.0126, +0.0584] | −0.0075 |
+| Weight decay 0,003 | 0.5542 | +0.0038 | [−0.0309, +0.0372] | −0.0064 |
+| Afines | 0.5667 | +0.0163 | [−0.0152, +0.0506] | −0.0221 |
+| EMA 0,99 | 0.5562 | +0.0058 | [−0.0262, +0.0362] | +0.0084 |
+
+Todos mejoraron la estimación de AUC en cuatro de cinco folds, con diferencias
+medias positivas en ambas semillas y mayor AP media ponderada. **Ninguno
+cumplió el requisito de intervalo inferior positivo**; weight decay y EMA
+tampoco alcanzaron la mejora práctica de +0,01. Dropout2d y afines dan señales
+favorables que quedan inconcluyentes. Estos resultados no se describen como
+un empeoramiento general de los cuatro métodos.
+
+Los intervalos usan 4.000 bootstrap pareados por paciente, estratificados por
+fold/cohorte/clase, y corrección Bonferroni para cuatro comparaciones. Condicionan
+a esos modelos y no recogen toda la variabilidad del entrenamiento. Las pacientes
+de desarrollo ya se habían observado antes; sigue siendo evaluación interna
+adaptativa y no una confirmación externa.
+
+La recalculación de BN del control obtuvo AUC 0.5558; EMA frente a ese diagnóstico
+dio Δ +0.0004, IC95% [−0.0241, +0.0251]. No se demuestra un beneficio adicional
+del promedio de parámetros frente a recalcular BN. Ese control era diagnóstico,
+sin convertirlo después en un quinto candidato de búsqueda.
+
+Se conserva `04_entrenamiento.py` sin modificaciones: los candidatos se ejecutaron
+en código aislado y nunca se añadieron al entrenador activo. Los 3.334 archivos
+protegidos previos mantienen sus SHA-256. Se verificaron los 120 pesos de
+inferencia, su correspondencia con el mejor checkpoint y su compatibilidad exacta
+con la CNN original en evaluación CPU sintética. No se abrieron imágenes de test
+ni de validación privada y no se sustituyen pesos, calibración o umbral históricos.
+
+Evidencia y scripts congelados: `resultados/04_entrenamiento/cuatro_mejoras_20261005/`.
+Detalles, métricas de ambas pérdidas y reconstrucción:
+[RESULTADOS_CUATRO_MEJORAS.md](docs/mejoras_cnn/RESULTADOS_CUATRO_MEJORAS.md).
 
 ## Límites de los ensayos por paciente, lotes y normalización
 

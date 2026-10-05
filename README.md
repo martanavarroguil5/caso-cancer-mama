@@ -181,13 +181,23 @@ con esa misma salida. Para `base_raw` y `raw_rot90` se mantienen ambas pérdidas
 del diseño del informe. Esa comparación sigue siendo desarrollo interno y
 usa validación para seleccionar checkpoints.
 
-## Investigación de próximas mejoras
+## Investigación y ensayos de mejora
 
 [Investigación de mejoras de la CNN](docs/mejoras_cnn/INVESTIGACION_MEJORAS.md)
 recoge la revisión del enunciado, curvas, metadatos y fuentes primarias realizada
-el 05/10/2026. Prioriza una prueba aislada de Dropout2d en las características
-convolucionales, seguida de regularización y aumentos suaves. Son propuestas
-pendientes de ensayo; esta revisión no modifica el entrenador ni inicia runs.
+el 05/10/2026. Las cuatro propuestas ya se probaron: Dropout2d, weight decay
+0,003, aumentos afines suaves y EMA. Se completaron 80 entrenamientos, cinco
+folds, semillas 42/2026 y ambas pérdidas, con selección interna independiente
+del fold exterior. El [protocolo previo](docs/mejoras_cnn/PROTOCOLO_CUATRO_MEJORAS.md)
+y los [resultados completos](docs/mejoras_cnn/RESULTADOS_CUATRO_MEJORAS.md)
+registran las condiciones y decisiones.
+
+Con BCE ponderada, Dropout2d dio la mayor señal: AUC media 0,5504 → 0,5729,
+pero IC98,75% de la diferencia [−0,0126, +0,0584]. Ninguna propuesta cumplió
+todos los criterios fijados de adopción. Los cuatro candidatos quedan
+inconcluyentes y fuera del entrenador activo; no se sustituye el modelo histórico.
+La evidencia y código congelado están en
+`resultados/04_entrenamiento/cuatro_mejoras_20261005/`, separados del paso 04.
 Se conservan los pasos 01–03 y la CNN 2D desde cero exigida por la práctica.
 
 ## Experimentos descartados y limpieza

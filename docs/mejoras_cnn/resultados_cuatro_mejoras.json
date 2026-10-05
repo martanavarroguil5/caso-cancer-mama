@@ -1,0 +1,671 @@
+{
+  "status": "complete",
+  "training_jobs": 80,
+  "evaluated_models": 120,
+  "primary_models": 100,
+  "diagnostic_models": 20,
+  "patients": 1097,
+  "physical_epochs": 1431,
+  "primary_endpoint": "mean outer-fold raw patient AUC; two-seed ensemble; weighted BCE",
+  "metrics": [
+    {
+      "variant": "control",
+      "loss": "weighted",
+      "mean_fold_auc": 0.550386899736268,
+      "mean_fold_ap": 0.34036518128988835,
+      "fold_auc": [
+        0.5673387096774194,
+        0.5333881241010889,
+        0.580166333298242,
+        0.504367816091954,
+        0.5666735155126361
+      ],
+      "oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.5411901422560609,
+        "average_precision": 0.3248895312611798,
+        "brier": 0.255705573492367,
+        "log_loss": 0.7074776390006905,
+        "accuracy": 0.5414767547857794,
+        "f1": 0.4075382803297998,
+        "precision": 0.32827324478178366,
+        "recall": 0.5372670807453416,
+        "balanced_accuracy": 0.5402464435984773,
+        "sensitivity": 0.5372670807453416,
+        "specificity": 0.5432258064516129,
+        "threshold": 0.5,
+        "tn": 421,
+        "fp": 354,
+        "fn": 149,
+        "tp": 173,
+        "confusion_matrix": [
+          [
+            421,
+            354
+          ],
+          [
+            149,
+            173
+          ]
+        ]
+      }
+    },
+    {
+      "variant": "dropout2d",
+      "loss": "weighted",
+      "mean_fold_auc": 0.5728743511408622,
+      "mean_fold_ap": 0.3651722924223467,
+      "fold_auc": [
+        0.6129032258064516,
+        0.5342099856174234,
+        0.561006421728603,
+        0.552183908045977,
+        0.6040682145058558
+      ],
+      "oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.5593428170707273,
+        "average_precision": 0.35018938785615017,
+        "brier": 0.24020899122562406,
+        "log_loss": 0.6746311558632773,
+        "accuracy": 0.5861440291704649,
+        "f1": 0.3897849462365591,
+        "precision": 0.34360189573459715,
+        "recall": 0.4503105590062112,
+        "balanced_accuracy": 0.5464456020837507,
+        "sensitivity": 0.4503105590062112,
+        "specificity": 0.6425806451612903,
+        "threshold": 0.5,
+        "tn": 498,
+        "fp": 277,
+        "fn": 177,
+        "tp": 145,
+        "confusion_matrix": [
+          [
+            498,
+            277
+          ],
+          [
+            177,
+            145
+          ]
+        ]
+      }
+    },
+    {
+      "variant": "weight_decay",
+      "loss": "weighted",
+      "mean_fold_auc": 0.5541542016677705,
+      "mean_fold_ap": 0.3533818773579329,
+      "fold_auc": [
+        0.5732862903225806,
+        0.5145880419149373,
+        0.5816401726497525,
+        0.520919540229885,
+        0.5803369632216971
+      ],
+      "oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.5474974954918854,
+        "average_precision": 0.335723800579504,
+        "brier": 0.2399465395556719,
+        "log_loss": 0.677204531158679,
+        "accuracy": 0.5788514129443938,
+        "f1": 0.35833333333333334,
+        "precision": 0.3241206030150754,
+        "recall": 0.40062111801242234,
+        "balanced_accuracy": 0.526762171909437,
+        "sensitivity": 0.40062111801242234,
+        "specificity": 0.6529032258064517,
+        "threshold": 0.5,
+        "tn": 506,
+        "fp": 269,
+        "fn": 193,
+        "tp": 129,
+        "confusion_matrix": [
+          [
+            506,
+            269
+          ],
+          [
+            193,
+            129
+          ]
+        ]
+      }
+    },
+    {
+      "variant": "afines",
+      "loss": "weighted",
+      "mean_fold_auc": 0.5667205133228974,
+      "mean_fold_ap": 0.35800634102072887,
+      "fold_auc": [
+        0.597883064516129,
+        0.5085268132319704,
+        0.5971154858406149,
+        0.5388505747126436,
+        0.5912266283131293
+      ],
+      "oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.551184131436586,
+        "average_precision": 0.33835530108201906,
+        "brier": 0.2432089143932707,
+        "log_loss": 0.6803738308014198,
+        "accuracy": 0.6025524156791249,
+        "f1": 0.38935574229691877,
+        "precision": 0.35459183673469385,
+        "recall": 0.43167701863354035,
+        "balanced_accuracy": 0.5526127028651573,
+        "sensitivity": 0.43167701863354035,
+        "specificity": 0.6735483870967742,
+        "threshold": 0.5,
+        "tn": 522,
+        "fp": 253,
+        "fn": 183,
+        "tp": 139,
+        "confusion_matrix": [
+          [
+            522,
+            253
+          ],
+          [
+            183,
+            139
+          ]
+        ]
+      }
+    },
+    {
+      "variant": "ema",
+      "loss": "weighted",
+      "mean_fold_auc": 0.5562105772284524,
+      "mean_fold_ap": 0.3533841972352073,
+      "fold_auc": [
+        0.573891129032258,
+        0.5274296281076638,
+        0.5835351089588378,
+        0.5106206896551724,
+        0.5855763303883296
+      ],
+      "oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.5530234421959528,
+        "average_precision": 0.3342423332921741,
+        "brier": 0.24841151742374007,
+        "log_loss": 0.6992744398579217,
+        "accuracy": 0.5870556061987238,
+        "f1": 0.4,
+        "precision": 0.34872979214780603,
+        "recall": 0.468944099378882,
+        "balanced_accuracy": 0.5525365658184732,
+        "sensitivity": 0.468944099378882,
+        "specificity": 0.6361290322580645,
+        "threshold": 0.5,
+        "tn": 493,
+        "fp": 282,
+        "fn": 171,
+        "tp": 151,
+        "confusion_matrix": [
+          [
+            493,
+            282
+          ],
+          [
+            171,
+            151
+          ]
+        ]
+      }
+    },
+    {
+      "variant": "control_bn",
+      "loss": "weighted",
+      "mean_fold_auc": 0.5558066409701767,
+      "mean_fold_ap": 0.35612305502953107,
+      "fold_auc": [
+        0.5489919354838709,
+        0.5576330388329567,
+        0.5841667543951995,
+        0.5057471264367817,
+        0.5824943497020751
+      ],
+      "oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.5572590663193749,
+        "average_precision": 0.3446966585512366,
+        "brier": 0.2442229189720424,
+        "log_loss": 0.6824025700939768,
+        "accuracy": 0.5660893345487694,
+        "f1": 0.398989898989899,
+        "precision": 0.33617021276595743,
+        "recall": 0.4906832298136646,
+        "balanced_accuracy": 0.5440512923261871,
+        "sensitivity": 0.4906832298136646,
+        "specificity": 0.5974193548387097,
+        "threshold": 0.5,
+        "tn": 463,
+        "fp": 312,
+        "fn": 164,
+        "tp": 158,
+        "confusion_matrix": [
+          [
+            463,
+            312
+          ],
+          [
+            164,
+            158
+          ]
+        ]
+      }
+    },
+    {
+      "variant": "control",
+      "loss": "normal",
+      "mean_fold_auc": 0.5633657600935472,
+      "mean_fold_ap": 0.36192958779120477,
+      "fold_auc": [
+        0.6368951612903226,
+        0.5019519211012944,
+        0.5716391199073587,
+        0.5301149425287357,
+        0.5762276556400246
+      ],
+      "oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.5431376477659787,
+        "average_precision": 0.33044899177992404,
+        "brier": 0.2131020279938226,
+        "log_loss": 0.6220605481582239,
+        "accuracy": 0.6918869644484958,
+        "f1": 0.10106382978723404,
+        "precision": 0.35185185185185186,
+        "recall": 0.059006211180124224,
+        "balanced_accuracy": 0.5069224604287718,
+        "sensitivity": 0.059006211180124224,
+        "specificity": 0.9548387096774194,
+        "threshold": 0.5,
+        "tn": 740,
+        "fp": 35,
+        "fn": 303,
+        "tp": 19,
+        "confusion_matrix": [
+          [
+            740,
+            35
+          ],
+          [
+            303,
+            19
+          ]
+        ]
+      }
+    },
+    {
+      "variant": "dropout2d",
+      "loss": "normal",
+      "mean_fold_auc": 0.5558633750668921,
+      "mean_fold_ap": 0.35420769006055697,
+      "fold_auc": [
+        0.6191532258064516,
+        0.49301417711115675,
+        0.5875355300557954,
+        0.5109885057471264,
+        0.5686254366139305
+      ],
+      "oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.5360248447204969,
+        "average_precision": 0.33211232130974017,
+        "brier": 0.2131338021238932,
+        "log_loss": 0.6202238069252618,
+        "accuracy": 0.6964448495897904,
+        "f1": 0.10723860589812333,
+        "precision": 0.39215686274509803,
+        "recall": 0.062111801242236024,
+        "balanced_accuracy": 0.5110559006211179,
+        "sensitivity": 0.062111801242236024,
+        "specificity": 0.96,
+        "threshold": 0.5,
+        "tn": 744,
+        "fp": 31,
+        "fn": 302,
+        "tp": 20,
+        "confusion_matrix": [
+          [
+            744,
+            31
+          ],
+          [
+            302,
+            20
+          ]
+        ]
+      }
+    },
+    {
+      "variant": "weight_decay",
+      "loss": "normal",
+      "mean_fold_auc": 0.5569308120020233,
+      "mean_fold_ap": 0.3581681146383057,
+      "fold_auc": [
+        0.561491935483871,
+        0.5315389356893363,
+        0.5731129592588693,
+        0.5069425287356322,
+        0.6115677008424081
+      ],
+      "oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.5541534762572631,
+        "average_precision": 0.3446845025780241,
+        "brier": 0.2111140488838576,
+        "log_loss": 0.6232613498241943,
+        "accuracy": 0.7028258887876025,
+        "f1": 0.06321839080459771,
+        "precision": 0.4230769230769231,
+        "recall": 0.034161490683229816,
+        "balanced_accuracy": 0.5074033259867762,
+        "sensitivity": 0.034161490683229816,
+        "specificity": 0.9806451612903225,
+        "threshold": 0.5,
+        "tn": 760,
+        "fp": 15,
+        "fn": 311,
+        "tp": 11,
+        "confusion_matrix": [
+          [
+            760,
+            15
+          ],
+          [
+            311,
+            11
+          ]
+        ]
+      }
+    },
+    {
+      "variant": "afines",
+      "loss": "normal",
+      "mean_fold_auc": 0.5412170333946518,
+      "mean_fold_ap": 0.3497900127212291,
+      "fold_auc": [
+        0.5628024193548388,
+        0.5484898294637354,
+        0.5523739340983261,
+        0.5101609195402299,
+        0.532258064516129
+      ],
+      "oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.5363374073331997,
+        "average_precision": 0.32493784166896045,
+        "brier": 0.2123253969965219,
+        "log_loss": 0.621858313686513,
+        "accuracy": 0.7019143117593437,
+        "f1": 0.06303724928366762,
+        "precision": 0.4074074074074074,
+        "recall": 0.034161490683229816,
+        "balanced_accuracy": 0.5067581646964536,
+        "sensitivity": 0.034161490683229816,
+        "specificity": 0.9793548387096774,
+        "threshold": 0.5,
+        "tn": 759,
+        "fp": 16,
+        "fn": 311,
+        "tp": 11,
+        "confusion_matrix": [
+          [
+            759,
+            16
+          ],
+          [
+            311,
+            11
+          ]
+        ]
+      }
+    },
+    {
+      "variant": "ema",
+      "loss": "normal",
+      "mean_fold_auc": 0.5717803530777852,
+      "mean_fold_ap": 0.37439648211910415,
+      "fold_auc": [
+        0.6117943548387097,
+        0.582597082391617,
+        0.5709022002316033,
+        0.527448275862069,
+        0.566159852064927
+      ],
+      "oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.560400721298337,
+        "average_precision": 0.3491175047631503,
+        "brier": 0.21021572738873953,
+        "log_loss": 0.6122945642352909,
+        "accuracy": 0.7046490428441203,
+        "f1": 0.07954545454545454,
+        "precision": 0.4666666666666667,
+        "recall": 0.043478260869565216,
+        "balanced_accuracy": 0.5114165497896214,
+        "sensitivity": 0.043478260869565216,
+        "specificity": 0.9793548387096774,
+        "threshold": 0.5,
+        "tn": 759,
+        "fp": 16,
+        "fn": 308,
+        "tp": 14,
+        "confusion_matrix": [
+          [
+            759,
+            16
+          ],
+          [
+            308,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "variant": "control_bn",
+      "loss": "normal",
+      "mean_fold_auc": 0.5637734784558945,
+      "mean_fold_ap": 0.3606208780257714,
+      "fold_auc": [
+        0.6413306451612903,
+        0.5365728374768851,
+        0.5401621223286662,
+        0.5195402298850575,
+        0.5812615574275735
+      ],
+      "oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.5434221598877981,
+        "average_precision": 0.33131387086625863,
+        "brier": 0.21344846258756683,
+        "log_loss": 0.6237037051386896,
+        "accuracy": 0.6891522333637192,
+        "f1": 0.10026385224274406,
+        "precision": 0.3333333333333333,
+        "recall": 0.059006211180124224,
+        "balanced_accuracy": 0.504986976557804,
+        "sensitivity": 0.059006211180124224,
+        "specificity": 0.9509677419354838,
+        "threshold": 0.5,
+        "tn": 737,
+        "fp": 38,
+        "fn": 303,
+        "tp": 19,
+        "confusion_matrix": [
+          [
+            737,
+            38
+          ],
+          [
+            303,
+            19
+          ]
+        ]
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "variant": "dropout2d",
+      "delta_mean_fold_auc": 0.022487451404594183,
+      "ci95": [
+        -0.0046117667620895215,
+        0.0503307844559188
+      ],
+      "family_ci9875": [
+        -0.012594368971065301,
+        0.0583552106149666
+      ],
+      "better_folds": 4,
+      "seed_deltas": [
+        0.006727106038713737,
+        0.02205124275562842
+      ],
+      "delta_mean_fold_ap": 0.02480711113245837,
+      "normal_loss_delta_auc": -0.007502385026655123,
+      "adoption_checks": {
+        "delta_auc_at_least_001": true,
+        "better_at_least_4_folds": true,
+        "positive_both_seeds": true,
+        "ap_not_worse": true,
+        "family_ci_lower_positive": false
+      },
+      "adoptable": false
+    },
+    {
+      "variant": "weight_decay",
+      "delta_mean_fold_auc": 0.0037673019315025424,
+      "ci95": [
+        -0.023278585753289123,
+        0.030058804124120837
+      ],
+      "family_ci9875": [
+        -0.030902809965859396,
+        0.03716255154025242
+      ],
+      "better_folds": 4,
+      "seed_deltas": [
+        0.008112272625351524,
+        0.0007434870576590313
+      ],
+      "delta_mean_fold_ap": 0.013016696068044564,
+      "normal_loss_delta_auc": -0.0064349480915238955,
+      "adoption_checks": {
+        "delta_auc_at_least_001": false,
+        "better_at_least_4_folds": true,
+        "positive_both_seeds": true,
+        "ap_not_worse": true,
+        "family_ci_lower_positive": false
+      },
+      "adoptable": false
+    },
+    {
+      "variant": "afines",
+      "delta_mean_fold_auc": 0.016333613586629436,
+      "ci95": [
+        -0.009432580746426616,
+        0.04225123076959734
+      ],
+      "family_ci9875": [
+        -0.015162550616504933,
+        0.05059652255764575
+      ],
+      "better_folds": 4,
+      "seed_deltas": [
+        0.017997470798674087,
+        0.015438962193748074
+      ],
+      "delta_mean_fold_ap": 0.017641159730840517,
+      "normal_loss_delta_auc": -0.02214872669889545,
+      "adoption_checks": {
+        "delta_auc_at_least_001": true,
+        "better_at_least_4_folds": true,
+        "positive_both_seeds": true,
+        "ap_not_worse": true,
+        "family_ci_lower_positive": false
+      },
+      "adoptable": false
+    },
+    {
+      "variant": "ema",
+      "delta_mean_fold_auc": 0.005823677492184376,
+      "ci95": [
+        -0.019948466468007166,
+        0.02978248971363675
+      ],
+      "family_ci9875": [
+        -0.026173573207838217,
+        0.0362421650585438
+      ],
+      "better_folds": 4,
+      "seed_deltas": [
+        0.004567700870931168,
+        0.005314228996794346
+      ],
+      "delta_mean_fold_ap": 0.013019015945318957,
+      "normal_loss_delta_auc": 0.008414592984237967,
+      "adoption_checks": {
+        "delta_auc_at_least_001": false,
+        "better_at_least_4_folds": true,
+        "positive_both_seeds": true,
+        "ap_not_worse": true,
+        "family_ci_lower_positive": false
+      },
+      "adoptable": false
+    }
+  ],
+  "ema_bn_diagnostic": {
+    "ema_minus_control_bn_auc": 0.00040393625827561674,
+    "ci95": [
+      -0.024119992888699492,
+      0.025135356359313816
+    ],
+    "control_bn_minus_control_auc": 0.005419741233908759
+  },
+  "adoptable_variants": [],
+  "bootstrap_repetitions": 4000,
+  "bootstrap_unit": "patient stratified by fold/cohort/class",
+  "bootstrap_scope": "conditional on fitted models; family intervals correct four comparisons",
+  "test_images_loaded": 0,
+  "private_validation_images_loaded": 0,
+  "historical_model_replaced": false,
+  "protected_files": 3334,
+  "changed_protected_files": [],
+  "initialization_pairs_verified": 20,
+  "partition_pairs_verified": 5,
+  "augmentation_loader_pairing_verified": true,
+  "analysis_sha256": "3e9f42fce35748beac94cbd8d02be00c3c8e39925ba448986ec0105b7d220cd9"
+}
