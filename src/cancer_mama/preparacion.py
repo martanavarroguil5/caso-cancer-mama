@@ -10,9 +10,11 @@ import os
 from dataclasses import asdict
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parent
-SALIDA_BASE = RAIZ / "resultados" / "03_preparacion"
-os.environ.setdefault("MPLCONFIGDIR", str(RAIZ / ".codex_tmp" / "matplotlib"))
+from .paths import PROJECT_ROOT, RESULTS_DIR, RUNTIME_DIR
+
+RAIZ = PROJECT_ROOT
+SALIDA_BASE = RESULTS_DIR / "03_preparacion"
+os.environ.setdefault("MPLCONFIGDIR", str(RUNTIME_DIR / "matplotlib"))
 
 import matplotlib
 
@@ -22,7 +24,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-import pipeline_datos as pdatos
+from . import datos as pdatos
 
 
 def sha256(ruta: Path) -> str:
@@ -266,7 +268,7 @@ Las imágenes tienen forma `(batch, 3, 256, 256)`, tipo `float32`, etiquetas bin
 ## Uso posterior
 
 ```python
-import pipeline_datos as pdatos
+from cancer_mama import datos as pdatos
 
 samples = pdatos.cargar_samples()
 particiones = pdatos.crear_particiones(samples, fold_validation={fold})

@@ -6,9 +6,9 @@ intensidades de las tres fases DCE. También genera figuras de resumen y ejemplo
 
 Uso:
 
-    python 01_auditoria_datos.py
-    python 01_auditoria_datos.py --rapido       # inspecciona hasta 500 cortes
-    python 01_auditoria_datos.py --max-cortes 100
+    python -m cancer_mama.auditoria
+    python -m cancer_mama.auditoria --rapido       # inspecciona hasta 500 cortes
+    python -m cancer_mama.auditoria --max-cortes 100
 """
 
 from __future__ import annotations
@@ -19,10 +19,12 @@ import os
 from collections import Counter, defaultdict
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parent
-DATOS = RAIZ / "breastdcedl"
-SALIDA_PREDETERMINADA = RAIZ / "resultados" / "01_auditoria"
-os.environ.setdefault("MPLCONFIGDIR", str(RAIZ / ".codex_tmp" / "matplotlib"))
+from .paths import DATA_DIR, PROJECT_ROOT, RESULTS_DIR, RUNTIME_DIR
+
+RAIZ = PROJECT_ROOT
+DATOS = DATA_DIR
+SALIDA_PREDETERMINADA = RESULTS_DIR / "01_auditoria"
+os.environ.setdefault("MPLCONFIGDIR", str(RUNTIME_DIR / "matplotlib"))
 
 import matplotlib
 

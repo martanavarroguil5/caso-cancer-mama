@@ -39,10 +39,11 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
-import pipeline_datos as pdatos
+from . import datos as pdatos
+from .paths import PACKAGE_DIR, PROJECT_ROOT, RESULTS_DIR
 
-RAIZ = Path(__file__).resolve().parent
-SALIDA = RAIZ / "resultados" / "04_entrenamiento"
+RAIZ = PROJECT_ROOT
+SALIDA = RESULTS_DIR / "04_entrenamiento"
 SCHEMA_VERSION = 1
 EPS = 1e-7
 METHODS = ("mean", "max", "median")
@@ -51,7 +52,8 @@ CLINICAL_MODEL_FEATURES = ("age", "log1p_tum_vol", "HR", "HER2")
 
 
 def configuracion(nombre="raw_rot90"):
-    if nombre not in {"base_raw", "raw_rot90", "pool_dropout_wd", "pool_dropout_wd_clinical"}:
+    if nombre not in {"base_raw", "raw_rot90", "pool_dropout_wd", "pool_dropout_wd_clinical",
+                      "patient_level_clinical"}:
         raise ValueError("Configuración desconocida")
     config = {
         "name": nombre,
@@ -65,15 +67,23 @@ def configuracion(nombre="raw_rot90"):
         "augmentation": {"hflip": 0.5, "rot90": nombre != "base_raw"},
         "evaluation": {"threshold": 0.5, "checkpoint_metric": "patient_auc"},
     }
-    if nombre in {"pool_dropout_wd", "pool_dropout_wd_clinical"}:
+    if nombre in {"pool_dropout_wd", "pool_dropout_wd_clinical", "patient_level_clinical"}:
         config["model"].update(pooling="intermedio", dropout=.35)
         config["training"]["weight_decay"] = .001
-    if nombre == "pool_dropout_wd_clinical":
+    if nombre in {"pool_dropout_wd_clinical", "patient_level_clinical"}:
         config["model"]["clinical"] = {
             "raw_columns": list(CLINICAL_COLUMNS),
             "features": list(CLINICAL_MODEL_FEATURES),
             "missing_indicators": True,
         }
+    if nombre == "patient_level_clinical":
+        # Cada paciente aparece una vez por época y todos sus cortes contribuyen
+        # conjuntamente a una única BCE, igual que la unidad de evaluación.
+        config["training"].update(loss_unit="patient", patients_per_batch=6)
+        config["evaluation"].update(
+            threshold_strategy="max_specificity_at_min_sensitivity",
+            min_sensitivity=.90,
+        )
     return config
 
 
@@ -368,13 +378,47 @@ class DatasetEntrenamiento(pdatos.BreastDCESliceDataset):
         return result
 
 
-def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None, clinical=False):
+class PatientBatchSampler:
+    """Agrupa pacientes completos sin ponderarlos por su número de cortes."""
+    def __init__(self, samples, patients_per_batch, generator, shuffle=True):
+        if not isinstance(patients_per_batch, int) or patients_per_batch < 1:
+            raise ValueError("patients_per_batch debe ser un entero positivo")
+        self.generator = generator
+        self.shuffle = bool(shuffle)
+        self.patients_per_batch = patients_per_batch
+        self.patient_ids = list(dict.fromkeys(samples.patient_id.astype(str)))
+        self.indices = {patient: [] for patient in self.patient_ids}
+        for index, patient in enumerate(samples.patient_id.astype(str)):
+            self.indices[patient].append(index)
+        if not self.patient_ids or any(not indices for indices in self.indices.values()):
+            raise ValueError("No se pudieron construir lotes completos por paciente")
+
+    def __iter__(self):
+        order = list(range(len(self.patient_ids)))
+        if self.shuffle:
+            order = torch.randperm(len(order), generator=self.generator).tolist()
+        for start in range(0, len(order), self.patients_per_batch):
+            batch = []
+            for position in order[start:start + self.patients_per_batch]:
+                batch.extend(self.indices[self.patient_ids[position]])
+            yield batch
+
+    def __len__(self):
+        return (len(self.patient_ids) + self.patients_per_batch - 1) // self.patients_per_batch
+
+
+def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None, clinical=False,
+                patients_per_batch=None):
     # Los lectores trabajan en CPU; Linux usa fork y Windows/macOS spawn.
     context = ("fork" if sys.platform.startswith("linux") else "spawn") if workers else None
-    return DataLoader(DatasetEntrenamiento(samples, root, cache, clinical), batch_size=batch_size,
-        shuffle=shuffle, num_workers=workers, pin_memory=torch.cuda.is_available(),
-        persistent_workers=False, worker_init_fn=pdatos.inicializar_worker, generator=generator,
-        multiprocessing_context=context)
+    dataset = DatasetEntrenamiento(samples, root, cache, clinical)
+    common = dict(num_workers=workers, pin_memory=torch.cuda.is_available(), persistent_workers=False,
+                  worker_init_fn=pdatos.inicializar_worker, generator=generator,
+                  multiprocessing_context=context)
+    if patients_per_batch is not None:
+        sampler = PatientBatchSampler(samples, patients_per_batch, generator, shuffle)
+        return DataLoader(dataset, batch_sampler=sampler, **common)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, **common)
 
 
 def aumentar_geometria(x, generator, hflip=0.5, rot90=True):
@@ -401,6 +445,25 @@ def batch_device(batch, device):
 def batch_clinical(batch, device):
     clinical = batch.get("clinical")
     return clinical.to(device, non_blocking=True) if clinical is not None else None
+
+
+def aggregate_patient_logits(logits, labels, patient_ids):
+    """Convierte logits por corte en una decisión diferenciable por paciente."""
+    if logits.ndim != 1 or labels.ndim != 1 or len(logits) != len(labels) or len(logits) != len(patient_ids):
+        raise ValueError("Logits, etiquetas y pacientes deben estar alineados")
+    groups = {}
+    for index, patient in enumerate(map(str, patient_ids)):
+        groups.setdefault(patient, []).append(index)
+    patient_logits, patient_labels = [], []
+    for indices in groups.values():
+        index = torch.tensor(indices, device=logits.device)
+        current_labels = labels.index_select(0, index)
+        if not torch.equal(current_labels, current_labels[:1].expand_as(current_labels)):
+            raise ValueError("Etiquetas inconsistentes dentro de una paciente")
+        probability = torch.sigmoid(logits.index_select(0, index).float()).mean()
+        patient_logits.append(torch.logit(probability.clamp(EPS, 1 - EPS)))
+        patient_labels.append(current_labels[0].float())
+    return torch.stack(patient_logits), torch.stack(patient_labels)
 
 
 def sha256(path):
@@ -528,7 +591,7 @@ def amp_context(device, enabled):
 
 
 def train_epoch(model, loader, optimizer, scaler, criterion, device, amp, augmentation,
-                augmentation_generator, clip_norm=5.0, max_batches=None):
+                augmentation_generator, clip_norm=5.0, max_batches=None, loss_unit="slice"):
     model.train()
     losses = torch.zeros((), device=device)
     count = 0
@@ -542,7 +605,12 @@ def train_epoch(model, loader, optimizer, scaler, criterion, device, amp, augmen
         optimizer.zero_grad(set_to_none=True)
         with amp_context(device, amp):
             logits = model(x, clinical).squeeze(1)
-            loss = criterion(logits, y)
+            targets = y
+            if loss_unit == "patient":
+                logits, targets = aggregate_patient_logits(logits, y, batch["patient_id"])
+            elif loss_unit != "slice":
+                raise ValueError("Unidad de pérdida desconocida")
+            loss = criterion(logits, targets)
         if not torch.isfinite(loss):
             raise FloatingPointError("Pérdida no finita; no se seleccionará este run")
         scaler.scale(loss).backward()
@@ -552,7 +620,7 @@ def train_epoch(model, loader, optimizer, scaler, criterion, device, amp, augmen
         nn.utils.clip_grad_norm_(model.parameters(), clip_norm, error_if_nonfinite=not amp)
         scaler.step(optimizer)
         scaler.update()
-        units = len(y)
+        units = len(targets)
         losses += loss.detach() * units
         count += units
     return float(losses / count)
@@ -595,13 +663,22 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
     if loss_name not in {"normal", "weighted"}:
         raise ValueError("Pérdida desconocida")
     config["smoke"] = bool(smoke)
-    config["source_sha256"] = {p.name: sha256(p) for p in (Path(__file__), RAIZ/"pipeline_datos.py")}
+    config["source_sha256"] = {
+        "04_entrenamiento.py": sha256(Path(__file__)),
+        "pipeline_datos.py": sha256(PACKAGE_DIR / "datos.py"),
+    }
     config["device_type"] = device.type
     tconf = config["training"]
-    if tconf.get("loss_unit", "slice") != "slice":
-        raise ValueError("El entrenamiento activo solo admite BCE por corte")
+    loss_unit = tconf.get("loss_unit", "slice")
+    if loss_unit not in {"slice", "patient"}:
+        raise ValueError("La unidad de pérdida debe ser slice o patient")
+    patients_per_batch = tconf.get("patients_per_batch")
+    if loss_unit == "patient" and (not isinstance(patients_per_batch, int) or patients_per_batch < 1):
+        raise ValueError("La BCE por paciente requiere patients_per_batch positivo")
+    if loss_unit == "slice" and patients_per_batch is not None:
+        raise ValueError("patients_per_batch solo se admite con BCE por paciente")
     unsupported_batch = any(key in tconf for key in
-        ("batch_policy", "patient_batch_size", "patients_per_batch", "paired_augmentation"))
+        ("batch_policy", "patient_batch_size", "paired_augmentation"))
     if unsupported_batch or config["evaluation"].get("protocol") == "nested_holdout":
         raise ValueError("Configuración experimental retirada del entrenamiento activo")
     if until_epoch is not None and not 1 <= until_epoch <= int(tconf["epochs"]):
@@ -621,7 +698,11 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
         preprocessing = fit_clinical_preprocessing(train)
         config["model"]["clinical"]["preprocessing"] = preprocessing
         config["model"]["clinical"]["initialization"] = fit_clinical_initializer(train, preprocessing)
-    config["pos_weight"] = pdatos.pos_weight_cortes(train) if loss_name == "weighted" else 1.0
+    if loss_name == "weighted" and loss_unit == "patient":
+        patient_labels = train.drop_duplicates("patient_id").pCR
+        config["pos_weight"] = float((patient_labels == 0).sum() / (patient_labels == 1).sum())
+    else:
+        config["pos_weight"] = pdatos.pos_weight_cortes(train) if loss_name == "weighted" else 1.0
     config["n_train_slices"], config["n_val_slices"] = len(train), len(val)
     config["n_train_patients"], config["n_val_patients"] = train.patient_id.nunique(), val.patient_id.nunique()
     run_dir = out / config["name"] / loss_name / f"seed_{seed}" / f"fold_{fold}"
@@ -661,7 +742,8 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
     workers = 0 if smoke else int(tconf["num_workers"])
     batch_size = min(8, tconf["batch_size"]) if smoke else tconf["batch_size"]
     train_loader = make_loader(train, root, batch_size, workers, generator, shuffle=True,
-                               cache=cache, clinical=clinical_enabled)
+                               cache=cache, clinical=clinical_enabled,
+                               patients_per_batch=patients_per_batch if loss_unit == "patient" else None)
     val_loader = make_loader(val, root, batch_size, workers, val_generator, cache=cache,
                              clinical=clinical_enabled)
     train_eval_loader = make_loader(train, root, batch_size, workers,
@@ -707,7 +789,7 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
         lr = optimizer.param_groups[0]["lr"]
         train_loss = train_epoch(model, train_loader, optimizer, scaler, criterion, device, amp,
                                  config["augmentation"], aug_generator, tconf["clip_grad_norm"],
-                                 max_batches=1 if smoke else None)
+                                 max_batches=1 if smoke else None, loss_unit=loss_unit)
         probabilities, val_loss = predict(model, val_loader, device, False, criterion)
         metrics = patient_metrics(val, probabilities, config["evaluation"]["threshold"])
         scheduler.step()
@@ -772,7 +854,7 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
                "current_session_seconds": time.perf_counter() - wall_start,
                "peak_vram_gib": max(r["peak_vram_gib"] for r in history),
                "checkpoint": "best.pt", "test_images_loaded": 0,
-               "inference_amp": False, "patient_aggregation": "mean"}
+               "inference_amp": False, "patient_aggregation": "mean", "loss_unit": loss_unit}
     export_inference_checkpoint(run_dir)
     summary["inference_sha256"] = sha256(run_dir/"inference.pt")
     summary["oof_sha256"] = sha256(run_dir/"oof_slices.csv")
@@ -789,7 +871,10 @@ def environment(device):
         "torch": str(torch.__version__), "numpy": np.__version__, "pandas": pd.__version__,
         "sklearn": sklearn.__version__, "pillow": PIL.__version__,
         "cuda_runtime": torch.version.cuda, "device": str(device),
-        "code_sha256": {p.name: sha256(p) for p in (Path(__file__), RAIZ/"pipeline_datos.py")},
+        "code_sha256": {
+            "04_entrenamiento.py": sha256(Path(__file__)),
+            "pipeline_datos.py": sha256(PACKAGE_DIR / "datos.py"),
+        },
         "determinism_scope": "Mismo código, datos, entorno y hardware; reanudación por época."}
     if device.type == "cuda":
         props = torch.cuda.get_device_properties(device)
@@ -930,6 +1015,26 @@ def youden_threshold(y: np.ndarray, p: np.ndarray) -> float:
     return float(sorted(best, key=lambda t: (abs(t - 0.5), -t))[0])
 
 
+def threshold_for_sensitivity(y: np.ndarray, p: np.ndarray, min_sensitivity: float) -> float:
+    """Máxima especificidad sujeta a una sensibilidad mínima, con empates deterministas."""
+    y, p = np.asarray(y), np.asarray(p, dtype=float)
+    binary_metrics(y, p)  # Validación común de etiquetas y probabilidades.
+    if len(np.unique(y)) != 2:
+        raise ValueError("La selección de umbral requiere ambas clases")
+    if not 0 < min_sensitivity <= 1:
+        raise ValueError("min_sensitivity debe pertenecer a (0,1]")
+    candidates = np.unique(np.concatenate(([0.0, 0.5, 1.0], p)))
+    feasible = []
+    for threshold in candidates:
+        metrics = binary_metrics(y, p, float(threshold))
+        if metrics["sensitivity"] + 1e-12 >= min_sensitivity:
+            feasible.append(metrics)
+    if not feasible:
+        raise RuntimeError("No existe un umbral que alcance la sensibilidad solicitada")
+    best = max(feasible, key=lambda m: (m["specificity"], m["precision"], m["threshold"]))
+    return float(best["threshold"])
+
+
 def comparar_ejecuciones(root, output):
     """Compara ejecuciones nuevas completas; no altera el modelo final histórico."""
     train = cargar_train(root)
@@ -954,7 +1059,8 @@ def comparar_ejecuciones(root, output):
         fold = int(config["fold"])
         oof = validate_oof(pd.read_csv(folder/"oof_slices.csv"), roster[roster.fold.eq(fold)])
         if config["name"] not in {"base_raw", "raw_rot90", "base_raw_pool", "raw_rot90_pool",
-                                  "pool_dropout_wd", "pool_dropout_wd_clinical"}:
+                                  "pool_dropout_wd", "pool_dropout_wd_clinical",
+                                  "patient_level_clinical"}:
             raise ValueError("Nombre de configuración desconocido")
         key = (config["name"], config["loss"], int(config["seed"]))
         groups.setdefault(key, {})
@@ -976,7 +1082,7 @@ def comparar_ejecuciones(root, output):
         fingerprints[config["name"]] = fingerprint
     candidates, predictions = [], {}
     for name in sorted({key[0] for key in groups}):
-        losses = ("weighted",) if name == "pool_dropout_wd" else ("normal", "weighted")
+        losses = ("weighted",) if name in {"pool_dropout_wd", "patient_level_clinical"} else ("normal", "weighted")
         expected = {(name, loss, seed) for loss in losses for seed in (42, 2026)}
         if not expected.issubset(groups) or any(set(groups[key]) != set(range(5)) for key in expected):
             raise ValueError(f"{name}: se requieren pérdidas {losses}, dos semillas y cinco folds completos")
@@ -1015,12 +1121,24 @@ def comparar_ejecuciones(root, output):
     calibration = fit_platt(patients.label.to_numpy(), patients.probability.to_numpy())
     patients["calibrated_crossfit"] = crossfit_calibration(patients)
     patients["calibrated_fit"] = apply_calibration(patients.probability.to_numpy(), calibration)
-    threshold = youden_threshold(patients.label.to_numpy(), patients.calibrated_fit.to_numpy())
+    selected_config = groups[selected["configuration"], selected["loss"], 42][0][2]
+    evaluation = selected_config.get("evaluation", {})
+    if evaluation.get("threshold_strategy") == "max_specificity_at_min_sensitivity":
+        target_sensitivity = float(evaluation.get("min_sensitivity", .90))
+        threshold = threshold_for_sensitivity(
+            patients.label.to_numpy(), patients.calibrated_fit.to_numpy(), target_sensitivity)
+        decision_policy = {"strategy": "max_specificity_at_min_sensitivity",
+                           "min_sensitivity": target_sensitivity,
+                           "fit_data": "train_oof_apparent"}
+    else:
+        threshold = youden_threshold(patients.label.to_numpy(), patients.calibrated_fit.to_numpy())
+        decision_policy = {"strategy": "youden", "fit_data": "train_oof_apparent"}
     dest = Path(output)/"comparacion"
     dest.mkdir(parents=True, exist_ok=True)
     report = {"status": "desarrollo_sin_test", "warning":
         "La selección de candidatos y checkpoints con OOF introduce optimismo; no es validación anidada.",
         "candidates": candidates, "selected": selected,
+        "decision_policy": decision_policy,
         "calibrated_crossfit_at_0_5": binary_metrics(patients.label, patients.calibrated_crossfit),
         "calibrated_apparent": binary_metrics(patients.label, patients.calibrated_fit, threshold)}
     json_write(dest/"seleccion.json", report)
@@ -1036,6 +1154,7 @@ def comparar_ejecuciones(root, output):
     selected_clinical = any(item["model_config"].get("clinical") is not None for item in models)
     manifest = {"schema_version": 1, "status": "desarrollo_sin_test", "models": models,
         "aggregation": selected["aggregation"], "calibration": calibration, "threshold": threshold,
+        "decision_policy": decision_policy,
         "test_evaluated_once": False, "selection": selected,
         "preprocessing": {"phases": list(pdatos.FASES), "shape": [3,256,256],
                           "scaling": "uint8 / 255; CNN: 2*x-1",
@@ -1263,7 +1382,7 @@ def main():
     parser.add_argument("--salida",type=Path,default=None)
     parser.add_argument("--manifest",type=Path,default=SALIDA/"modelo_final.json")
     parser.add_argument("--configuraciones",nargs="+",choices=("base_raw","raw_rot90","pool_dropout_wd",
-        "pool_dropout_wd_clinical"),default=["raw_rot90"])
+        "pool_dropout_wd_clinical","patient_level_clinical"),default=["raw_rot90"])
     parser.add_argument("--perdidas",nargs="+",choices=("normal","ponderada"),default=["normal","ponderada"])
     parser.add_argument("--semillas",nargs="+",type=int,default=[42,2026])
     parser.add_argument("--folds",nargs="+",type=int,choices=range(5),default=list(range(5)))

@@ -8,7 +8,6 @@ forma pareada con las predicciones OOF históricas ya congeladas.
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -19,9 +18,11 @@ from sklearn.calibration import calibration_curve
 from sklearn.metrics import (average_precision_score, brier_score_loss, log_loss,
                              precision_recall_curve, roc_auc_score, roc_curve)
 
+from . import entrenamiento
+from .paths import DOCS_DIR, PROJECT_ROOT, RESULTS_DIR
 
-ROOT = Path(__file__).resolve().parent
-OUTPUT = ROOT / "resultados" / "05_informe_mejora"
+ROOT = PROJECT_ROOT
+OUTPUT = RESULTS_DIR / "05_informe_mejora"
 OUTPUT.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("MPLCONFIGDIR", str(OUTPUT / ".matplotlib"))
 (OUTPUT / ".matplotlib").mkdir(exist_ok=True)
@@ -31,17 +32,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 
-HISTORICAL = ROOT / "resultados" / "04_entrenamiento" / "historico"
-DIAGNOSTIC = ROOT / "docs" / "mejoras_cnn" / "diagnostico.json"
+HISTORICAL = RESULTS_DIR / "04_entrenamiento" / "historico"
+DIAGNOSTIC = DOCS_DIR / "mejoras_cnn" / "diagnostico.json"
 COLORS = {"historical": "#4472C4", "clinical": "#159D78", "test": "#C55A11",
           "train": "#6F42C1", "reference": "#666666"}
 
 
 def load_training_module():
-    spec = importlib.util.spec_from_file_location("entrenamiento", ROOT / "04_entrenamiento.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return entrenamiento
 
 
 def sigmoid(values):
@@ -336,7 +334,7 @@ después de entrenar el ensemble multimodal completo.
 
 ## Reproducibilidad
 
-Ejecutar `python 05_informe_mejora.py`. Se regeneran las predicciones clínicas
+Ejecutar `python -m cancer_mama.informe_mejora`. Se regeneran las predicciones clínicas
 OOF, métricas, bootstrap, tablas y figuras sin cargar imágenes ni etiquetas nuevas
 de test. Los ficheros numéricos quedan en esta misma carpeta.
 """
@@ -402,7 +400,7 @@ def main():
     plot_calibration(old_frame, new_frame)
     write_report(summary, fold_metrics, cohort_metrics, bootstrap, diagnostic)
     provenance = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in
-                  (ROOT/"04_entrenamiento.py", HISTORICAL/"oof_pacientes.csv",
+                  (Path(entrenamiento.__file__), HISTORICAL/"oof_pacientes.csv",
                    HISTORICAL/"test_pacientes.csv", HISTORICAL/"curvas_entrenamiento.csv", DIAGNOSTIC)}
     (OUTPUT / "procedencia.json").write_text(json.dumps(provenance, indent=2), encoding="utf-8")
     print(json.dumps({"output": str(OUTPUT), "historical_oof_auc": old_summary["roc_auc"],

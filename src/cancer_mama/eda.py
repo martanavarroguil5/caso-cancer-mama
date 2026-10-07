@@ -25,10 +25,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from textwrap import dedent
 
-RAIZ = Path(__file__).resolve().parent
-DATOS = RAIZ / "breastdcedl"
-SALIDA_PREDETERMINADA = RAIZ / "resultados" / "02_eda"
-os.environ.setdefault("MPLCONFIGDIR", str(RAIZ / ".codex_tmp" / "matplotlib"))
+from .paths import DATA_DIR, PROJECT_ROOT, RESULTS_DIR, RUNTIME_DIR
+
+RAIZ = PROJECT_ROOT
+DATOS = DATA_DIR
+SALIDA_PREDETERMINADA = RESULTS_DIR / "02_eda"
+os.environ.setdefault("MPLCONFIGDIR", str(RUNTIME_DIR / "matplotlib"))
 
 import matplotlib
 
