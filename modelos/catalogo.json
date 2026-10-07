@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "versions": [
+    {
+      "id": "v001_cnn_historica_20260930",
+      "description": "CNN histórica de imágenes, conservada con su evaluación original del 30/09/2026",
+      "archived_at": "2026-10-07T18:28:32.129991+02:00",
+      "status": "historico_conservado",
+      "clinical_required": false,
+      "n_models": 10,
+      "weights_bytes": 22287310,
+      "metrics_raw_oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.594510118212783,
+        "average_precision": 0.3773966286517211,
+        "brier": 0.23585884418869607,
+        "log_loss": 0.6654920029763175,
+        "accuracy": 0.626253418413856,
+        "sensitivity": 0.43167701863354035,
+        "specificity": 0.7070967741935484,
+        "threshold": 0.5,
+        "tn": 548,
+        "fp": 227,
+        "fn": 183,
+        "tp": 139,
+        "confusion_matrix": [
+          [
+            548,
+            227
+          ],
+          [
+            183,
+            139
+          ]
+        ]
+      }
+    },
+    {
+      "id": "v002_multimodal_clinico_20261007",
+      "description": "CNN multimodal con BCE ponderada y mediana, seleccionada en desarrollo OOF el 07/10/2026",
+      "archived_at": "2026-10-07T18:30:55.655606+02:00",
+      "status": "desarrollo_sin_test",
+      "clinical_required": true,
+      "n_models": 10,
+      "weights_bytes": 22303920,
+      "metrics_raw_oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.7245682228010419,
+        "average_precision": 0.531645920079384,
+        "brier": 0.2108519049246439,
+        "log_loss": 0.6097532019513768,
+        "accuracy": 0.6654512306289881,
+        "f1": 0.5529841656516443,
+        "precision": 0.45490981963927857,
+        "recall": 0.7049689440993789,
+        "balanced_accuracy": 0.6770006010819476,
+        "sensitivity": 0.7049689440993789,
+        "specificity": 0.6490322580645161,
+        "threshold": 0.5,
+        "tn": 503,
+        "fp": 272,
+        "fn": 95,
+        "tp": 227,
+        "confusion_matrix": [
+          [
+            503,
+            272
+          ],
+          [
+            95,
+            227
+          ]
+        ],
+        "fold_roc_auc": [
+          0.7667338709677419,
+          0.7116293404561331,
+          0.7116538583008739,
+          0.7234022988505747,
+          0.7081364290117116
+        ],
+        "mean_fold_roc_auc": 0.7243111595174071,
+        "min_fold_roc_auc": 0.7081364290117116
+      }
+    }
+  ]
+}

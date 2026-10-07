@@ -1,0 +1,107 @@
+{
+  "name": "pool_dropout_wd_clinical",
+  "model": {
+    "representation": "raw",
+    "channels": [
+      24,
+      48,
+      96,
+      160
+    ],
+    "hidden": 64,
+    "dropout": 0.35,
+    "pooling": "intermedio",
+    "clinical": {
+      "raw_columns": [
+        "age",
+        "tum_vol",
+        "HR",
+        "HER2"
+      ],
+      "features": [
+        "age",
+        "log1p_tum_vol",
+        "HR",
+        "HER2"
+      ],
+      "missing_indicators": true,
+      "preprocessing": {
+        "fit_scope": "unique_patients_in_training_partition",
+        "medians": [
+          49.0,
+          2.6252057673185245,
+          1.0,
+          0.0
+        ],
+        "means": [
+          48.71687927107061,
+          2.6638715679044482,
+          0.5740318906605922,
+          0.2539863325740319
+        ],
+        "stds": [
+          10.417521951480145,
+          1.1103598164250532,
+          0.4944889070193776,
+          0.4352898751862097
+        ],
+        "n_patients": 878
+      },
+      "initialization": {
+        "method": "fold_train_logistic_balanced",
+        "coefficients": [
+          -0.14603349232461127,
+          -0.2695109624956888,
+          -0.667953508279226,
+          0.44399614644992774,
+          0.22769683100410973,
+          0.24877431847180803,
+          -0.33010215231491147,
+          0.3269026189522698
+        ],
+        "intercept": -0.12517160568668062,
+        "n_patients": 878
+      }
+    }
+  },
+  "training": {
+    "epochs": 46,
+    "min_epochs": 12,
+    "patience": 10,
+    "min_delta": 0.001,
+    "batch_size": 64,
+    "lr": 0.0008,
+    "min_lr": 1e-05,
+    "weight_decay": 0.001,
+    "clip_grad_norm": 5.0,
+    "amp": true,
+    "num_workers": 4,
+    "cpu_threads": 8,
+    "deterministic": true,
+    "review_interval": 10
+  },
+  "augmentation": {
+    "hflip": 0.5,
+    "rot90": true
+  },
+  "evaluation": {
+    "threshold": 0.5,
+    "checkpoint_metric": "patient_auc"
+  },
+  "loss": "weighted",
+  "seed": 2026,
+  "fold": 1,
+  "smoke": false,
+  "source_sha256": {
+    "04_entrenamiento.py": "931543fa15cc7e1ae4580e8adcdcd040f7a284c7c4bafeb6a9ba1971f83a9cc3",
+    "pipeline_datos.py": "2a6bd21c29f3bed9292f7d9ceb821e1116737ec58af55a7dcc6dae807a1a36d0"
+  },
+  "device_type": "cuda",
+  "data_signature": "d5dd0e325f58f06e82085fd1c37017aa94a0ef6549b89d6ed57d941a289a0212",
+  "clinical_signature": "725bd56d736c71c0a0c84eb672a877e96cf50d4f95e33ce679e0776c96be2162",
+  "pos_weight": 2.3724961479198767,
+  "n_train_slices": 8755,
+  "n_val_slices": 2190,
+  "n_train_patients": 878,
+  "n_val_patients": 219
+}

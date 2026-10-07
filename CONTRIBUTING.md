@@ -16,7 +16,7 @@ En Windows, sustituye `.venv/bin/python` por `.venv\Scripts\python.exe`.
 2. Mantén separados los cambios de código, documentación y resultados cuando puedan revisarse de forma independiente.
 3. Ejecuta las pruebas antes de confirmar cambios.
 4. Usa mensajes de commit imperativos y concretos, por ejemplo: `Corrige la agregación por paciente`.
-5. No confirmes datasets, entornos virtuales, checkpoints ni ejecuciones pesadas.
+5. No confirmes datasets, entornos virtuales, checkpoints de trabajo ni ejecuciones pesadas. Los pesos seleccionados se publican como versiones completas en `modelos/versiones/`, siguiendo el [historial de modelos](modelos/README.md).
 
 ## Reproducibilidad
 

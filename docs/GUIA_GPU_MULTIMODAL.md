@@ -22,16 +22,18 @@ interrumpe, repetir el mismo comando y la misma carpeta de salida reanuda desde
    anterior.
 2. La carpeta `breastdcedl/` completa: 38.122 archivos y aproximadamente
    1,28 GiB. Está ignorada por Git y no aparece al clonar el repositorio.
-3. No copiar ni reutilizar `.venv/`: el entorno actual contiene PyTorch para CPU.
-   Hay que crear un entorno nuevo en el ordenador con GPU.
+3. No copiar ni reutilizar `.venv/`: depende del sistema y de la instalación de
+   PyTorch. Hay que crear un entorno nuevo en el ordenador con GPU.
 4. Reservar al menos 10 GiB libres para datos, entorno CUDA, checkpoints y resultados.
    Es preferible un SSD local; OneDrive puede bloquear archivos temporales y
    ralentizar la lectura de miles de PNG.
 
 No hace falta copiar las ejecuciones de humo de
 `resultados/04_entrenamiento/multimodal_clinico_20261007/`. Están ignoradas y no
-son seleccionables. Los pesos completos nuevos tampoco se subirán a Git porque
-`*.pt` está ignorado; al terminar hay que conservar/copiar la carpeta de salida.
+son seleccionables. Los checkpoints de trabajo siguen ignorados. Los modelos
+seleccionados se archivan con `modelos/versionar.py guardar` en
+`modelos/versiones/`, donde sus pesos sí se guardan en Git. El
+[historial de modelos](modelos/README.md) explica cómo publicar una versión nueva.
 
 ## Preparación del entorno
 
@@ -119,5 +121,8 @@ Copiar de vuelta la carpeta completa:
 resultados/04_entrenamiento/multimodal_clinico_20261007/
 ```
 
-Incluye los pesos; Git no los transportará. Con esa carpeta se pueden revisar
-las curvas, comprobar checksums y preparar el ensemble de inferencia.
+Incluye los checkpoints de entrenamiento, que no viajan automáticamente con Git.
+Con esa carpeta se pueden revisar las curvas, reanudar el entrenamiento y
+preparar el ensemble. Después se archiva la versión seleccionada en
+`modelos/versiones/` y se hace commit y push; esa versión completa se obtiene
+al clonar el repositorio.
