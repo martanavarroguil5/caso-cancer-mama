@@ -1,0 +1,32 @@
+{
+  "historical_oof": {
+    "n": 1097,
+    "positives": 322,
+    "prevalence": 0.2935278030993619,
+    "roc_auc": 0.594510118212783,
+    "average_precision": 0.3773966286517211,
+    "brier": 0.23585884418869607,
+    "log_loss": 0.6654920029763175
+  },
+  "clinical_oof": {
+    "n": 1097,
+    "positives": 322,
+    "prevalence": 0.2935278030993619,
+    "roc_auc": 0.7070727309156482,
+    "average_precision": 0.4977309152011893,
+    "brier": 0.216993856140031,
+    "log_loss": 0.6245006610798861
+  },
+  "historical_test": {
+    "n": 176,
+    "positives": 53,
+    "prevalence": 0.30113636363636365,
+    "roc_auc": 0.5462494247583985,
+    "average_precision": 0.34174409785381565,
+    "brier": 0.23895486911715588,
+    "log_loss": 0.6703174806628204
+  },
+  "historical_ece": 0.17682501823287378,
+  "clinical_ece": 0.17785319512639514,
+  "test_note": "Historical CNN only; the new clinical/multimodal candidate was not evaluated on test."
+}

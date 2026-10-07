@@ -193,6 +193,45 @@ class TestEntrenamiento(unittest.TestCase):
             h.remove()
         self.assertEqual(sum(isinstance(m,torch.nn.MaxPool2d) for m in entrenamiento.CNN().modules()),1)
 
+    def test_multimodal_ajusta_clinica_solo_con_train_del_fold(self):
+        frame=datos_sinteticos(self.root,imagenes=True)
+        patients=[]
+        for patient in frame[frame.split.eq("train")].drop_duplicates("patient_id").itertuples():
+            # El fold 0 queda como validación y contiene edades extremas que no
+            # deben alterar las estadísticas ajustadas con folds 1-2.
+            fold=int(patient.fold)
+            patients.append({"pid":patient.patient_id,"split":"train","dataset":"spy1",
+                "age":999.0 if fold==0 else 40.0+fold,"tum_vol":10.0+fold,
+                "HR":float(int(patient.pCR)==0),"HER2":float(int(patient.pCR)==1)})
+        pd.DataFrame(patients).to_csv(self.root/"metadata/patients.csv",index=False)
+        samples=entrenamiento.cargar_train(self.root,include_clinical=True)
+        train,val=entrenamiento.particion(samples,0)
+        preprocessing=entrenamiento.fit_clinical_preprocessing(train)
+        self.assertEqual(preprocessing["n_patients"],4)
+        self.assertLess(preprocessing["means"][0],100)
+        config=entrenamiento.configuracion("pool_dropout_wd_clinical")
+        config["model"].update(channels=[2,2,2,2],hidden=4)
+        config["model"]["clinical"]["preprocessing"]=preprocessing
+        initialization=entrenamiento.fit_clinical_initializer(train,preprocessing)
+        config["model"]["clinical"]["initialization"]=initialization
+        model=entrenamiento.CNN(config)
+        self.assertTrue(torch.equal(model.classifier.weight[0,:4],torch.zeros(4)))
+        np.testing.assert_allclose(model.classifier.weight[0,4:].detach().numpy(),
+                                   initialization["coefficients"],rtol=1e-6)
+        loader=entrenamiento.make_loader(train,self.root,2,0,torch.Generator(),clinical=True)
+        batch=next(iter(loader))
+        x,y=entrenamiento.batch_device(batch,torch.device("cpu"))
+        clinical=entrenamiento.batch_clinical(batch,torch.device("cpu"))
+        result=model(x,clinical)
+        self.assertEqual(tuple(clinical.shape),(2,4))
+        self.assertEqual(tuple(result.shape),(2,1))
+        torch.nn.BCEWithLogitsLoss()(result[:,0],y).backward()
+        self.assertGreater(float(model.classifier.weight.grad.abs().sum()),0)
+        missing=clinical.clone(); missing[:,0]=float("nan")
+        self.assertTrue(torch.isfinite(model(x,missing)).all())
+        with self.assertRaisesRegex(ValueError,"clínicas"):
+            model(x)
+
     def test_f1_se_calcula_por_paciente(self):
         samples=pd.DataFrame({"patient_id":["a","a","a","b","c","d"],"pCR":[0,0,0,0,1,1]})
         q=np.array([.1,.1,.1,.7,.6,.4])
@@ -292,6 +331,8 @@ class TestEntrenamiento(unittest.TestCase):
         self.assertEqual(report["selected"]["configuration"],"raw_rot90")
         self.assertEqual(report["selected"]["loss"],"weighted")
         self.assertEqual(report["selected"]["aggregation"],"mean")
+        self.assertEqual(report["selected"]["metrics"]["mean_fold_roc_auc"],1.0)
+        self.assertEqual(report["selected"]["metrics"]["fold_roc_auc"],[1.0]*5)
         manifest_path=output/"comparacion/modelo_desarrollo.json"
         manifest=entrenamiento.cargar_manifest(manifest_path)
         self.assertEqual(len(manifest["models"]),10)

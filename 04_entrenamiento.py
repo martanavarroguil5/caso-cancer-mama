@@ -46,10 +46,12 @@ SALIDA = RAIZ / "resultados" / "04_entrenamiento"
 SCHEMA_VERSION = 1
 EPS = 1e-7
 METHODS = ("mean", "max", "median")
+CLINICAL_COLUMNS = ("age", "tum_vol", "HR", "HER2")
+CLINICAL_MODEL_FEATURES = ("age", "log1p_tum_vol", "HR", "HER2")
 
 
 def configuracion(nombre="raw_rot90"):
-    if nombre not in {"base_raw", "raw_rot90", "pool_dropout_wd"}:
+    if nombre not in {"base_raw", "raw_rot90", "pool_dropout_wd", "pool_dropout_wd_clinical"}:
         raise ValueError("Configuración desconocida")
     config = {
         "name": nombre,
@@ -63,9 +65,15 @@ def configuracion(nombre="raw_rot90"):
         "augmentation": {"hflip": 0.5, "rot90": nombre != "base_raw"},
         "evaluation": {"threshold": 0.5, "checkpoint_metric": "patient_auc"},
     }
-    if nombre == "pool_dropout_wd":
+    if nombre in {"pool_dropout_wd", "pool_dropout_wd_clinical"}:
         config["model"].update(pooling="intermedio", dropout=.35)
         config["training"]["weight_decay"] = .001
+    if nombre == "pool_dropout_wd_clinical":
+        config["model"]["clinical"] = {
+            "raw_columns": list(CLINICAL_COLUMNS),
+            "features": list(CLINICAL_MODEL_FEATURES),
+            "missing_indicators": True,
+        }
     return config
 
 
@@ -113,9 +121,45 @@ class CNN(nn.Module):
         self.maxpool = GlobalMaxPool()
         hidden = int(self.config.get("hidden", 64))
         dropout = float(self.config.get("dropout", 0.20))
-        self.classifier = nn.Sequential(nn.Dropout(dropout), nn.Linear(canales[-1]*2, hidden),
-            nn.ReLU(inplace=True), nn.Dropout(dropout), nn.Linear(hidden, 1))
+        clinical = self.config.get("clinical")
+        self.clinical_enabled = clinical is not None
+        if self.clinical_enabled:
+            if clinical.get("features") != list(CLINICAL_MODEL_FEATURES):
+                raise ValueError("Variables clínicas incompatibles")
+            preprocessing = clinical.get("preprocessing")
+            if not isinstance(preprocessing, dict):
+                raise ValueError("Falta el preprocesado clínico ajustado en train")
+            expected = len(CLINICAL_MODEL_FEATURES)
+            for key in ("medians", "means", "stds"):
+                values = preprocessing.get(key)
+                if not isinstance(values, list) or len(values) != expected or not np.isfinite(values).all():
+                    raise ValueError(f"Preprocesado clínico inválido: {key}")
+                self.register_buffer("clinical_" + key, torch.tensor(values, dtype=torch.float32))
+            if (self.clinical_stds <= 0).any():
+                raise ValueError("Las desviaciones clínicas deben ser positivas")
+            clinical_width = expected * (2 if clinical.get("missing_indicators", True) else 1)
+            self.image_projection = nn.Sequential(
+                nn.Dropout(dropout), nn.Linear(canales[-1] * 2, hidden), nn.ReLU(inplace=True),
+                nn.Dropout(dropout))
+            # Las variables estandarizadas entran directamente en el único logit.
+            # Así la rama clínica puede reproducir un baseline lineal sin obligar
+            # a la CNN a reaprender HR/HER2 a partir de la imagen.
+            self.classifier = nn.Linear(hidden + clinical_width, 1)
+        else:
+            self.classifier = nn.Sequential(nn.Dropout(dropout), nn.Linear(canales[-1]*2, hidden),
+                nn.ReLU(inplace=True), nn.Dropout(dropout), nn.Linear(hidden, 1))
         self.apply(self._initialize)
+        if self.clinical_enabled and clinical.get("initialization") is not None:
+            initialization = clinical["initialization"]
+            coefficients = initialization.get("coefficients")
+            if (not isinstance(coefficients, list) or len(coefficients) != clinical_width or
+                    not np.isfinite(coefficients).all() or
+                    not np.isfinite(initialization.get("intercept", np.nan))):
+                raise ValueError("Inicialización clínica inválida")
+            with torch.no_grad():
+                self.classifier.weight.zero_()
+                self.classifier.weight[0, hidden:] = torch.tensor(coefficients, dtype=torch.float32)
+                self.classifier.bias.fill_(float(initialization["intercept"]))
 
     @staticmethod
     def _initialize(capa):
@@ -130,11 +174,26 @@ class CNN(nn.Module):
     def preprocess(self, x):
         return 2*x - 1
 
-    def forward(self, x):
+    def preprocess_clinical(self, clinical):
+        if clinical is None or clinical.ndim != 2 or clinical.shape[1] != len(CLINICAL_MODEL_FEATURES):
+            shape = None if clinical is None else tuple(clinical.shape)
+            raise ValueError(f"Esperadas variables clínicas [N,4], recibido {shape}")
+        missing = torch.isnan(clinical)
+        values = torch.where(missing, self.clinical_medians, clinical)
+        values = (values - self.clinical_means) / self.clinical_stds
+        if self.config["clinical"].get("missing_indicators", True):
+            values = torch.cat((values, missing.to(values.dtype)), dim=1)
+        return values
+
+    def forward(self, x, clinical=None):
         if x.ndim != 4 or tuple(x.shape[1:]) != (3, 256, 256):
             raise ValueError(f"Esperado [N,3,256,256], recibido {tuple(x.shape)}")
         z = self.features(self.preprocess(x))
         z = torch.cat((self.avgpool(z).flatten(1), self.maxpool(z).flatten(1)), dim=1)
+        if self.clinical_enabled:
+            z = torch.cat((self.image_projection(z), self.preprocess_clinical(clinical)), dim=1)
+        elif clinical is not None:
+            raise ValueError("Este modelo histórico no admite variables clínicas")
         return self.classifier(z)
 
 
@@ -142,7 +201,7 @@ def numero_parametros(modelo):
     return sum(p.numel() for p in modelo.parameters() if p.requires_grad)
 
 
-def cargar_train(root):
+def cargar_train(root, include_clinical=False):
     """Comprueba identidades globales y convierte etiquetas solamente de train."""
     rows, identidades, ids = [], {}, set()
     with (Path(root)/"metadata/samples.csv").open(newline="", encoding="utf-8") as f:
@@ -171,14 +230,92 @@ def cargar_train(root):
     for column in ("pCR", "fold"):
         if (frame.groupby("patient_id")[column].nunique() != 1).any():
             raise ValueError(f"Paciente con {column} inconsistente")
-    if "dataset" not in frame:
+    required_patient_columns = ["dataset", *(CLINICAL_COLUMNS if include_clinical else ())]
+    missing_patient_columns = [column for column in required_patient_columns if column not in frame]
+    if missing_patient_columns:
         with (Path(root)/"metadata/patients.csv").open(newline="", encoding="utf-8") as f:
             patients = pd.DataFrame([r for r in csv.DictReader(f) if r["split"] == "train"])
-        frame = frame.merge(patients[["pid", "dataset"]], left_on="patient_id", right_on="pid",
+        if patients.pid.duplicated().any():
+            raise ValueError("Paciente duplicada en patients.csv")
+        unavailable = set(missing_patient_columns) - set(patients.columns)
+        if unavailable:
+            raise ValueError(f"Faltan variables en patients.csv: {sorted(unavailable)}")
+        frame = frame.merge(patients[["pid", *missing_patient_columns]], left_on="patient_id", right_on="pid",
                             how="left", validate="many_to_one").drop(columns="pid")
     if frame.dataset.isna().any():
         raise ValueError("Paciente sin cohorte")
+    if include_clinical:
+        for column in CLINICAL_COLUMNS:
+            frame[column] = pd.to_numeric(frame[column], errors="coerce")
+            observed = frame[column].dropna().to_numpy(dtype=float)
+            if not np.isfinite(observed).all():
+                raise ValueError(f"{column} contiene valores no finitos")
+        if (frame[["age", "tum_vol"]].dropna() < 0).any().any():
+            raise ValueError("Edad y volumen tumoral no pueden ser negativos")
+        for column in ("HR", "HER2"):
+            observed = frame[column].dropna()
+            if not observed.isin([0, 1]).all():
+                raise ValueError(f"{column} debe ser binaria o ausente")
     return frame.reset_index(drop=True)
+
+
+def clinical_matrix(frame: pd.DataFrame) -> np.ndarray:
+    missing = set(CLINICAL_COLUMNS) - set(frame.columns)
+    if missing:
+        raise ValueError(f"Faltan variables clínicas: {sorted(missing)}")
+    raw = frame[list(CLINICAL_COLUMNS)].apply(pd.to_numeric, errors="coerce")
+    observed = raw.to_numpy(dtype=np.float64)
+    if not np.isfinite(observed[~np.isnan(observed)]).all():
+        raise ValueError("Las variables clínicas contienen infinitos")
+    tumor_volume = raw["tum_vol"].to_numpy(dtype=np.float64)
+    if np.any(tumor_volume[np.isfinite(tumor_volume)] < 0):
+        raise ValueError("El volumen tumoral no puede ser negativo")
+    return np.column_stack([
+        raw["age"].to_numpy(dtype=np.float64),
+        np.log1p(tumor_volume),
+        raw["HR"].to_numpy(dtype=np.float64),
+        raw["HER2"].to_numpy(dtype=np.float64),
+    ])
+
+
+def fit_clinical_preprocessing(train: pd.DataFrame) -> dict:
+    """Ajusta imputación y escala usando una fila por paciente del fold de train."""
+    patients = train.drop_duplicates("patient_id").sort_values("patient_id")
+    values = clinical_matrix(patients)
+    if np.isnan(values).all(axis=0).any():
+        raise ValueError("Una variable clínica no tiene valores observados en train")
+    medians = np.nanmedian(values, axis=0)
+    imputed = np.where(np.isnan(values), medians, values)
+    means = imputed.mean(axis=0)
+    stds = imputed.std(axis=0)
+    stds = np.where(stds > 1e-8, stds, 1.0)
+    return {
+        "fit_scope": "unique_patients_in_training_partition",
+        "medians": medians.tolist(),
+        "means": means.tolist(),
+        "stds": stds.tolist(),
+        "n_patients": int(len(patients)),
+    }
+
+
+def fit_clinical_initializer(train: pd.DataFrame, preprocessing: dict) -> dict:
+    """Ajusta el baseline lineal solo con pacientes del train del fold."""
+    patients = train.drop_duplicates("patient_id").sort_values("patient_id")
+    values = clinical_matrix(patients)
+    medians = np.asarray(preprocessing["medians"], dtype=float)
+    means = np.asarray(preprocessing["means"], dtype=float)
+    stds = np.asarray(preprocessing["stds"], dtype=float)
+    missing = np.isnan(values)
+    standardized = (np.where(missing, medians, values) - means) / stds
+    design = np.column_stack((standardized, missing.astype(float)))
+    labels = patients.pCR.to_numpy(dtype=int)
+    if set(labels) != {0, 1}:
+        raise ValueError("La inicialización clínica requiere ambas clases en train")
+    baseline = LogisticRegression(C=1.0, solver="lbfgs", max_iter=2000,
+                                  class_weight="balanced", random_state=0)
+    baseline.fit(design, labels)
+    return {"method": "fold_train_logistic_balanced", "coefficients": baseline.coef_[0].tolist(),
+            "intercept": float(baseline.intercept_[0]), "n_patients": int(len(patients))}
 
 
 def particion(samples, fold_val):
@@ -195,8 +332,11 @@ def particion(samples, fold_val):
 
 class DatasetEntrenamiento(pdatos.BreastDCESliceDataset):
     """Reutiliza el cargador de Marta, sin estandarización ni aumentos de validación."""
-    def __init__(self, filas, root, cache=None):
+    def __init__(self, filas, root, cache=None, clinical=False):
         self.cache = cache
+        self.clinical = bool(clinical)
+        if self.clinical:
+            clinical_matrix(filas)
         if not filas.split.eq("train").all():
             raise ValueError("El entrenamiento solo admite train")
         root = Path(root).resolve()
@@ -211,21 +351,27 @@ class DatasetEntrenamiento(pdatos.BreastDCESliceDataset):
     def __getitem__(self, indice):
         row = self.filas.iloc[indice]
         if self.cache is not None:
-            return {"image": self.cache.imagen(row.sample_id),
+            result = {"image": self.cache.imagen(row.sample_id),
                 "label": torch.tensor(float(row.pCR),dtype=torch.float32),
                 "patient_id": str(row.patient_id), "sample_id": str(row.sample_id),
                 "slice_index": torch.tensor(int(row.slice_index),dtype=torch.int64)}
+            if self.clinical:
+                result["clinical"] = torch.from_numpy(clinical_matrix(row.to_frame().T)[0].astype(np.float32))
+            return result
         for column in pdatos.COLUMNAS_RUTA:
             with Image.open(self.raiz/getattr(row, column)) as png:
                 if png.format != "PNG" or png.mode != "L" or png.size != (256, 256):
                     raise ValueError("Se requiere PNG monocromo de 8 bits y 256x256")
-        return super().__getitem__(indice)
+        result = super().__getitem__(indice)
+        if self.clinical:
+            result["clinical"] = torch.from_numpy(clinical_matrix(row.to_frame().T)[0].astype(np.float32))
+        return result
 
 
-def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None):
+def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None, clinical=False):
     # Los lectores trabajan en CPU; Linux usa fork y Windows/macOS spawn.
     context = ("fork" if sys.platform.startswith("linux") else "spawn") if workers else None
-    return DataLoader(DatasetEntrenamiento(samples, root, cache), batch_size=batch_size,
+    return DataLoader(DatasetEntrenamiento(samples, root, cache, clinical), batch_size=batch_size,
         shuffle=shuffle, num_workers=workers, pin_memory=torch.cuda.is_available(),
         persistent_workers=False, worker_init_fn=pdatos.inicializar_worker, generator=generator,
         multiprocessing_context=context)
@@ -250,6 +396,11 @@ def batch_device(batch, device):
     if x.dtype == torch.uint8:
         x = x.float().div_(255.0)
     return x, batch["label"].to(device,non_blocking=True)
+
+
+def batch_clinical(batch, device):
+    clinical = batch.get("clinical")
+    return clinical.to(device, non_blocking=True) if clinical is not None else None
 
 
 def sha256(path):
@@ -386,10 +537,11 @@ def train_epoch(model, loader, optimizer, scaler, criterion, device, amp, augmen
         if max_batches is not None and batch_idx >= max_batches:
             break
         x, y = batch_device(batch, device)
+        clinical = batch_clinical(batch, device)
         x = aumentar_geometria(x, augmentation_generator, **augmentation)
         optimizer.zero_grad(set_to_none=True)
         with amp_context(device, amp):
-            logits = model(x).squeeze(1)
+            logits = model(x, clinical).squeeze(1)
             loss = criterion(logits, y)
         if not torch.isfinite(loss):
             raise FloatingPointError("Pérdida no finita; no se seleccionará este run")
@@ -413,8 +565,9 @@ def predict(model, loader, device, amp=False, criterion=None):
     loss_sum, n = torch.zeros((), device=device), 0
     for batch in loader:
         x, y = batch_device(batch, device)
+        clinical = batch_clinical(batch, device)
         with amp_context(device, amp):
-            logits = model(x).squeeze(1)
+            logits = model(x, clinical).squeeze(1)
             if criterion is not None:
                 units = len(y)
                 loss_sum += criterion(logits, y) * units
@@ -455,9 +608,19 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
         raise ValueError("La época objetivo debe estar dentro del presupuesto fijado")
     torch.set_num_threads(int(tconf.get("cpu_threads", 8)))
     seed_everything(seed, tconf.get("deterministic", True))
-    all_train = cargar_train(root)
+    clinical_enabled = config["model"].get("clinical") is not None
+    all_train = cargar_train(root, include_clinical=clinical_enabled)
     train, val = particion(all_train, fold)
-    config["data_signature"] = hashlib.sha256(all_train.to_csv(index=False).encode()).hexdigest()
+    signature_frame = all_train.drop(columns=list(CLINICAL_COLUMNS), errors="ignore")
+    config["data_signature"] = hashlib.sha256(signature_frame.to_csv(index=False).encode()).hexdigest()
+    if clinical_enabled:
+        clinical_roster = all_train.drop_duplicates("patient_id").sort_values("patient_id")
+        clinical_values = clinical_roster[["patient_id", *CLINICAL_COLUMNS]]
+        config["clinical_signature"] = hashlib.sha256(
+            clinical_values.to_csv(index=False).encode()).hexdigest()
+        preprocessing = fit_clinical_preprocessing(train)
+        config["model"]["clinical"]["preprocessing"] = preprocessing
+        config["model"]["clinical"]["initialization"] = fit_clinical_initializer(train, preprocessing)
     config["pos_weight"] = pdatos.pos_weight_cortes(train) if loss_name == "weighted" else 1.0
     config["n_train_slices"], config["n_val_slices"] = len(train), len(val)
     config["n_train_patients"], config["n_val_patients"] = train.patient_id.nunique(), val.patient_id.nunique()
@@ -497,10 +660,12 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
     val_generator = torch.Generator().manual_seed(seed + 60000 + fold)
     workers = 0 if smoke else int(tconf["num_workers"])
     batch_size = min(8, tconf["batch_size"]) if smoke else tconf["batch_size"]
-    train_loader = make_loader(train, root, batch_size, workers, generator, shuffle=True, cache=cache)
-    val_loader = make_loader(val, root, batch_size, workers, val_generator, cache=cache)
+    train_loader = make_loader(train, root, batch_size, workers, generator, shuffle=True,
+                               cache=cache, clinical=clinical_enabled)
+    val_loader = make_loader(val, root, batch_size, workers, val_generator, cache=cache,
+                             clinical=clinical_enabled)
     train_eval_loader = make_loader(train, root, batch_size, workers,
-        torch.Generator().manual_seed(seed+70000+fold), cache=cache)
+        torch.Generator().manual_seed(seed+70000+fold), cache=cache, clinical=clinical_enabled)
     model = CNN(config).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=tconf["lr"], weight_decay=tconf["weight_decay"])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=tconf["epochs"], eta_min=tconf["min_lr"])
@@ -517,6 +682,13 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
         bad_epochs, history = loaded["bad_epochs"], loaded["history"]
         best_epoch = loaded["best_epoch"]
         print(f"Reanudando {run_dir} época {start_epoch + 1}", flush=True)
+    elif clinical_enabled:
+        baseline_probabilities, _ = predict(model, val_loader, device, False, criterion)
+        baseline_metrics = patient_metrics(val, baseline_probabilities, config["evaluation"]["threshold"])
+        best_auc = baseline_metrics["patient_auc"]
+        save_checkpoint(run_dir / "best.pt", model, optimizer, scheduler, scaler, -1, best_auc,
+                        bad_epochs, config, generator, aug_generator, history, best_epoch)
+        print(f"Baseline clínico fold-train: valAUC={best_auc:.4f}", flush=True)
     print(f"Run {run_dir}: {numero_parametros(model):,} parámetros; {len(train)} cortes train, "
           f"{len(val)} validación, pos_weight={config['pos_weight']:.4f}", flush=True)
     if device.type == "cuda":
@@ -781,7 +953,8 @@ def comparar_ejecuciones(root, output):
                 raise ValueError(f"Artefacto modificado: {folder/name}")
         fold = int(config["fold"])
         oof = validate_oof(pd.read_csv(folder/"oof_slices.csv"), roster[roster.fold.eq(fold)])
-        if config["name"] not in {"base_raw", "raw_rot90", "base_raw_pool", "raw_rot90_pool", "pool_dropout_wd"}:
+        if config["name"] not in {"base_raw", "raw_rot90", "base_raw_pool", "raw_rot90_pool",
+                                  "pool_dropout_wd", "pool_dropout_wd_clinical"}:
             raise ValueError("Nombre de configuración desconocido")
         key = (config["name"], config["loss"], int(config["seed"]))
         groups.setdefault(key, {})
@@ -792,7 +965,11 @@ def comparar_ejecuciones(root, output):
         groups[key][fold] = (oof, folder/"inference.pt", config)
         comparable = {k: v for k, v in config.items() if k not in {
             "loss", "seed", "fold", "pos_weight", "n_train_slices", "n_val_slices",
-            "n_train_patients", "n_val_patients"}}
+            "n_train_patients", "n_val_patients", "clinical_signature"}}
+        comparable = deepcopy(comparable)
+        if comparable.get("model", {}).get("clinical"):
+            comparable["model"]["clinical"].pop("preprocessing", None)
+            comparable["model"]["clinical"].pop("initialization", None)
         fingerprint = config_hash(comparable)
         if config["name"] in fingerprints and fingerprints[config["name"]] != fingerprint:
             raise ValueError("Comparación con distinto código, datos o presupuesto")
@@ -815,13 +992,24 @@ def comparar_ejecuciones(root, output):
             for method in METHODS:
                 patients = aggregate_patients(slices, method)
                 metrics = binary_metrics(patients.label, patients.probability)
+                fold_auc = []
+                for fold in range(5):
+                    held_out = patients[patients.fold.eq(fold)]
+                    auc = binary_metrics(held_out.label, held_out.probability)["roc_auc"]
+                    if auc is None:
+                        raise ValueError(f"Fold {fold} sin ambas clases; AUC no definida")
+                    fold_auc.append(auc)
+                metrics["fold_roc_auc"] = fold_auc
+                metrics["mean_fold_roc_auc"] = float(np.mean(fold_auc))
+                metrics["min_fold_roc_auc"] = float(np.min(fold_auc))
                 candidate = f"{name}_{loss}_{method}"
                 candidates.append({"candidate": candidate, "configuration": name, "loss": loss,
                     "aggregation": method, "metrics": metrics})
                 predictions[candidate] = patients
     if not candidates:
         raise ValueError("No hay comparaciones completas; las pruebas no son seleccionables")
-    selected = min(candidates, key=lambda c: (-c["metrics"]["roc_auc"], c["metrics"]["brier"],
+    selected = min(candidates, key=lambda c: (-c["metrics"]["mean_fold_roc_auc"],
+        -c["metrics"]["roc_auc"], c["metrics"]["brier"],
         c["aggregation"] != "mean", c["candidate"]))
     patients = predictions[selected["candidate"]]
     calibration = fit_platt(patients.label.to_numpy(), patients.probability.to_numpy())
@@ -845,10 +1033,14 @@ def comparar_ejecuciones(root, output):
             _, path, config = groups[selected["configuration"], selected["loss"], seed][fold]
             models.append({"path": os.path.relpath(path.resolve(), dest.resolve()), "sha256": sha256(path),
                 "seed": seed, "fold": fold, "model_config": config["model"]})
+    selected_clinical = any(item["model_config"].get("clinical") is not None for item in models)
     manifest = {"schema_version": 1, "status": "desarrollo_sin_test", "models": models,
         "aggregation": selected["aggregation"], "calibration": calibration, "threshold": threshold,
         "test_evaluated_once": False, "selection": selected,
-        "preprocessing": {"phases": list(pdatos.FASES), "shape": [3,256,256], "scaling": "uint8 / 255; CNN: 2*x-1"}}
+        "preprocessing": {"phases": list(pdatos.FASES), "shape": [3,256,256],
+                          "scaling": "uint8 / 255; CNN: 2*x-1",
+                          "clinical_required": selected_clinical,
+                          "clinical_raw_columns": list(CLINICAL_COLUMNS) if selected_clinical else []}}
     json_write(dest/"modelo_desarrollo.json", manifest)
     (dest/"modelo_desarrollo.json.sha256").write_text(sha256(dest/"modelo_desarrollo.json")+"\n")
     return report
@@ -856,7 +1048,10 @@ def comparar_ejecuciones(root, output):
 
 def cargar_manifest(path):
     path = Path(path).resolve()
-    if sha256(path) != path.with_suffix(path.suffix+".sha256").read_text().strip():
+    expected_checksum = path.with_suffix(path.suffix+".sha256").read_text().strip()
+    raw = path.read_bytes()
+    canonical_checksum = hashlib.sha256(raw.replace(b"\r\n", b"\n")).hexdigest()
+    if expected_checksum not in {sha256(path), canonical_checksum}:
         raise ValueError("El manifiesto ha cambiado")
     manifest = json.loads(path.read_text())
     if len(manifest["models"]) != 10 or {(m["seed"],m["fold"]) for m in manifest["models"]} != {
@@ -868,6 +1063,12 @@ def cargar_manifest(path):
     if calibration.get("clip_epsilon") != EPS or calibration["slope"] < 0 or not np.isfinite(
             [calibration["slope"], calibration["intercept"]]).all():
         raise ValueError("Calibración incompatible")
+    clinical_flags = {item["model_config"].get("clinical") is not None for item in manifest["models"]}
+    if len(clinical_flags) != 1:
+        raise ValueError("El ensemble mezcla modelos con y sin variables clínicas")
+    clinical_required = clinical_flags.pop()
+    if bool(manifest.get("preprocessing", {}).get("clinical_required", False)) != clinical_required:
+        raise ValueError("El manifiesto no describe correctamente las variables clínicas")
     for item in manifest["models"]:
         model_path = path.parent/item["path"]
         if sha256(model_path) != item["sha256"]:
@@ -880,22 +1081,38 @@ def cargar_manifest(path):
 
 def verificar_modelo_final(path):
     manifest = cargar_manifest(path)
+    parameter_counts = set()
     for item in manifest["models"]:
         artifact = torch.load(Path(path).parent/item["path"], map_location="cpu", weights_only=True)
         if artifact["model_config"] != item["model_config"]:
             raise ValueError("Configuración de pesos y manifiesto diferentes")
         model = CNN(artifact["model_config"])
-        if numero_parametros(model) != 551913:
+        parameters = numero_parametros(model)
+        if not model.clinical_enabled and parameters != 551913:
             raise ValueError("La arquitectura no coincide con el PDF")
+        parameter_counts.add(parameters)
         model.load_state_dict(artifact["state_dict"], strict=True)
-    return {"models": 10, "parameters_per_model": 551913, "checksums_verified": True,
+    if len(parameter_counts) != 1:
+        raise ValueError("Los modelos del ensemble tienen distinto número de parámetros")
+    return {"models": 10, "parameters_per_model": parameter_counts.pop(), "checksums_verified": True,
         "test_evaluated_once": manifest["test_evaluated_once"], "test_repeated": False,
-        "aggregation": manifest["aggregation"], "threshold": manifest["threshold"]}
+        "aggregation": manifest["aggregation"], "threshold": manifest["threshold"],
+        "clinical_required": manifest.get("preprocessing", {}).get("clinical_required", False)}
 
 
 @torch.inference_mode()
-def predecir_cortes(path, triples):
+def predecir_cortes(path, triples, clinical=None):
     manifest = cargar_manifest(path)
+    clinical_required = bool(manifest.get("preprocessing", {}).get("clinical_required", False))
+    if clinical_required and clinical is None:
+        raise ValueError("El modelo multimodal requiere edad, volumen tumoral, HR y HER2")
+    if not clinical_required and clinical is not None:
+        raise ValueError("El modelo histórico no admite variables clínicas")
+    clinical_values = None
+    if clinical_required:
+        if set(clinical) != set(CLINICAL_COLUMNS):
+            raise ValueError(f"Se requieren exactamente estas variables clínicas: {list(CLINICAL_COLUMNS)}")
+        clinical_values = clinical_matrix(pd.DataFrame([clinical])).astype(np.float32)
     images, sample_ids, patient_ids = [], set(), set()
     for triple in triples:
         if len(triple) != 3:
@@ -922,18 +1139,22 @@ def predecir_cortes(path, triples):
     if not images or len(patient_ids) != 1:
         raise ValueError("Se necesitan cortes de una sola paciente")
     x = torch.stack(images)
+    clinical_tensor = None
+    if clinical_values is not None:
+        clinical_tensor = torch.from_numpy(clinical_values).repeat(len(images), 1)
     predictions = []
     for item in manifest["models"]:
         artifact = torch.load(Path(path).parent/item["path"],map_location="cpu",weights_only=True)
         model = CNN(artifact["model_config"]).eval()
         model.load_state_dict(artifact["state_dict"],strict=True)
-        predictions.append(torch.sigmoid(model(x).squeeze(1)).numpy())
+        predictions.append(torch.sigmoid(model(x, clinical_tensor).squeeze(1)).numpy())
     slices = np.mean(predictions,axis=0)
     raw = float(getattr(np, manifest["aggregation"])(slices))
     calibrated = float(apply_calibration(np.array([raw]),manifest["calibration"])[0])
     return {"patient_id": next(iter(patient_ids)), "n_slices": len(images), "probability_raw": raw,
         "probability_calibrated": calibrated, "threshold": manifest["threshold"],
         "pCR": int(calibrated >= manifest["threshold"]), "models": len(predictions),
+        "clinical_used": clinical_required,
         "notice": "Uso educativo. La calibración se ajustó con varios cortes por paciente."}
 
 
@@ -1041,7 +1262,8 @@ def main():
     parser.add_argument("--datos",type=Path,default=pdatos.DATOS)
     parser.add_argument("--salida",type=Path,default=None)
     parser.add_argument("--manifest",type=Path,default=SALIDA/"modelo_final.json")
-    parser.add_argument("--configuraciones",nargs="+",choices=("base_raw","raw_rot90","pool_dropout_wd"),default=["raw_rot90"])
+    parser.add_argument("--configuraciones",nargs="+",choices=("base_raw","raw_rot90","pool_dropout_wd",
+        "pool_dropout_wd_clinical"),default=["raw_rot90"])
     parser.add_argument("--perdidas",nargs="+",choices=("normal","ponderada"),default=["normal","ponderada"])
     parser.add_argument("--semillas",nargs="+",type=int,default=[42,2026])
     parser.add_argument("--folds",nargs="+",type=int,choices=range(5),default=list(range(5)))
@@ -1055,6 +1277,10 @@ def main():
     parser.add_argument("--prueba",action="store_true",help="Un lote y una época; excluido de la selección")
     for phase in ("pre","early","late"):
         parser.add_argument("--"+phase,type=Path,nargs="+")
+    parser.add_argument("--edad", type=float)
+    parser.add_argument("--volumen-tumoral", type=float)
+    parser.add_argument("--hr", type=float, choices=(0.0, 1.0))
+    parser.add_argument("--her2", type=float, choices=(0.0, 1.0))
     args = parser.parse_args()
     args.salida = args.salida or SALIDA/"ejecuciones"
     if args.workers < 0 or args.lote < 1 or args.epocas < 1 or args.revision_cada < 1:
@@ -1084,7 +1310,10 @@ def main():
         if not args.pre or not args.early or not args.late or not len(args.pre)==len(args.early)==len(args.late):
             parser.error("predecir requiere el mismo número de --pre, --early y --late")
         torch.set_num_threads(8)
-        print(json.dumps(predecir_cortes(args.manifest,list(zip(args.pre,args.early,args.late))),ensure_ascii=False,indent=2))
+        clinical_args = (args.edad, args.volumen_tumoral, args.hr, args.her2)
+        clinical = None if all(value is None for value in clinical_args) else {
+            "age": args.edad, "tum_vol": args.volumen_tumoral, "HR": args.hr, "HER2": args.her2}
+        print(json.dumps(predecir_cortes(args.manifest,list(zip(args.pre,args.early,args.late)),clinical),ensure_ascii=False,indent=2))
     else:
         print(json.dumps(verificar_modelo_final(args.manifest),ensure_ascii=False,indent=2))
 

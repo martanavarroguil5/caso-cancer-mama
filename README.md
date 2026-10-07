@@ -19,6 +19,101 @@ si ya están en el ordenador. Para usar el modelo final en otro ordenador, copia
 también `resultados/04_entrenamiento/modelos/`: los diez archivos `.pt` no se
 suben a Git y deben conservarse junto a su manifiesto.
 
+## Abrir y entrenar en otro ordenador con GPU
+
+Git solo descarga archivos confirmados y enviados al remoto. Antes de cambiar de
+ordenador hay que comprobar que el código multimodal está en un commit y se ha
+hecho `git push`. El dataset y los pesos están ignorados deliberadamente y no
+viajan con `git clone`.
+
+En el ordenador con GPU:
+
+```powershell
+git clone https://github.com/martanavarroguil5/caso-cancer-mama.git
+cd caso-cancer-mama
+```
+
+La carpeta de datos que se copie por separado debe quedar exactamente así:
+
+```text
+caso-cancer-mama/
+├── breastdcedl/
+│   ├── dataset/
+│   ├── metadata/
+│   └── documentation/
+├── 04_entrenamiento.py
+└── requirements.txt
+```
+
+No se debe copiar ni reutilizar `.venv/` del primer ordenador: contiene una
+instalación de PyTorch para CPU. Crear un entorno nuevo, preferiblemente con
+Python 3.12:
+
+```powershell
+py -3.12 -m venv .venv
+.venv\Scripts\python.exe -m pip install --upgrade pip
+```
+
+`requirements.txt` contiene las dependencias de Python, pero no puede instalar
+el controlador NVIDIA ni elegir por sí solo la compilación CUDA apropiada. Hay
+que instalar primero PyTorch CUDA usando el comando generado por el
+[selector oficial de PyTorch](https://pytorch.org/get-started/locally/) para el
+sistema y controlador concretos. Después se instala el resto:
+
+```powershell
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+La instalación debe verificarse antes de entrenar:
+
+```powershell
+nvidia-smi
+.venv\Scripts\python.exe -c "import torch; print(torch.__version__); print(torch.version.cuda); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'SIN CUDA')"
+```
+
+`torch.cuda.is_available()` debe devolver `True`. A continuación se ejecutan los
+tests y un humo de un único lote, que no es seleccionable ni sirve como resultado:
+
+```powershell
+.venv\Scripts\python.exe -B -m unittest discover -s tests -v
+
+.venv\Scripts\python.exe -B 04_entrenamiento.py entrenar `
+  --prueba --configuraciones pool_dropout_wd_clinical `
+  --perdidas ponderada --semillas 42 --folds 0 `
+  --epocas 1 --lote 8 --workers 0 --dispositivo cuda `
+  --salida resultados/04_entrenamiento/multimodal_clinico_20261007
+```
+
+Si ambas comprobaciones terminan bien, la matriz completa es una configuración ×
+dos pérdidas × dos semillas × cinco folds: **20 entrenamientos secuenciales**.
+
+```powershell
+.venv\Scripts\python.exe -B 04_entrenamiento.py entrenar `
+  --configuraciones pool_dropout_wd_clinical `
+  --perdidas normal ponderada --semillas 42 2026 --folds 0 1 2 3 4 `
+  --epocas 46 --lote 64 --workers 4 --dispositivo cuda `
+  --salida resultados/04_entrenamiento/multimodal_clinico_20261007
+```
+
+Repetir exactamente el mismo comando y la misma salida reanuda cada run desde
+su última época completa. Si Windows da errores con los procesos de lectura,
+puede usarse `--workers 0` o `--workers 2`. Si se modifica el lote u otro
+hiperparámetro, debe utilizarse una salida nueva para no mezclar configuraciones.
+
+Cuando terminen los veinte runs:
+
+```powershell
+.venv\Scripts\python.exe -B 04_entrenamiento.py comparar `
+  --salida resultados/04_entrenamiento/multimodal_clinico_20261007
+```
+
+Hay que conservar y copiar de vuelta toda esa carpeta de resultados: contiene
+los checkpoints `.pt`, las curvas, predicciones OOF, métricas y el manifiesto del
+ensemble, y Git no subirá automáticamente los pesos. Se recomienda entrenar en
+un SSD local, evitar que el ordenador se suspenda y disponer de al menos 10 GiB
+libres. La versión ampliada de esta lista está en
+[GUIA_GPU_MULTIMODAL.md](GUIA_GPU_MULTIMODAL.md).
+
 ## Pasos
 
 ```bash
@@ -199,6 +294,50 @@ inconcluyentes y fuera del entrenador activo; no se sustituye el modelo históri
 La evidencia y código congelado están en
 `resultados/04_entrenamiento/cuatro_mejoras_20261005/`, separados del paso 04.
 Se conservan los pasos 01–03 y la CNN 2D desde cero exigida por la práctica.
+
+## Candidato multimodal clínico
+
+`pool_dropout_wd_clinical` añade a la CNN ajustada cuatro variables disponibles
+en `patients.csv`: edad, volumen tumoral, HR y HER2. La red sigue partiendo de
+cero y termina en un único logit. La imputación y estandarización se ajustan solo
+con las pacientes de aprendizaje de cada fold y se guardan dentro de sus pesos.
+No se utilizan cohorte, raza, coordenadas de recorte ni indicadores del split.
+La salida clínica se inicializa con una regresión logística ponderada ajustada
+en ese mismo train y su rendimiento se conserva como checkpoint de época 0: la
+optimización conjunta puede mejorarlo, pero no sustituirlo por un checkpoint peor.
+
+Es un candidato pendiente, no sustituye al modelo histórico. Su uso en la defensa
+depende de que el profesorado proporcione esas cuatro variables junto con cada
+muestra privada. El
+[protocolo multimodal](docs/mejoras_cnn/PROTOCOLO_MULTIMODAL_CLINICO.md) fija
+antes del entrenamiento veinte jobs, el test cerrado y AUC media y OOF de al
+menos 0,70 como criterios principales.
+La [guía de traslado a GPU](GUIA_GPU_MULTIMODAL.md) detalla qué copiar, cómo
+instalar CUDA, ejecutar el humo, reanudar los veinte runs y recuperar los pesos.
+
+```powershell
+.venv\Scripts\python.exe -B 04_entrenamiento.py entrenar `
+  --configuraciones pool_dropout_wd_clinical `
+  --perdidas normal ponderada --semillas 42 2026 --folds 0 1 2 3 4 `
+  --epocas 46 --lote 64 --dispositivo cuda `
+  --salida resultados/04_entrenamiento/multimodal_clinico_20261007
+
+.venv\Scripts\python.exe -B 04_entrenamiento.py comparar `
+  --salida resultados/04_entrenamiento/multimodal_clinico_20261007
+```
+
+Para un manifiesto multimodal, `predecir` recibe además `--edad`,
+`--volumen-tumoral`, `--hr` y `--her2`. Una variable individual omitida se trata
+como ausente mediante la imputación del fold; omitir las cuatro se rechaza para
+evitar una predicción accidental sin la modalidad clínica.
+
+La [justificación cuantitativa](resultados/05_informe_mejora/INFORME_JUSTIFICACION.md)
+compara ROC, PR, loss de train/validación, folds, cohortes, calibración y el test
+histórico. Se regenera, sin volver a evaluar el candidato en test, con:
+
+```powershell
+.venv\Scripts\python.exe -B 05_informe_mejora.py
+```
 
 ## Experimentos descartados y limpieza
 
