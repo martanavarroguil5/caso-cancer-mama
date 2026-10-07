@@ -1,0 +1,111 @@
+{
+  "name": "patient_level_clinical",
+  "model": {
+    "representation": "raw",
+    "channels": [
+      24,
+      48,
+      96,
+      160
+    ],
+    "hidden": 64,
+    "dropout": 0.35,
+    "pooling": "intermedio",
+    "clinical": {
+      "raw_columns": [
+        "age",
+        "tum_vol",
+        "HR",
+        "HER2"
+      ],
+      "features": [
+        "age",
+        "log1p_tum_vol",
+        "HR",
+        "HER2"
+      ],
+      "missing_indicators": true,
+      "preprocessing": {
+        "fit_scope": "unique_patients_in_training_partition",
+        "medians": [
+          49.0,
+          2.6108084337598014,
+          1.0,
+          0.0
+        ],
+        "means": [
+          48.80200684150513,
+          2.664256525151022,
+          0.580387685290764,
+          0.2531356898517674
+        ],
+        "stds": [
+          10.467126934247512,
+          1.0768417500135943,
+          0.4934955116853579,
+          0.43480801783664913
+        ],
+        "n_patients": 877
+      },
+      "initialization": {
+        "method": "fold_train_logistic_balanced",
+        "coefficients": [
+          -0.28511686388160734,
+          -0.31139906055708894,
+          -0.6359006961931861,
+          0.42285828770422595,
+          -0.14966744731244325,
+          0.0,
+          -0.3386284761686785,
+          0.4023608657611141
+        ],
+        "intercept": -0.13386362363655452,
+        "n_patients": 877
+      }
+    }
+  },
+  "training": {
+    "epochs": 46,
+    "min_epochs": 12,
+    "patience": 10,
+    "min_delta": 0.001,
+    "batch_size": 64,
+    "lr": 0.0008,
+    "min_lr": 1e-05,
+    "weight_decay": 0.001,
+    "clip_grad_norm": 5.0,
+    "amp": true,
+    "num_workers": 4,
+    "cpu_threads": 8,
+    "deterministic": true,
+    "review_interval": 10,
+    "loss_unit": "patient",
+    "patients_per_batch": 6
+  },
+  "augmentation": {
+    "hflip": 0.5,
+    "rot90": true
+  },
+  "evaluation": {
+    "threshold": 0.5,
+    "checkpoint_metric": "patient_auc",
+    "threshold_strategy": "max_specificity_at_min_sensitivity",
+    "min_sensitivity": 0.9
+  },
+  "loss": "weighted",
+  "seed": 2026,
+  "fold": 3,
+  "smoke": false,
+  "source_sha256": {
+    "04_entrenamiento.py": "9ba4a3d7b5840abc20ffa778fa9c283883091c16ddbb28336ee02e0be4d6768b",
+    "pipeline_datos.py": "b61e550788d321536dccb96c87b09a3b04c1ef87f885c6945056b935215eb8eb"
+  },
+  "device_type": "cuda",
+  "data_signature": "d5dd0e325f58f06e82085fd1c37017aa94a0ef6549b89d6ed57d941a289a0212",
+  "clinical_signature": "725bd56d736c71c0a0c84eb672a877e96cf50d4f95e33ce679e0776c96be2162",
+  "pos_weight": 2.5506072874493926,
+  "n_train_slices": 8753,
+  "n_val_slices": 2192,
+  "n_train_patients": 877,
+  "n_val_patients": 220
+}
