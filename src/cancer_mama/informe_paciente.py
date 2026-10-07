@@ -333,6 +333,8 @@ La última revisión registra medianas AUC train {training['median_final_train_a
 
 ![Folds y evolución del entrenamiento](02_folds_entrenamiento.png)
 
+La mediana de cada época usa solo los runs que alcanzan esa época. La parada temprana reduce el número de runs disponibles y cambia su composición, por lo que una caída de la mediana tardía no demuestra por sí sola que todos los modelos hayan empeorado. Las líneas individuales y la tabla de runs permiten distinguir ambas situaciones.
+
 El comparador promedia primero las semillas por corte y valora media, máximo y mediana por paciente. Selecciona por AUC media de los cinco folds, seguida de AUC agrupada, Brier y preferencia por media en empate. La agregación elegida es `{summary['selected']['aggregation']}`.
 
 {table_md(candidates)}
