@@ -1,0 +1,116 @@
+{
+  "base_marta": "69a44eba05523ced9eb95bbbf77dda91bf398db2",
+  "head_before_cleanup": "9c8c2d5ca3e04cb92ffffce6e81700f2e48d14a8",
+  "backup_directory": "/home/jorgesrab/Respaldos/caso-cancer-mama/2026-10-03_limpieza_181637",
+  "archive": "/home/jorgesrab/Respaldos/caso-cancer-mama/2026-10-03_limpieza_181637/proyecto_antes_de_limpiar.tar.gz",
+  "migration": "Solo traslado y refactorización: sin reentrenar ni repetir test.",
+  "original_manifest_sha256": "97120e5b293569a7d4a8c6b78a81368873d7d976378873591bf5354007d99338",
+  "original_source_checksums": {
+    "cnn.py": "7e71d385efbebc7183f65049627849ee89058c3180f8871168591fc4c917e595",
+    "datos.py": "12a5a65b17a736f9cf3aca34183649a2775006ee760b028f3135cd13506836af",
+    "entrenar.py": "75d0a724c6f1a188faea4eafb13afc76ebe2d7ca2372b6a1be995c742092e0cf",
+    "evaluar.py": "2b98711766c76ed604e029482a9320acfe987584b2ea049098f8c66a3bc5e745"
+  },
+  "weights": [
+    {
+      "original_path": "/home/jorgesrab/Escritorio/caso-cancer-mama/runs/experimentos/raw_rot90/weighted/seed_2026/fold_0/inference.pt",
+      "current_path": "modelos/cnn_semilla_2026_fold_0.pt",
+      "sha256": "40f04613183a19acb0e938965ea4885df8c3d7a41df58a9fd55b20e3a582a279"
+    },
+    {
+      "original_path": "/home/jorgesrab/Escritorio/caso-cancer-mama/runs/experimentos/raw_rot90/weighted/seed_2026/fold_1/inference.pt",
+      "current_path": "modelos/cnn_semilla_2026_fold_1.pt",
+      "sha256": "0f9427bf78d2dd54c3cf2174fd02485c063914436d10b099134ccfb05d5d208b"
+    },
+    {
+      "original_path": "/home/jorgesrab/Escritorio/caso-cancer-mama/runs/experimentos/raw_rot90/weighted/seed_2026/fold_2/inference.pt",
+      "current_path": "modelos/cnn_semilla_2026_fold_2.pt",
+      "sha256": "56ab733875b53243780e72927a809817783604fb3ceceb35e360e5f54663d4f0"
+    },
+    {
+      "original_path": "/home/jorgesrab/Escritorio/caso-cancer-mama/runs/experimentos/raw_rot90/weighted/seed_2026/fold_3/inference.pt",
+      "current_path": "modelos/cnn_semilla_2026_fold_3.pt",
+      "sha256": "1ad586cfb339faf2d5a6c9a48366ba67b7aee7310d86ca5b363d30da4a9b702f"
+    },
+    {
+      "original_path": "/home/jorgesrab/Escritorio/caso-cancer-mama/runs/experimentos/raw_rot90/weighted/seed_2026/fold_4/inference.pt",
+      "current_path": "modelos/cnn_semilla_2026_fold_4.pt",
+      "sha256": "29ca5305401a875e5444edbc9019ee6bbd8de172eb2d043a2984c33cc967af3a"
+    },
+    {
+      "original_path": "/home/jorgesrab/Escritorio/caso-cancer-mama/runs/experimentos/raw_rot90/weighted/seed_42/fold_0/inference.pt",
+      "current_path": "modelos/cnn_semilla_42_fold_0.pt",
+      "sha256": "40f150f2ba7347dbc55d1706886310891c723eb62db2f150a8038ced72e45ee3"
+    },
+    {
+      "original_path": "/home/jorgesrab/Escritorio/caso-cancer-mama/runs/experimentos/raw_rot90/weighted/seed_42/fold_1/inference.pt",
+      "current_path": "modelos/cnn_semilla_42_fold_1.pt",
+      "sha256": "20fbe166179cbe79a13643beb1d354668a927a2d21213ef695a355aa3ac70f4f"
+    },
+    {
+      "original_path": "/home/jorgesrab/Escritorio/caso-cancer-mama/runs/experimentos/raw_rot90/weighted/seed_42/fold_2/inference.pt",
+      "current_path": "modelos/cnn_semilla_42_fold_2.pt",
+      "sha256": "f1ed55ff30234381e1eae5fc4cde2d8fef6e39a4b2558f5a1d86a550872bb1ea"
+    },
+    {
+      "original_path": "/home/jorgesrab/Escritorio/caso-cancer-mama/runs/experimentos/raw_rot90/weighted/seed_42/fold_3/inference.pt",
+      "current_path": "modelos/cnn_semilla_42_fold_3.pt",
+      "sha256": "00de97207245307151472919e5d1f8d67dc2f16725cb2d02ac6929d32a588ee5"
+    },
+    {
+      "original_path": "/home/jorgesrab/Escritorio/caso-cancer-mama/runs/experimentos/raw_rot90/weighted/seed_42/fold_4/inference.pt",
+      "current_path": "modelos/cnn_semilla_42_fold_4.pt",
+      "sha256": "32444d3882df73e56672d596ff3bf2cb8487e7649e476367baa153d276cd1011"
+    }
+  ],
+  "completed_experiments": [
+    {
+      "configuration": "base_enhancement",
+      "loss": "weighted",
+      "fold_runs": 2
+    },
+    {
+      "configuration": "base_raw",
+      "loss": "normal",
+      "fold_runs": 10
+    },
+    {
+      "configuration": "base_raw",
+      "loss": "weighted",
+      "fold_runs": 10
+    },
+    {
+      "configuration": "raw_rot90",
+      "loss": "normal",
+      "fold_runs": 10
+    },
+    {
+      "configuration": "raw_rot90",
+      "loss": "weighted",
+      "fold_runs": 10
+    }
+  ],
+  "historical_evidence_sha256": {
+    "curvas_entrenamiento.csv": "9f0e3c8e037e3a3331542e8588ec4e2c81b6896b73d1aa7913ab8555b9ae8990",
+    "oof_pacientes.csv": "5fb5b9394c7a7af6badb4f9f7dc2352bf76f88fe6051eb3cd648cf640fcb7c23",
+    "manifiesto_original.json": "97120e5b293569a7d4a8c6b78a81368873d7d976378873591bf5354007d99338",
+    "test_metrics.json": "d8a0d98b9edb71b2c6daa5b1461056ea39f9b9afc900bee5207d812d6ff7b52c",
+    "informe_original.pdf": "7e556b7921382af65ed3c9838b2f2c69772f04e3abde8f611ccfdf4118facb7f",
+    "comparacion_perdidas.json": "c716d864c1ed4b951232f27042540eae4c9f6305b46c9dca0f26d68bfeb3e870",
+    "oof_cortes.csv": "534d733762c3a2471dfe4cbf5711c9e29f7ff0c74bded5e2cb29d3779c33f92b",
+    "test_pacientes.csv": "c264478abeb7aea0594e1af317c6299f613901c0f79ab8e004ec4d4c223fa02a",
+    "test_evaluation.lock": "e321c5200001d64c62c1d7c717e71625c9a24e635a05c68bc0e0911979ced26e",
+    "manifiesto_original.json.sha256": "6dace60f35d6fda913bab6c1e6488d791383b0bfc76aee39d4b0ba9224b64af0",
+    "test_metrics.csv": "3cbef4a5eb139f5898a61194dc09a509e2d7ee47200fcb65e13ff52d686d96dc",
+    "seleccion_oof.json": "d69e8e4b225ab4925ed404a0cb7ed273161b8d5633c46a18f7c1cd95d63ceeeb",
+    "seleccion_original.json": "3bb60f010012803df5c63b169c35b0eab871e6618c598a492d8c56cdffcb1934",
+    "COMPLETE.json": "63c0e91bb0079c297aed336d58bf9ba62eea04eb42df243ed28444d6d1d0e3e6",
+    "comparacion_oof.csv": "efead856c7033d796e6043da1c956cbcaaac252e898edfd84f548ad21e70d65c",
+    "test_cortes.csv": "6f0719fe5ed066b010bad92bd843607da885804d4e94fe7a1082316ae21b514f"
+  },
+  "original_test_completed": {
+    "completed_at": "2026-09-30T12:32:56.627085+00:00",
+    "manifest_sha256": "97120e5b293569a7d4a8c6b78a81368873d7d976378873591bf5354007d99338",
+    "metrics_sha256": "d8a0d98b9edb71b2c6daa5b1461056ea39f9b9afc900bee5207d812d6ff7b52c"
+  }
+}

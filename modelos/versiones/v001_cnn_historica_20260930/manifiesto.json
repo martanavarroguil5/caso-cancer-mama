@@ -1,0 +1,324 @@
+{
+  "schema_version": 1,
+  "status": "historico_conservado",
+  "base_marta": "69a44eba05523ced9eb95bbbf77dda91bf398db2",
+  "frozen_at": "2026-09-30T12:24:47.566059+00:00",
+  "models": [
+    {
+      "path": "pesos/semilla_2026_fold_0.pt",
+      "sha256": "40f04613183a19acb0e938965ea4885df8c3d7a41df58a9fd55b20e3a582a279",
+      "seed": 2026,
+      "fold": 0,
+      "model_config": {
+        "representation": "raw",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.2
+      }
+    },
+    {
+      "path": "pesos/semilla_2026_fold_1.pt",
+      "sha256": "0f9427bf78d2dd54c3cf2174fd02485c063914436d10b099134ccfb05d5d208b",
+      "seed": 2026,
+      "fold": 1,
+      "model_config": {
+        "representation": "raw",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.2
+      }
+    },
+    {
+      "path": "pesos/semilla_2026_fold_2.pt",
+      "sha256": "56ab733875b53243780e72927a809817783604fb3ceceb35e360e5f54663d4f0",
+      "seed": 2026,
+      "fold": 2,
+      "model_config": {
+        "representation": "raw",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.2
+      }
+    },
+    {
+      "path": "pesos/semilla_2026_fold_3.pt",
+      "sha256": "1ad586cfb339faf2d5a6c9a48366ba67b7aee7310d86ca5b363d30da4a9b702f",
+      "seed": 2026,
+      "fold": 3,
+      "model_config": {
+        "representation": "raw",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.2
+      }
+    },
+    {
+      "path": "pesos/semilla_2026_fold_4.pt",
+      "sha256": "29ca5305401a875e5444edbc9019ee6bbd8de172eb2d043a2984c33cc967af3a",
+      "seed": 2026,
+      "fold": 4,
+      "model_config": {
+        "representation": "raw",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.2
+      }
+    },
+    {
+      "path": "pesos/semilla_42_fold_0.pt",
+      "sha256": "40f150f2ba7347dbc55d1706886310891c723eb62db2f150a8038ced72e45ee3",
+      "seed": 42,
+      "fold": 0,
+      "model_config": {
+        "representation": "raw",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.2
+      }
+    },
+    {
+      "path": "pesos/semilla_42_fold_1.pt",
+      "sha256": "20fbe166179cbe79a13643beb1d354668a927a2d21213ef695a355aa3ac70f4f",
+      "seed": 42,
+      "fold": 1,
+      "model_config": {
+        "representation": "raw",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.2
+      }
+    },
+    {
+      "path": "pesos/semilla_42_fold_2.pt",
+      "sha256": "f1ed55ff30234381e1eae5fc4cde2d8fef6e39a4b2558f5a1d86a550872bb1ea",
+      "seed": 42,
+      "fold": 2,
+      "model_config": {
+        "representation": "raw",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.2
+      }
+    },
+    {
+      "path": "pesos/semilla_42_fold_3.pt",
+      "sha256": "00de97207245307151472919e5d1f8d67dc2f16725cb2d02ac6929d32a588ee5",
+      "seed": 42,
+      "fold": 3,
+      "model_config": {
+        "representation": "raw",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.2
+      }
+    },
+    {
+      "path": "pesos/semilla_42_fold_4.pt",
+      "sha256": "32444d3882df73e56672d596ff3bf2cb8487e7649e476367baa153d276cd1011",
+      "seed": 42,
+      "fold": 4,
+      "model_config": {
+        "representation": "raw",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.2
+      }
+    }
+  ],
+  "aggregation": "mean",
+  "calibration": {
+    "method": "regularized_platt",
+    "input": "logit_patient_aggregated_probability",
+    "slope": 0.6680108289790444,
+    "intercept": -0.815361445727788,
+    "C": 1.0,
+    "clip_epsilon": 1e-07,
+    "scope": "patient",
+    "fit_data": "train_oof",
+    "nonnegative_slope_constraint": true,
+    "boundary_solution": false
+  },
+  "threshold": 0.2982406880601241,
+  "preprocessing": {
+    "phases": [
+      "PRE",
+      "EARLY",
+      "LATE"
+    ],
+    "shape": [
+      3,
+      256,
+      256
+    ],
+    "dtype": "float32",
+    "scaling": "uint8 / 255",
+    "augmentation_at_inference": false
+  },
+  "test_evaluated_once": true,
+  "test_completed_at": "2026-09-30T12:32:56.627085+00:00",
+  "test_metrics_path": "evidencia/repo/resultados/04_entrenamiento/historico/test_metrics.json",
+  "selection": {
+    "candidate": "2685c82dbae6c889_weighted_mean",
+    "configuration": "2685c82dbae6c889",
+    "loss": "weighted",
+    "seeds": [
+      42,
+      2026
+    ],
+    "aggregation": "mean",
+    "runs": [
+      "runs/experimentos/raw_rot90/weighted/seed_2026",
+      "runs/experimentos/raw_rot90/weighted/seed_42"
+    ],
+    "eligible": true,
+    "metrics_raw_oof": {
+      "n_patients": 1097,
+      "n_positive": 322,
+      "prevalence": 0.2935278030993619,
+      "roc_auc": 0.594510118212783,
+      "average_precision": 0.3773966286517211,
+      "brier": 0.23585884418869607,
+      "log_loss": 0.6654920029763175,
+      "accuracy": 0.626253418413856,
+      "sensitivity": 0.43167701863354035,
+      "specificity": 0.7070967741935484,
+      "threshold": 0.5,
+      "tn": 548,
+      "fp": 227,
+      "fn": 183,
+      "tp": 139,
+      "confusion_matrix": [
+        [
+          548,
+          227
+        ],
+        [
+          183,
+          139
+        ]
+      ]
+    }
+  },
+  "original_manifest_sha256": "97120e5b293569a7d4a8c6b78a81368873d7d976378873591bf5354007d99338",
+  "provenance_files": [
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/COMPLETE.json",
+      "sha256": "63c0e91bb0079c297aed336d58bf9ba62eea04eb42df243ed28444d6d1d0e3e6"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/comparacion_oof.csv",
+      "sha256": "efead856c7033d796e6043da1c956cbcaaac252e898edfd84f548ad21e70d65c"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/comparacion_perdidas.json",
+      "sha256": "c716d864c1ed4b951232f27042540eae4c9f6305b46c9dca0f26d68bfeb3e870"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/curvas_entrenamiento.csv",
+      "sha256": "9f0e3c8e037e3a3331542e8588ec4e2c81b6896b73d1aa7913ab8555b9ae8990"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/informe_original.pdf",
+      "sha256": "7e556b7921382af65ed3c9838b2f2c69772f04e3abde8f611ccfdf4118facb7f"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/manifiesto_original.json",
+      "sha256": "97120e5b293569a7d4a8c6b78a81368873d7d976378873591bf5354007d99338"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/manifiesto_original.json.sha256",
+      "sha256": "6dace60f35d6fda913bab6c1e6488d791383b0bfc76aee39d4b0ba9224b64af0"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/oof_cortes.csv",
+      "sha256": "534d733762c3a2471dfe4cbf5711c9e29f7ff0c74bded5e2cb29d3779c33f92b"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/oof_pacientes.csv",
+      "sha256": "5fb5b9394c7a7af6badb4f9f7dc2352bf76f88fe6051eb3cd648cf640fcb7c23"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/procedencia.json",
+      "sha256": "8af672283cab725d61264e47c1618a40f534c8405f68827b1a105323718ab99b"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/seleccion_oof.json",
+      "sha256": "d69e8e4b225ab4925ed404a0cb7ed273161b8d5633c46a18f7c1cd95d63ceeeb"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/seleccion_original.json",
+      "sha256": "3bb60f010012803df5c63b169c35b0eab871e6618c598a492d8c56cdffcb1934"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/test_cortes.csv",
+      "sha256": "6f0719fe5ed066b010bad92bd843607da885804d4e94fe7a1082316ae21b514f"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/test_evaluation.lock",
+      "sha256": "e321c5200001d64c62c1d7c717e71625c9a24e635a05c68bc0e0911979ced26e"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/test_metrics.csv",
+      "sha256": "3cbef4a5eb139f5898a61194dc09a509e2d7ee47200fcb65e13ff52d686d96dc"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/test_metrics.json",
+      "sha256": "d8a0d98b9edb71b2c6daa5b1461056ea39f9b9afc900bee5207d812d6ff7b52c"
+    },
+    {
+      "path": "evidencia/repo/resultados/04_entrenamiento/historico/test_pacientes.csv",
+      "sha256": "c264478abeb7aea0594e1af317c6299f613901c0f79ab8e004ec4d4c223fa02a"
+    }
+  ],
+  "notice": "Los resultados pertenecen al entrenamiento original. Las nuevas ejecuciones no sustituyen estos pesos ni repiten test."
+}

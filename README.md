@@ -14,6 +14,7 @@ caso-cancer-mama/
 ├── tests/               # pruebas unitarias y contratos de reproducibilidad
 ├── docs/                # protocolos, guías e informes finales
 ├── resultados/          # evidencia ligera versionada por etapa
+├── modelos/             # versiones completas con pesos y código compatible
 ├── pyproject.toml       # metadatos, instalación y comandos de consola
 ├── requirements.txt     # dependencias con rangos reproducibles
 ├── CONTRIBUTING.md      # flujo de ramas, commits y reproducibilidad
@@ -32,17 +33,18 @@ python -m venv .venv
 ```
 
 En Windows, utiliza `.venv\Scripts\python.exe`. Los datos se guardan en
-`breastdcedl/` y los pesos quedan fuera de Git. No hace falta volver a descargarlos
-si ya están en el ordenador. Para usar el modelo final en otro ordenador, copia
-también `resultados/04_entrenamiento/modelos/`: los diez archivos `.pt` no se
-suben a Git y deben conservarse junto a su manifiesto.
+`breastdcedl/` y no hace falta volver a descargarlos si ya están en el ordenador.
+Los modelos seleccionados se conservan en Git, organizados por versiones en
+`modelos/versiones/`, con sus pesos, manifiestos y código compatible. El dataset
+y los checkpoints de trabajo siguen fuera de Git. Consulta el
+[historial de modelos](modelos/README.md) para recuperar y usar cada versión.
 
 ## Abrir y entrenar en otro ordenador con GPU
 
 Git solo descarga archivos confirmados y enviados al remoto. Antes de cambiar de
 ordenador hay que comprobar que el código multimodal está en un commit y se ha
-hecho `git push`. El dataset y los pesos están ignorados deliberadamente y no
-viajan con `git clone`.
+hecho `git push`. `git clone` incluye las versiones archivadas de los modelos;
+el dataset y los checkpoints de las ejecuciones en curso se copian por separado.
 
 En el ordenador con GPU:
 
@@ -64,8 +66,8 @@ caso-cancer-mama/
 └── requirements.txt
 ```
 
-No se debe copiar ni reutilizar `.venv/` del primer ordenador: contiene una
-instalación de PyTorch para CPU. Crear un entorno nuevo, preferiblemente con
+No se debe copiar ni reutilizar `.venv/` del primer ordenador: depende del sistema
+y de su instalación de PyTorch. Crear un entorno nuevo, preferiblemente con
 Python 3.12:
 
 ```powershell
@@ -128,8 +130,9 @@ Cuando terminen los veinte runs:
 
 Hay que conservar y copiar de vuelta toda esa carpeta de resultados: contiene
 los checkpoints `.pt`, las curvas, predicciones OOF, métricas y el manifiesto del
-ensemble, y Git no subirá automáticamente los pesos. Se recomienda entrenar en
-un SSD local, evitar que el ordenador se suspenda y disponer de al menos 10 GiB
+ensemble. Para publicar el modelo seleccionado se usa
+`modelos/versionar.py guardar`; los checkpoints intermedios no se suben automáticamente.
+Se recomienda entrenar en un SSD local, evitar que el ordenador se suspenda y disponer de al menos 10 GiB
 libres. La versión ampliada de esta lista está en
 [guía GPU](docs/GUIA_GPU_MULTIMODAL.md).
 
@@ -139,7 +142,7 @@ libres. La versión ampliada de esta lista está en
 .venv/bin/python -m cancer_mama.auditoria
 .venv/bin/python -m cancer_mama.eda
 .venv/bin/python -m cancer_mama.preparacion --fold 0
-.venv/bin/python -m cancer_mama.entrenamiento verificar
+.venv/bin/python -B modelos/versionar.py verificar v001_cnn_historica_20260930
 ```
 
 Los pasos 01-03 y `src/cancer_mama/datos.py` son los originales de Marta. El paso 04
@@ -226,12 +229,13 @@ acreditan utilidad clínica.
 Para predecir un corte nuevo con los pesos conservados:
 
 ```bash
-.venv/bin/python -m cancer_mama.entrenamiento predecir --pre paciente_z000_PRE.png --early paciente_z000_EARLY.png --late paciente_z000_LATE.png
+.venv/bin/python -B modelos/versionar.py predecir v001_cnn_historica_20260930 -- --pre paciente_z000_PRE.png --early paciente_z000_EARLY.png --late paciente_z000_LATE.png
 ```
 
 Se pueden pasar varios archivos en cada opción, en el mismo orden y de una sola
-paciente. Deben ser PNG monocromos de 8 bits y 256×256. Para usar pesos nuevos,
-indica `--manifest ruta/comparacion/modelo_desarrollo.json`.
+paciente. Deben ser PNG monocromos de 8 bits y 256×256. Para usar otra versión,
+indica su ID después de `predecir`. El [historial de modelos](modelos/README.md)
+incluye un ejemplo completo con las variables clínicas del multimodal.
 
 ## Evidencia y comprobaciones
 
@@ -254,7 +258,7 @@ La correspondencia de código es:
 
 ```bash
 CUDA_VISIBLE_DEVICES='' .venv/bin/python -B -m unittest discover -s tests -v
-.venv/bin/python -B -m cancer_mama.entrenamiento verificar
+.venv/bin/python -B modelos/versionar.py verificar
 ```
 
 Las pruebas verifican la arquitectura, escala y alineación de fases, separación
