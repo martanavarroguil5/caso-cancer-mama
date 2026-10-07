@@ -2,8 +2,30 @@
 
 ## Estado
 
-El entrenador está preparado para ejecutar una configuración, dos pérdidas,
-dos semillas y cinco folds: **20 entrenamientos**.
+La variante nueva `patient_level_clinical` usa BCE ponderada, dos semillas y
+cinco folds: **10 entrenamientos**. Agrupa seis pacientes completos por lote y
+calcula una sola pérdida por paciente. Para entrenar únicamente esta variante:
+
+```powershell
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento entrenar `
+  --configuraciones patient_level_clinical --perdidas ponderada `
+  --semillas 42 2026 --folds 0 1 2 3 4 `
+  --epocas 46 --lote 64 --workers 4 --dispositivo cuda `
+  --salida resultados/04_entrenamiento/patient_level_clinical_20261007
+
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento comparar `
+  --salida resultados/04_entrenamiento/patient_level_clinical_20261007
+```
+
+Los diez runs del 07/10/2026 están completos; el
+[informe por paciente](../resultados/07_informe_paciente_20261007/INFORME_RESULTADOS.md)
+conserva sus resultados. No se sustituyó v002 ni se publicó una nueva versión de
+pesos. Usar la carpeta anterior con el mismo código y configuración reconoce los
+runs completados; una configuración o un código distinto requiere otra salida.
+
+El multimodal anterior `pool_dropout_wd_clinical` usaba dos pérdidas, dos semillas
+y cinco folds: **20 entrenamientos**. Los comandos restantes de esta guía
+corresponden a esa variante anterior.
 
 ```text
 pool_dropout_wd_clinical × (normal, ponderada) × (42, 2026) × (0,1,2,3,4)
@@ -16,10 +38,8 @@ interrumpe, repetir el mismo comando y la misma carpeta de salida reanuda desde
 
 ## Qué debe llegar al ordenador con GPU
 
-1. El código actual del proyecto. Los cambios multimodales todavía deben viajar
-   mediante una copia de la carpeta de trabajo o mediante un commit y `git push`.
-   Clonar ahora mismo `main` sin guardar esos cambios recuperaría la versión
-   anterior.
+1. El código actual del proyecto, disponible al clonar o actualizar `main`.
+   Incluye ambas variantes de entrenamiento y las versiones publicadas de pesos.
 2. La carpeta `breastdcedl/` completa: 38.122 archivos y aproximadamente
    1,28 GiB. Está ignorada por Git y no aparece al clonar el repositorio.
 3. No copiar ni reutilizar `.venv/`: depende del sistema y de la instalación de

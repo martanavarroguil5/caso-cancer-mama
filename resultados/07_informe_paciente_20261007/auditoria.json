@@ -1,0 +1,95 @@
+{
+  "expected_runs": 10,
+  "complete_runs": 10,
+  "test_images_loaded": 0,
+  "oof_patients": 1097,
+  "oof_slices": 10945,
+  "protected_files_verified_at_training_end": 228,
+  "data_metadata_sha256": {
+    "breastdcedl/metadata/excluded_patients.csv": "43c1ac4fe83efa4b83f45e43144465c82d6dc41aabb854aa4523d7beca88aaab",
+    "breastdcedl/metadata/patients.csv": "ca3b1f8e4d1bc1abf276659bda60520075ace9bd384d623e34d85746ebf50885",
+    "breastdcedl/metadata/samples.csv": "7ddd0ecc8272e6460211bd63c1479513bf815e3ea518d1b6bafdcd69f9a75c03"
+  },
+  "runtime_verification": {
+    "models": 10,
+    "parameters_per_model": 551921,
+    "checksums_verified": true,
+    "test_evaluated_once": false,
+    "test_repeated": false,
+    "aggregation": "median",
+    "threshold": 0.14169571042235907,
+    "clinical_required": true
+  },
+  "bootstrap_implementation_check": {
+    "reference": "scikit-learn",
+    "cases_with_ties_and_repeated_patients": 3,
+    "passed": true
+  },
+  "image_branch": [
+    {
+      "seed": 42,
+      "fold": 0,
+      "all_zero": false,
+      "max_abs": 0.009618612937629223
+    },
+    {
+      "seed": 42,
+      "fold": 1,
+      "all_zero": false,
+      "max_abs": 0.023433087393641472
+    },
+    {
+      "seed": 42,
+      "fold": 2,
+      "all_zero": false,
+      "max_abs": 0.014712406322360039
+    },
+    {
+      "seed": 42,
+      "fold": 3,
+      "all_zero": false,
+      "max_abs": 0.03173552080988884
+    },
+    {
+      "seed": 42,
+      "fold": 4,
+      "all_zero": false,
+      "max_abs": 0.031249752268195152
+    },
+    {
+      "seed": 2026,
+      "fold": 0,
+      "all_zero": false,
+      "max_abs": 0.01961575075984001
+    },
+    {
+      "seed": 2026,
+      "fold": 1,
+      "all_zero": false,
+      "max_abs": 0.013872536830604076
+    },
+    {
+      "seed": 2026,
+      "fold": 2,
+      "all_zero": false,
+      "max_abs": 0.02113732323050499
+    },
+    {
+      "seed": 2026,
+      "fold": 3,
+      "all_zero": false,
+      "max_abs": 0.009934085421264172
+    },
+    {
+      "seed": 2026,
+      "fold": 4,
+      "all_zero": false,
+      "max_abs": 0.013531461358070374
+    }
+  ],
+  "source_sha256": {
+    "src/cancer_mama/entrenamiento.py": "9ba4a3d7b5840abc20ffa778fa9c283883091c16ddbb28336ee02e0be4d6768b",
+    "src/cancer_mama/datos.py": "b61e550788d321536dccb96c87b09a3b04c1ef87f885c6945056b935215eb8eb",
+    "src/cancer_mama/informe_paciente.py": "cedca11bdf87977a23fcf683af5e010d831442e71288a1f8d57bad6945ec54b0"
+  }
+}

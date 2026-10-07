@@ -1,0 +1,57 @@
+{
+  "repetitions": 4000,
+  "seed": 2026,
+  "strata": [
+    "fold",
+    "label"
+  ],
+  "interpretation": "Intervalos descriptivos condicionados a las predicciones OOF seleccionadas; no incluyen incertidumbre de entrenamiento ni selección.",
+  "new_minus_reference": {
+    "previous": {
+      "roc_auc": {
+        "mean": -0.009433992185934681,
+        "ci95": [
+          -0.019110699258665688,
+          0.00045782408335008715
+        ]
+      },
+      "mean_fold_roc_auc": {
+        "mean": -0.008553157452898969,
+        "ci95": [
+          -0.019297925263795694,
+          0.002148271007004844
+        ]
+      },
+      "average_precision": {
+        "mean": -0.0157879033458129,
+        "ci95": [
+          -0.0331319967175978,
+          0.0014329726031570417
+        ]
+      }
+    },
+    "clinical": {
+      "roc_auc": {
+        "mean": 0.007852252053696654,
+        "ci95": [
+          0.0011259266680023834,
+          0.014282107794029246
+        ]
+      },
+      "mean_fold_roc_auc": {
+        "mean": 0.007908161289578133,
+        "ci95": [
+          0.001262832620969595,
+          0.014600920125382888
+        ]
+      },
+      "average_precision": {
+        "mean": 0.017396383648201702,
+        "ci95": [
+          0.005227097886348712,
+          0.030118837377611604
+        ]
+      }
+    }
+  }
+}

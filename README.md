@@ -374,6 +374,17 @@ La variante usa solo BCE ponderada, dos semillas y cinco folds: diez runs.
 El 90 % es una restricción de desarrollo, no una garantía clínica. El umbral y
 la matriz resultantes deben confirmarse en pacientes independientes.
 
+Los diez entrenamientos del 07/10/2026 están completos. Obtienen AUC media por
+fold **0,7155** y AUC OOF **0,7150**, frente a **0,7243** y **0,7246** de v002.
+Se mantiene v002 como referencia y se conservan los checkpoints nuevos localmente.
+El [informe por paciente](resultados/07_informe_paciente_20261007/INFORME_RESULTADOS.md)
+incluye curvas, predicciones OOF, configuraciones y comparación de falsos positivos
+al mismo objetivo de sensibilidad. Con los datos y pesos locales se regenera con:
+
+```bash
+.venv/bin/python -B -m cancer_mama.informe_paciente
+```
+
 Para un manifiesto multimodal, `predecir` recibe además `--edad`,
 `--volumen-tumoral`, `--hr` y `--her2`. Una variable individual omitida se trata
 como ausente mediante la imputación del fold; omitir las cuatro se rechaza para
@@ -396,7 +407,8 @@ activo. También se eliminaron los samplers, aumentos pareados, particiones y
 calibración anidada específicos de esos ensayos y sus pruebas exclusivas.
 
 El paso 04 ofrece únicamente `verificar`, `entrenar`, `comparar` y `predecir`.
-No incorpora GroupNorm ni BCE por paciente. Las configuraciones de experimentos
+No incorpora GroupNorm. La BCE por paciente está disponible con
+`patient_level_clinical`. Las configuraciones de experimentos
 retirados se rechazan; no se reinterpretan como entrenamiento habitual.
 Las opciones originales del informe y el perfil ajustado conservado siguen
 funcionando. El valor por defecto de entrenamiento continúa siendo `raw_rot90`.

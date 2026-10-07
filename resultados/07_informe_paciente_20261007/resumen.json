@@ -1,0 +1,651 @@
+{
+  "created_at": "2026-10-07T19:29:43.495553+02:00",
+  "source_git_commit": "ab49a04493728fa1f0f49094c5c0d38ef893c061",
+  "selected": {
+    "candidate": "patient_level_clinical_weighted_median",
+    "configuration": "patient_level_clinical",
+    "loss": "weighted",
+    "aggregation": "median",
+    "metrics": {
+      "n_patients": 1097,
+      "n_positive": 322,
+      "prevalence": 0.2935278030993619,
+      "roc_auc": 0.714974954918854,
+      "average_precision": 0.5157143528241216,
+      "brier": 0.20869526279096356,
+      "log_loss": 0.6055927681792052,
+      "accuracy": 0.6654512306289881,
+      "f1": 0.5383647798742138,
+      "precision": 0.452431289640592,
+      "recall": 0.6645962732919255,
+      "balanced_accuracy": 0.6652013624524143,
+      "sensitivity": 0.6645962732919255,
+      "specificity": 0.6658064516129032,
+      "threshold": 0.5,
+      "tn": 516,
+      "fp": 259,
+      "fn": 108,
+      "tp": 214,
+      "confusion_matrix": [
+        [
+          516,
+          259
+        ],
+        [
+          108,
+          214
+        ]
+      ],
+      "fold_roc_auc": [
+        0.7625,
+        0.7157386480378055,
+        0.6945994315191073,
+        0.720183908045977,
+        0.6847133757961783
+      ],
+      "mean_fold_roc_auc": 0.7155470726798135,
+      "min_fold_roc_auc": 0.6847133757961783
+    }
+  },
+  "metrics_raw_oof": {
+    "clinical": {
+      "n_patients": 1097,
+      "n_positive": 322,
+      "prevalence": 0.2935278030993619,
+      "roc_auc": 0.7070727309156482,
+      "average_precision": 0.4977309152011893,
+      "brier": 0.21699385614003106,
+      "log_loss": 0.6245006610798862,
+      "accuracy": 0.6435733819507748,
+      "f1": 0.5394581861012956,
+      "precision": 0.43453510436432635,
+      "recall": 0.7111801242236024,
+      "balanced_accuracy": 0.6633319975956722,
+      "sensitivity": 0.7111801242236024,
+      "specificity": 0.6154838709677419,
+      "threshold": 0.5,
+      "tn": 477,
+      "fp": 298,
+      "fn": 93,
+      "tp": 229,
+      "confusion_matrix": [
+        [
+          477,
+          298
+        ],
+        [
+          93,
+          229
+        ]
+      ],
+      "fold_roc_auc": [
+        0.7581653225806452,
+        0.7116293404561331,
+        0.6770186335403727,
+        0.7151264367816093,
+        0.6759810971851243
+      ],
+      "mean_fold_roc_auc": 0.707584166108777,
+      "min_fold_roc_auc": 0.6759810971851243
+    },
+    "previous": {
+      "n_patients": 1097,
+      "n_positive": 322,
+      "prevalence": 0.2935278030993619,
+      "roc_auc": 0.7245682228010419,
+      "average_precision": 0.531645920079384,
+      "brier": 0.2108519049246439,
+      "log_loss": 0.6097532019513768,
+      "accuracy": 0.6654512306289881,
+      "f1": 0.5529841656516443,
+      "precision": 0.45490981963927857,
+      "recall": 0.7049689440993789,
+      "balanced_accuracy": 0.6770006010819476,
+      "sensitivity": 0.7049689440993789,
+      "specificity": 0.6490322580645161,
+      "threshold": 0.5,
+      "tn": 503,
+      "fp": 272,
+      "fn": 95,
+      "tp": 227,
+      "confusion_matrix": [
+        [
+          503,
+          272
+        ],
+        [
+          95,
+          227
+        ]
+      ],
+      "fold_roc_auc": [
+        0.7667338709677419,
+        0.7116293404561331,
+        0.7116538583008739,
+        0.7234022988505747,
+        0.7081364290117116
+      ],
+      "mean_fold_roc_auc": 0.7243111595174071,
+      "min_fold_roc_auc": 0.7081364290117116
+    },
+    "new": {
+      "n_patients": 1097,
+      "n_positive": 322,
+      "prevalence": 0.2935278030993619,
+      "roc_auc": 0.714974954918854,
+      "average_precision": 0.5157143528241216,
+      "brier": 0.20869526279096356,
+      "log_loss": 0.6055927681792052,
+      "accuracy": 0.6654512306289881,
+      "f1": 0.5383647798742138,
+      "precision": 0.452431289640592,
+      "recall": 0.6645962732919255,
+      "balanced_accuracy": 0.6652013624524143,
+      "sensitivity": 0.6645962732919255,
+      "specificity": 0.6658064516129032,
+      "threshold": 0.5,
+      "tn": 516,
+      "fp": 259,
+      "fn": 108,
+      "tp": 214,
+      "confusion_matrix": [
+        [
+          516,
+          259
+        ],
+        [
+          108,
+          214
+        ]
+      ],
+      "fold_roc_auc": [
+        0.7625,
+        0.7157386480378055,
+        0.6945994315191073,
+        0.720183908045977,
+        0.6847133757961783
+      ],
+      "mean_fold_roc_auc": 0.7155470726798135,
+      "min_fold_roc_auc": 0.6847133757961783
+    }
+  },
+  "training": {
+    "n_runs": 10,
+    "epochs": 172,
+    "minutes": 31.210462873983374,
+    "wall_minutes": 35.94637433333333,
+    "best_epoch_zero": 0,
+    "image_branch_zero": 0,
+    "median_final_train_auc": 0.7249588181302278,
+    "median_final_validation_auc": 0.6998424434793081,
+    "median_final_auc_gap": 0.03994579859674213
+  },
+  "clinical_availability_assumption": "Se asume que edad, volumen tumoral, HR y HER2 estarán disponibles en la evaluación privada, por indicación del usuario; no confirmado externamente.",
+  "bootstrap": {
+    "repetitions": 4000,
+    "seed": 2026,
+    "strata": [
+      "fold",
+      "label"
+    ],
+    "interpretation": "Intervalos descriptivos condicionados a las predicciones OOF seleccionadas; no incluyen incertidumbre de entrenamiento ni selección.",
+    "new_minus_reference": {
+      "previous": {
+        "roc_auc": {
+          "mean": -0.009433992185934681,
+          "ci95": [
+            -0.019110699258665688,
+            0.00045782408335008715
+          ]
+        },
+        "mean_fold_roc_auc": {
+          "mean": -0.008553157452898969,
+          "ci95": [
+            -0.019297925263795694,
+            0.002148271007004844
+          ]
+        },
+        "average_precision": {
+          "mean": -0.0157879033458129,
+          "ci95": [
+            -0.0331319967175978,
+            0.0014329726031570417
+          ]
+        }
+      },
+      "clinical": {
+        "roc_auc": {
+          "mean": 0.007852252053696654,
+          "ci95": [
+            0.0011259266680023834,
+            0.014282107794029246
+          ]
+        },
+        "mean_fold_roc_auc": {
+          "mean": 0.007908161289578133,
+          "ci95": [
+            0.001262832620969595,
+            0.014600920125382888
+          ]
+        },
+        "average_precision": {
+          "mean": 0.017396383648201702,
+          "ci95": [
+            0.005227097886348712,
+            0.030118837377611604
+          ]
+        }
+      }
+    }
+  },
+  "crossfit_decision_policies": {
+    "clinical": {
+      "metrics": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.7041554798637547,
+        "average_precision": 0.49298787199803606,
+        "brier": 0.18461264852890713,
+        "log_loss": 0.5502766974362061,
+        "accuracy": 0.4740200546946217,
+        "f1": 0.49869678540399653,
+        "precision": 0.34620024125452353,
+        "recall": 0.8913043478260869,
+        "balanced_accuracy": 0.5959747545582048,
+        "sensitivity": 0.8913043478260869,
+        "specificity": 0.3006451612903226,
+        "tn": 233,
+        "fp": 542,
+        "fn": 35,
+        "tp": 287,
+        "confusion_matrix": [
+          [
+            233,
+            542
+          ],
+          [
+            35,
+            287
+          ]
+        ]
+      },
+      "policies": [
+        {
+          "fold": 0,
+          "threshold": 0.15718062340688702,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.8861629457318059,
+            "intercept": -0.873256424961946,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        },
+        {
+          "fold": 1,
+          "threshold": 0.15496171666169303,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.9542065821573616,
+            "intercept": -0.8566968234347219,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        },
+        {
+          "fold": 2,
+          "threshold": 0.16791346754690756,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.9563531614916525,
+            "intercept": -0.8489746399073965,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        },
+        {
+          "fold": 3,
+          "threshold": 0.14334809337693627,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.9411688826557307,
+            "intercept": -0.9214484128678954,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        },
+        {
+          "fold": 4,
+          "threshold": 0.1556647553975494,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 1.0323912442847438,
+            "intercept": -0.8609736437719304,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        }
+      ]
+    },
+    "previous": {
+      "metrics": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.7229372871168103,
+        "average_precision": 0.5280996418165733,
+        "brier": 0.17944055153910657,
+        "log_loss": 0.5376402308318999,
+        "accuracy": 0.487693710118505,
+        "f1": 0.5087412587412588,
+        "precision": 0.354014598540146,
+        "recall": 0.9037267080745341,
+        "balanced_accuracy": 0.6092827088759767,
+        "sensitivity": 0.9037267080745341,
+        "specificity": 0.31483870967741934,
+        "tn": 244,
+        "fp": 531,
+        "fn": 31,
+        "tp": 291,
+        "confusion_matrix": [
+          [
+            244,
+            531
+          ],
+          [
+            31,
+            291
+          ]
+        ]
+      },
+      "policies": [
+        {
+          "fold": 0,
+          "threshold": 0.14781528562988178,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.9494618730070166,
+            "intercept": -0.8734566725962476,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        },
+        {
+          "fold": 1,
+          "threshold": 0.156823068605874,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 1.0276208622035807,
+            "intercept": -0.8509801236620564,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        },
+        {
+          "fold": 2,
+          "threshold": 0.15872583879646826,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 1.0131987767660955,
+            "intercept": -0.8483244171947742,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        },
+        {
+          "fold": 3,
+          "threshold": 0.15115198942880298,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 1.0097471841797887,
+            "intercept": -0.8953225794441585,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        },
+        {
+          "fold": 4,
+          "threshold": 0.15499915916094328,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 1.0667438080209408,
+            "intercept": -0.8731592153277461,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        }
+      ]
+    },
+    "new": {
+      "metrics": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.7129473051492686,
+        "average_precision": 0.5096104443102619,
+        "brier": 0.18231243359754706,
+        "log_loss": 0.5449800841869591,
+        "accuracy": 0.4594348222424795,
+        "f1": 0.49617672047578587,
+        "precision": 0.34152046783625734,
+        "recall": 0.906832298136646,
+        "balanced_accuracy": 0.5901903426167101,
+        "sensitivity": 0.906832298136646,
+        "specificity": 0.2735483870967742,
+        "tn": 212,
+        "fp": 563,
+        "fn": 30,
+        "tp": 292,
+        "confusion_matrix": [
+          [
+            212,
+            563
+          ],
+          [
+            30,
+            292
+          ]
+        ]
+      },
+      "policies": [
+        {
+          "fold": 0,
+          "threshold": 0.14304121355956734,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.9162756381337054,
+            "intercept": -0.7931695931353117,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        },
+        {
+          "fold": 1,
+          "threshold": 0.15418651931523047,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.9919609645977988,
+            "intercept": -0.8117874468400651,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        },
+        {
+          "fold": 2,
+          "threshold": 0.15022953887247206,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.9815141552068942,
+            "intercept": -0.7668516934330776,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        },
+        {
+          "fold": 3,
+          "threshold": 0.13748958773271283,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.9690989807449802,
+            "intercept": -0.8299947160010802,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        },
+        {
+          "fold": 4,
+          "threshold": 0.13897509530841917,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 1.0578225498830143,
+            "intercept": -0.7827801273502205,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "train_oof",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          }
+        }
+      ]
+    }
+  },
+  "apparent_90_percent": [
+    {
+      "model": "clinical",
+      "scope": "apparent",
+      "sensitivity": 0.9006211180124224,
+      "specificity": 0.2864516129032258,
+      "precision": 0.34400948991696323,
+      "f1": 0.4978540772532189,
+      "accuracy": 0.4667274384685506,
+      "fn": 32,
+      "fp": 553,
+      "tn": 222,
+      "tp": 290
+    },
+    {
+      "model": "previous",
+      "scope": "apparent",
+      "sensitivity": 0.9006211180124224,
+      "specificity": 0.3225806451612903,
+      "precision": 0.3558282208588957,
+      "f1": 0.5101143359718557,
+      "accuracy": 0.49225159525979945,
+      "fn": 32,
+      "fp": 525,
+      "tn": 250,
+      "tp": 290
+    },
+    {
+      "model": "new",
+      "scope": "apparent",
+      "sensitivity": 0.9006211180124224,
+      "specificity": 0.2632258064516129,
+      "precision": 0.33681765389082463,
+      "f1": 0.4902789518174134,
+      "accuracy": 0.45031905195989064,
+      "fn": 32,
+      "fp": 571,
+      "tn": 204,
+      "tp": 290
+    }
+  ],
+  "manifest_local_path": "resultados/04_entrenamiento/patient_level_clinical_20261007/comparacion/modelo_desarrollo.json",
+  "runtime_verification": {
+    "models": 10,
+    "parameters_per_model": 551921,
+    "checksums_verified": true,
+    "test_evaluated_once": false,
+    "test_repeated": false,
+    "aggregation": "median",
+    "threshold": 0.14169571042235907,
+    "clinical_required": true
+  },
+  "deltas_new_minus_previous": {
+    "roc_auc": -0.00959326788218795,
+    "mean_fold_roc_auc": -0.008764086837593554,
+    "specificity_at_apparent_sensitivity_90": -0.05935483870967739
+  },
+  "versioning_recommended": false,
+  "decision": "Mantener v002 como referencia. La nueva variante no mejora simultáneamente la AUC media, la AUC agrupada y la especificidad al mismo objetivo de sensibilidad; conservar sus resultados y checkpoints locales sin promoverla como sustituta.",
+  "limits": [
+    "Checkpoints y agregación seleccionados con las mismas validaciones OOF; no validación anidada.",
+    "El 90 % aparente se ajusta con etiquetas OOF y no garantiza sensibilidad en pacientes nuevas.",
+    "El traslado de calibración y umbral entre folds no elimina el sesgo previo de selección de pesos.",
+    "El baseline clínico y su preprocesado se ajustan con una fila por paciente dentro del train del fold.",
+    "Train loss es BCE por paciente; val loss es BCE por corte y sus magnitudes no son directamente comparables."
+  ]
+}
