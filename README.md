@@ -3,14 +3,32 @@
 Predicción educativa de respuesta patológica completa (pCR) a partir de resonancia
 DCE anterior al tratamiento. Se conserva la base de Marta Navarro Guil,
 commit `69a44eb` (28/09/2026), y se añade únicamente el paso de entrenamiento.
-El proyecto queda en `main`, con los archivos numerados y resultados por etapa.
+El código instalable está en `src/cancer_mama/` y los resultados reproducibles
+se conservan por etapa.
+
+## Estructura
+
+```text
+caso-cancer-mama/
+├── src/cancer_mama/    # paquete: datos, EDA, entrenamiento e informes
+├── tests/               # pruebas unitarias y contratos de reproducibilidad
+├── docs/                # protocolos, guías e informes finales
+├── resultados/          # evidencia ligera versionada por etapa
+├── pyproject.toml       # metadatos, instalación y comandos de consola
+├── requirements.txt     # dependencias con rangos reproducibles
+├── CONTRIBUTING.md      # flujo de ramas, commits y reproducibilidad
+└── README.md
+```
+
+`breastdcedl/`, los entornos virtuales, checkpoints y ejecuciones pesadas son
+locales y están excluidos mediante `.gitignore`.
 
 ## Preparación
 
 ```bash
 python -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python descargar_datos.py
+.venv/bin/python -m pip install -e .
+.venv/bin/python -m cancer_mama.descarga
 ```
 
 En Windows, utiliza `.venv\Scripts\python.exe`. Los datos se guardan en
@@ -41,7 +59,8 @@ caso-cancer-mama/
 │   ├── dataset/
 │   ├── metadata/
 │   └── documentation/
-├── 04_entrenamiento.py
+├── src/cancer_mama/
+├── pyproject.toml
 └── requirements.txt
 ```
 
@@ -61,7 +80,7 @@ que instalar primero PyTorch CUDA usando el comando generado por el
 sistema y controlador concretos. Después se instala el resto:
 
 ```powershell
-.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe -m pip install -e .
 ```
 
 La instalación debe verificarse antes de entrenar:
@@ -77,7 +96,7 @@ tests y un humo de un único lote, que no es seleccionable ni sirve como resulta
 ```powershell
 .venv\Scripts\python.exe -B -m unittest discover -s tests -v
 
-.venv\Scripts\python.exe -B 04_entrenamiento.py entrenar `
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento entrenar `
   --prueba --configuraciones pool_dropout_wd_clinical `
   --perdidas ponderada --semillas 42 --folds 0 `
   --epocas 1 --lote 8 --workers 0 --dispositivo cuda `
@@ -88,7 +107,7 @@ Si ambas comprobaciones terminan bien, la matriz completa es una configuración 
 dos pérdidas × dos semillas × cinco folds: **20 entrenamientos secuenciales**.
 
 ```powershell
-.venv\Scripts\python.exe -B 04_entrenamiento.py entrenar `
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento entrenar `
   --configuraciones pool_dropout_wd_clinical `
   --perdidas normal ponderada --semillas 42 2026 --folds 0 1 2 3 4 `
   --epocas 46 --lote 64 --workers 4 --dispositivo cuda `
@@ -103,7 +122,7 @@ hiperparámetro, debe utilizarse una salida nueva para no mezclar configuracione
 Cuando terminen los veinte runs:
 
 ```powershell
-.venv\Scripts\python.exe -B 04_entrenamiento.py comparar `
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento comparar `
   --salida resultados/04_entrenamiento/multimodal_clinico_20261007
 ```
 
@@ -112,18 +131,18 @@ los checkpoints `.pt`, las curvas, predicciones OOF, métricas y el manifiesto d
 ensemble, y Git no subirá automáticamente los pesos. Se recomienda entrenar en
 un SSD local, evitar que el ordenador se suspenda y disponer de al menos 10 GiB
 libres. La versión ampliada de esta lista está en
-[GUIA_GPU_MULTIMODAL.md](GUIA_GPU_MULTIMODAL.md).
+[guía GPU](docs/GUIA_GPU_MULTIMODAL.md).
 
 ## Pasos
 
 ```bash
-.venv/bin/python 01_auditoria_datos.py
-.venv/bin/python 02_eda_profesional.py
-.venv/bin/python 03_preparar_datos.py --fold 0
-.venv/bin/python 04_entrenamiento.py verificar
+.venv/bin/python -m cancer_mama.auditoria
+.venv/bin/python -m cancer_mama.eda
+.venv/bin/python -m cancer_mama.preparacion --fold 0
+.venv/bin/python -m cancer_mama.entrenamiento verificar
 ```
 
-Los pasos 01-03 y `pipeline_datos.py` son los originales de Marta. El paso 04
+Los pasos 01-03 y `src/cancer_mama/datos.py` son los originales de Marta. El paso 04
 reutiliza su Dataset: convierte PRE/EARLY/LATE a float32 /255, conserva los cinco
 folds originales y aplica las transformaciones conjuntamente. Usa la configuración
 sin estandarización; las estadísticas del paso 03 siguen siendo descriptivas.
@@ -132,7 +151,7 @@ etiquetas del test reservado.
 
 ## Red y entrenamiento
 
-`04_entrenamiento.py` contiene toda la CNN, el aprendizaje, la comparación OOF y
+`src/cancer_mama/entrenamiento.py` contiene toda la CNN, el aprendizaje, la comparación OOF y
 la predicción. La entrada es `[N,3,256,256]`. La red aplica `2*x-1` y cuatro bloques
 de dos convoluciones Conv-BN-ReLU con 24/48/96/160 canales. Combina pooling global
 promedio y máximo y una cabeza 320→64→1 con dropout 0,20. Son 551.913 parámetros;
@@ -150,21 +169,21 @@ N0/N1, contando cortes solamente en el subconjunto que aprende cada fold.
 Para probar un lote sin entrenar el experimento completo:
 
 ```bash
-.venv/bin/python 04_entrenamiento.py entrenar --prueba --folds 0 --semillas 42 --perdidas ponderada --dispositivo cpu --workers 0 --salida resultados/04_entrenamiento/entrenamiento_actual
+.venv/bin/python -m cancer_mama.entrenamiento entrenar --prueba --folds 0 --semillas 42 --perdidas ponderada --dispositivo cpu --workers 0 --salida resultados/04_entrenamiento/entrenamiento_actual
 ```
 
 Para una ejecución concreta en la RTX 3090:
 
 ```bash
-.venv/bin/python 04_entrenamiento.py entrenar --folds 0 --semillas 42 --perdidas ponderada --dispositivo cuda --salida resultados/04_entrenamiento/entrenamiento_actual
+.venv/bin/python -m cancer_mama.entrenamiento entrenar --folds 0 --semillas 42 --perdidas ponderada --dispositivo cuda --salida resultados/04_entrenamiento/entrenamiento_actual
 ```
 
 Para reproducir las 40 ejecuciones del diseño del informe (dos configuraciones,
 dos pérdidas, dos semillas y cinco folds):
 
 ```bash
-.venv/bin/python 04_entrenamiento.py entrenar --configuraciones base_raw raw_rot90 --dispositivo cuda --salida resultados/04_entrenamiento/entrenamiento_actual
-.venv/bin/python 04_entrenamiento.py comparar --salida resultados/04_entrenamiento/entrenamiento_actual
+.venv/bin/python -m cancer_mama.entrenamiento entrenar --configuraciones base_raw raw_rot90 --dispositivo cuda --salida resultados/04_entrenamiento/entrenamiento_actual
+.venv/bin/python -m cancer_mama.entrenamiento comparar --salida resultados/04_entrenamiento/entrenamiento_actual
 ```
 
 `base_raw` conserva solo el espejo horizontal; `raw_rot90` añade las rotaciones.
@@ -207,7 +226,7 @@ acreditan utilidad clínica.
 Para predecir un corte nuevo con los pesos conservados:
 
 ```bash
-.venv/bin/python 04_entrenamiento.py predecir --pre paciente_z000_PRE.png --early paciente_z000_EARLY.png --late paciente_z000_LATE.png
+.venv/bin/python -m cancer_mama.entrenamiento predecir --pre paciente_z000_PRE.png --early paciente_z000_EARLY.png --late paciente_z000_LATE.png
 ```
 
 Se pueden pasar varios archivos en cada opción, en el mismo orden y de una sola
@@ -227,15 +246,15 @@ La correspondencia de código es:
 
 | Archivo anterior | Ubicación actual |
 |---|---|
-| cnn.py | CNN y bloques en 04_entrenamiento.py |
-| datos.py | pipeline_datos.py y validaciones del paso 04 |
+| cnn.py | CNN y bloques en `src/cancer_mama/entrenamiento.py` |
+| datos.py | `src/cancer_mama/datos.py` y validaciones del entrenamiento |
 | entrenar.py | entrenamiento y checkpoints en el paso 04 |
 | evaluar.py | comparación OOF, calibración e inferencia en el paso 04 |
 | configs/seleccion_final.json | modelo_final.json y historico/seleccion_original.json |
 
 ```bash
 CUDA_VISIBLE_DEVICES='' .venv/bin/python -B -m unittest discover -s tests -v
-.venv/bin/python -B 04_entrenamiento.py verificar
+.venv/bin/python -B -m cancer_mama.entrenamiento verificar
 ```
 
 Las pruebas verifican la arquitectura, escala y alineación de fases, separación
@@ -259,7 +278,7 @@ La arquitectura original continúa disponible para reproducir ese diseño y
 cargar sus diez pesos.
 
 ```bash
-.venv/bin/python -B 04_entrenamiento.py entrenar --configuraciones pool_dropout_wd --perdidas ponderada --folds 0 --semillas 42 --epocas 30 --revision-cada 10 --lote 64 --dispositivo cuda --salida resultados/04_entrenamiento/entrenamiento_pool
+.venv/bin/python -B -m cancer_mama.entrenamiento entrenar --configuraciones pool_dropout_wd --perdidas ponderada --folds 0 --semillas 42 --epocas 30 --revision-cada 10 --lote 64 --dispositivo cuda --salida resultados/04_entrenamiento/entrenamiento_pool
 ```
 
 Cada revisión guarda pérdida, AUC, F1, accuracy y predicciones por paciente.
@@ -312,19 +331,44 @@ muestra privada. El
 [protocolo multimodal](docs/mejoras_cnn/PROTOCOLO_MULTIMODAL_CLINICO.md) fija
 antes del entrenamiento veinte jobs, el test cerrado y AUC media y OOF de al
 menos 0,70 como criterios principales.
-La [guía de traslado a GPU](GUIA_GPU_MULTIMODAL.md) detalla qué copiar, cómo
+La [guía de traslado a GPU](docs/GUIA_GPU_MULTIMODAL.md) detalla qué copiar, cómo
 instalar CUDA, ejecutar el humo, reanudar los veinte runs y recuperar los pesos.
 
 ```powershell
-.venv\Scripts\python.exe -B 04_entrenamiento.py entrenar `
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento entrenar `
   --configuraciones pool_dropout_wd_clinical `
   --perdidas normal ponderada --semillas 42 2026 --folds 0 1 2 3 4 `
   --epocas 46 --lote 64 --dispositivo cuda `
   --salida resultados/04_entrenamiento/multimodal_clinico_20261007
 
-.venv\Scripts\python.exe -B 04_entrenamiento.py comparar `
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento comparar `
   --salida resultados/04_entrenamiento/multimodal_clinico_20261007
 ```
+
+### Variante orientada a reducir falsos negativos
+
+`patient_level_clinical` conserva la arquitectura multimodal, pero agrupa todos
+los cortes de una paciente dentro del mismo lote y calcula una única BCE por
+paciente. De esta forma, la unidad de optimización coincide con la unidad de
+evaluación y cada paciente pesa una vez por época. La decisión final maximiza la
+especificidad entre los umbrales que mantienen una sensibilidad aparente mínima
+del 90 %. El modelo anterior no se sobrescribe.
+
+La variante usa solo BCE ponderada, dos semillas y cinco folds: diez runs.
+
+```powershell
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento entrenar `
+  --configuraciones patient_level_clinical --perdidas ponderada `
+  --semillas 42 2026 --folds 0 1 2 3 4 `
+  --epocas 46 --lote 64 --workers 4 --dispositivo cuda `
+  --salida resultados/04_entrenamiento/patient_level_clinical_20261007
+
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento comparar `
+  --salida resultados/04_entrenamiento/patient_level_clinical_20261007
+```
+
+El 90 % es una restricción de desarrollo, no una garantía clínica. El umbral y
+la matriz resultantes deben confirmarse en pacientes independientes.
 
 Para un manifiesto multimodal, `predecir` recibe además `--edad`,
 `--volumen-tumoral`, `--hr` y `--her2`. Una variable individual omitida se trata
@@ -336,12 +380,12 @@ compara ROC, PR, loss de train/validación, folds, cohortes, calibración y el t
 histórico. Se regenera, sin volver a evaluar el candidato en test, con:
 
 ```powershell
-.venv\Scripts\python.exe -B 05_informe_mejora.py
+.venv\Scripts\python.exe -B -m cancer_mama.informe_mejora
 ```
 
 ## Experimentos descartados y limpieza
 
-[EXPERIMENTOS_DESCARTADOS.md](EXPERIMENTOS_DESCARTADOS.md) registra hipótesis,
+[experimentos descartados](docs/EXPERIMENTOS_DESCARTADOS.md) registra hipótesis,
 protocolos, resultados, límites y decisiones. Los comparadores de tamaño,
 composición de lotes, GroupNorm y búsqueda de ajustes se retiraron del código
 activo. También se eliminaron los samplers, aumentos pareados, particiones y
@@ -361,7 +405,7 @@ ensayos descartados desde el archivo actual. Para reconstruir un ensayo históri
 hay que usar su código, configuración y entorno registrados, no mezclarlos con
 esta versión. Al cambiar el código, usar una salida nueva para futuros runs.
 
-Los archivos numerados 01–03, `pipeline_datos.py`, datos fuente, manifiesto,
+Los archivos numerados 01–03, `src/cancer_mama/datos.py`, datos fuente, manifiesto,
 pesos, calibración y umbral históricos se conservan. La limpieza solo ejecuta
 pruebas CPU y de humo; no inicia nuevos ensayos ni repite el test reservado. Sus comprobaciones quedan en
 `resultados/04_entrenamiento/limpieza_20261005/`.

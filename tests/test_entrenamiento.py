@@ -1,6 +1,5 @@
 """Contratos del PDF, separación de pacientes y reanudación por época."""
 import hashlib
-import importlib.util
 import json
 import pickle
 import sys
@@ -14,10 +13,7 @@ import pandas as pd
 from PIL import Image
 import torch
 
-spec = importlib.util.spec_from_file_location("entrenamiento", Path(__file__).parents[1]/"04_entrenamiento.py")
-entrenamiento = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = entrenamiento
-spec.loader.exec_module(entrenamiento)
+from cancer_mama import entrenamiento
 
 
 def datos_sinteticos(root, imagenes=False, folds=(0,1,2)):
@@ -241,6 +237,41 @@ class TestEntrenamiento(unittest.TestCase):
         self.assertEqual(metrics["patient_precision"],.5)
         self.assertEqual(metrics["patient_recall"],.5)
         self.assertEqual(metrics["patient_balanced_accuracy"],.5)
+
+    def test_lotes_y_bce_por_paciente(self):
+        samples=pd.DataFrame({"patient_id":["a","a","b","c","c","c"],
+                              "pCR":[0,0,1,1,1,1]})
+        sampler=entrenamiento.PatientBatchSampler(samples,2,torch.Generator().manual_seed(7),shuffle=False)
+        self.assertEqual(list(sampler),[[0,1,2],[3,4,5]])
+        logits=torch.tensor([-2.,0.,1.,-1.,1.,2.],requires_grad=True)
+        labels=torch.tensor([0.,0.,1.,1.,1.,1.])
+        patient_logits,patient_labels=entrenamiento.aggregate_patient_logits(
+            logits,labels,samples.patient_id.tolist())
+        self.assertEqual(patient_labels.tolist(),[0.,1.,1.])
+        expected=torch.stack([
+            torch.sigmoid(logits[:2]).mean(),torch.sigmoid(logits[2:3]).mean(),
+            torch.sigmoid(logits[3:]).mean()]).detach()
+        torch.testing.assert_close(torch.sigmoid(patient_logits),expected)
+        torch.nn.BCEWithLogitsLoss()(patient_logits,patient_labels).backward()
+        self.assertGreater(float(logits.grad.abs().sum()),0)
+
+    def test_umbral_prioriza_sensibilidad_minima(self):
+        y=np.array([0,0,0,0,1,1,1,1])
+        p=np.array([.1,.2,.55,.8,.3,.6,.7,.9])
+        threshold=entrenamiento.threshold_for_sensitivity(y,p,.75)
+        metrics=entrenamiento.binary_metrics(y,p,threshold)
+        self.assertEqual(threshold,.6)
+        self.assertGreaterEqual(metrics["sensitivity"],.75)
+        self.assertEqual(metrics["specificity"],.75)
+        with self.assertRaises(ValueError):
+            entrenamiento.threshold_for_sensitivity(y,p,0)
+
+    def test_configuracion_por_paciente_es_explicita(self):
+        config=entrenamiento.configuracion("patient_level_clinical")
+        self.assertEqual(config["training"]["loss_unit"],"patient")
+        self.assertEqual(config["training"]["patients_per_batch"],6)
+        self.assertEqual(config["evaluation"]["min_sensitivity"],.90)
+        self.assertIn("clinical",config["model"])
 
     def test_cache_y_bloques_conservan_pesos_y_presupuesto(self):
         datos_sinteticos(self.root,imagenes=True)

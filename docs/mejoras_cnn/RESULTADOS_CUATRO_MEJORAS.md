@@ -89,7 +89,7 @@ Durante la ejecución se corrigió la exportación JSON del análisis convirtien
 
 Los seis casos de inspección de aumentos pertenecen a train, uno por cohorte y clase. Las tres fases se transforman juntas. La inspección visual no certifica que ninguna lesión de todo el conjunto pueda perder cobertura: no se dispone de máscaras de tumor en los PNG.
 
-La auditoría completa verificó 20 parejas de inicialización, 5 particiones exteriores, el pareado de RNG de loader/aumentos, la cobertura OOF, checkpoints elegidos por selección interna y los hashes de sus artefactos. Los 3334 archivos protegidos previos mantienen sus SHA-256. Los pasos 01–03, `pipeline_datos.py`, entrenador activo, modelo histórico, calibración y umbral se conservan.
+La auditoría completa verificó 20 parejas de inicialización, 5 particiones exteriores, el pareado de RNG de loader/aumentos, la cobertura OOF, checkpoints elegidos por selección interna y los hashes de sus artefactos. Los 3334 archivos protegidos previos mantienen sus SHA-256. Los pasos 01–03, `src/cancer_mama/datos.py`, entrenador activo, modelo histórico, calibración y umbral se conservan.
 
 Se abrieron **cero imágenes de test** y **cero de la validación privada**. Las 1.097 pacientes de desarrollo ya se habían observado en investigaciones anteriores. Esta es evaluación interna adaptativa; no demuestra rendimiento en pacientes externos y no se compara directamente con las AUC de ensayos antiguos que usaron otras particiones o lotes.
 

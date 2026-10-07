@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cancer-mama-dce"
+version = "1.0.0"
+description = "Predicción educativa de pCR con resonancia DCE y variables clínicas"
+readme = "README.md"
+requires-python = ">=3.10"
+dynamic = ["dependencies"]
+
+[project.scripts]
+cancer-mama-descargar = "cancer_mama.descarga:main"
+cancer-mama-auditar = "cancer_mama.auditoria:main"
+cancer-mama-eda = "cancer_mama.eda:main"
+cancer-mama-preparar = "cancer_mama.preparacion:main"
+cancer-mama-entrenar = "cancer_mama.entrenamiento:main"
+cancer-mama-informe-mejora = "cancer_mama.informe_mejora:main"
+cancer-mama-informe-multimodal = "cancer_mama.informe_multimodal:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.coverage.run]
+source = ["cancer_mama"]

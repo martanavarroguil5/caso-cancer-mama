@@ -22,9 +22,10 @@ import torch
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
+from .paths import DATA_DIR, PROJECT_ROOT
 
-RAIZ = Path(__file__).resolve().parent
-DATOS = RAIZ / "breastdcedl"
+RAIZ = PROJECT_ROOT
+DATOS = DATA_DIR
 FASES = ("PRE", "EARLY", "LATE")
 COLUMNAS_RUTA = ("path_pre", "path_early", "path_late")
 

@@ -47,7 +47,7 @@ que genere el selector oficial para el sistema, GPU y controlador del ordenador:
 <https://pytorch.org/get-started/locally/>. Después instalar el resto:
 
 ```powershell
-.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe -m pip install -e .
 ```
 
 Si PyTorch CUDA ya satisface `torch>=2.4,<3`, este último comando no debe
@@ -58,7 +58,7 @@ nvidia-smi
 .venv\Scripts\python.exe -c "import torch; print(torch.__version__); print(torch.version.cuda); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'SIN CUDA')"
 ```
 
-El tercer valor debe ser `True`. `04_entrenamiento.py` también se detiene con un
+El tercer valor debe ser `True`. `src/cancer_mama/entrenamiento.py` también se detiene con un
 error antes de empezar si se pide `--dispositivo cuda` y CUDA no está disponible.
 
 ## Comprobación corta obligatoria
@@ -66,7 +66,7 @@ error antes de empezar si se pide `--dispositivo cuda` y CUDA no está disponibl
 ```powershell
 .venv\Scripts\python.exe -B -m unittest discover -s tests -v
 
-.venv\Scripts\python.exe -B 04_entrenamiento.py entrenar `
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento entrenar `
   --prueba --configuraciones pool_dropout_wd_clinical `
   --perdidas ponderada --semillas 42 --folds 0 `
   --epocas 1 --lote 8 --workers 0 --dispositivo cuda `
@@ -80,7 +80,7 @@ solo un lote de cada clase.
 ## Matriz completa
 
 ```powershell
-.venv\Scripts\python.exe -B 04_entrenamiento.py entrenar `
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento entrenar `
   --configuraciones pool_dropout_wd_clinical `
   --perdidas normal ponderada --semillas 42 2026 --folds 0 1 2 3 4 `
   --epocas 46 --lote 64 --workers 4 --dispositivo cuda `
@@ -101,7 +101,7 @@ conserva.
 Solo cuando los 20 runs estén completos:
 
 ```powershell
-.venv\Scripts\python.exe -B 04_entrenamiento.py comparar `
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento comparar `
   --salida resultados/04_entrenamiento/multimodal_clinico_20261007
 ```
 

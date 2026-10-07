@@ -9,11 +9,9 @@ from __future__ import annotations
 import argparse
 from datetime import datetime
 import hashlib
-import importlib.util
 import json
 import os
 from pathlib import Path
-import sys
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -21,10 +19,13 @@ import pandas as pd
 from sklearn.calibration import calibration_curve
 from sklearn.metrics import average_precision_score, roc_auc_score, roc_curve, precision_recall_curve
 
-ROOT = Path(__file__).resolve().parent
-DEFAULT_RUNS = ROOT / "resultados/04_entrenamiento/multimodal_clinico_20261007"
-DEFAULT_OUTPUT = ROOT / "resultados/06_informe_multimodal_20261007"
-DEFAULT_PDF = ROOT / "output/pdf/informe_multimodal_20261007.pdf"
+from . import entrenamiento
+from .paths import DOCS_DIR, PROJECT_ROOT, RESULTS_DIR
+
+ROOT = PROJECT_ROOT
+DEFAULT_RUNS = RESULTS_DIR / "04_entrenamiento/multimodal_clinico_20261007"
+DEFAULT_OUTPUT = RESULTS_DIR / "06_informe_multimodal_20261007"
+DEFAULT_PDF = DOCS_DIR / "informes/informe_multimodal_20261007.pdf"
 SOURCES = [
     ("Validación cruzada y preprocesado dentro de train", "https://scikit-learn.org/stable/modules/cross_validation.html"),
     ("Sesgo de selección y validación anidada", "https://scikit-learn.org/stable/auto_examples/model_selection/plot_nested_cross_validation_iris.html"),
@@ -38,11 +39,7 @@ def write_json(path, value):
 
 
 def training_module():
-    spec = importlib.util.spec_from_file_location("informe_entrenamiento", ROOT / "04_entrenamiento.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return entrenamiento
 
 
 def clinical_oof(module, train):
@@ -217,7 +214,7 @@ def analyze(args):
         history = pd.read_csv(path.parent / "history.csv")
         history["loss"], history["seed"], history["fold"] = summary["loss"], summary["seed"], summary["fold"]
         histories.append(history)
-        if config["source_sha256"]["04_entrenamiento.py"] != module.sha256(ROOT / "04_entrenamiento.py"):
+        if config["source_sha256"]["04_entrenamiento.py"] != module.sha256(Path(module.__file__)):
             raise ValueError("El entrenador cambió después de ejecutar el run")
     expected = {(loss, seed, fold) for loss in ("normal", "weighted") for seed in (42, 2026) for fold in range(5)}
     if set(folders) != expected:
@@ -489,7 +486,7 @@ Pasaron 19 tests y humo CUDA. Se comprobaron los 20 runs, cobertura y alineació
 
 Entrenamiento: `resultados/04_entrenamiento/multimodal_clinico_20261007/entrenamiento.log`. Manifiesto: `{summary['manifest']['path']}`. SHA-256 del manifiesto: `{summary['audit']['manifest_sha256']}`.
 
-Regeneración del análisis, sin entrenar: `.venv/bin/python -B 06_informe_multimodal.py`, manteniendo código y datos de esta ejecución. El PDF requiere ReportLab, ya instalado en el entorno utilizado; en otro entorno se puede instalar con `python -m pip install reportlab`. Tablas, predicciones y auditoría quedan en esta carpeta. El PDF está en `output/pdf/informe_multimodal_20261007.pdf`.
+Regeneración del análisis, sin entrenar: `.venv/bin/python -B -m cancer_mama.informe_multimodal`, manteniendo código y datos de esta ejecución. ReportLab forma parte de las dependencias del proyecto. Tablas, predicciones y auditoría quedan en esta carpeta. El PDF está en `docs/informes/informe_multimodal_20261007.pdf`.
 
 ## Fuentes metodológicas
 
@@ -609,7 +606,7 @@ def build_pdf(summary, candidates, folds, cohorts, runs, output, pdf_path):
     note("Código: " + summary["git_commit"])
     note("Manifiesto: " + summary["manifest"]["path"])
     note("SHA-256: " + summary["audit"]["manifest_sha256"])
-    note("Regenerar: .venv/bin/python -B 06_informe_multimodal.py. Evidencia numérica y figuras: resultados/06_informe_multimodal_20261007/. Pesos y log: resultados/04_entrenamiento/multimodal_clinico_20261007/.")
+    note("Regenerar: .venv/bin/python -B -m cancer_mama.informe_multimodal. Evidencia numérica y figuras: resultados/06_informe_multimodal_20261007/. Pesos y log: resultados/04_entrenamiento/multimodal_clinico_20261007/.")
     p("Fuentes metodológicas", "Heading2")
     for title, url in SOURCES:
         content.append(Paragraph(f'<b>{escape(title)}</b><br/><link href="{escape(url)}">{escape(url)}</link>', small))

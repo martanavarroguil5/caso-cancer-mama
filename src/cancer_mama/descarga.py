@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Descarga el dataset BreastDCEDL desde el bucket publico del curso.
 
-    python descargar_datos.py
-    python descargar_datos.py --pacientes 5
-    python descargar_datos.py --solo-test
+    python -m cancer_mama.descarga
+    python -m cancer_mama.descarga --pacientes 5
+    python -m cancer_mama.descarga --solo-test
 """
 
 from __future__ import annotations
@@ -14,10 +14,12 @@ import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
+from .paths import DATA_DIR
+
 try:
     import requests
 except ImportError:
-    sys.exit("Falta 'requests'. Instala las dependencias con: python -m pip install -r requirements.txt")
+    sys.exit("Falta 'requests'. Instala el proyecto con: python -m pip install -e .")
 
 
 BASE = "https://storage.googleapis.com/usecasesf-breastdcedl-alumnos-8264/breastdcedl"
@@ -83,7 +85,7 @@ def descargar_lote(rutas: list[str], destino: Path, hilos: int, etiqueta: str) -
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--destino", type=Path, default=Path("breastdcedl"))
+    parser.add_argument("--destino", type=Path, default=DATA_DIR)
     parser.add_argument("--hilos", type=int, default=16)
     parser.add_argument("--solo-test", action="store_true")
     parser.add_argument("--pacientes", type=int, metavar="N")

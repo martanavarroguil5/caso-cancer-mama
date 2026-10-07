@@ -2,13 +2,13 @@
 
 Revisión del 05/10/2026 sobre el código posterior a la limpieza. **Las cuatro propuestas ya se ensayaron y ninguna cumple todos los criterios fijados de adopción.** Dropout2d obtuvo la mayor señal con BCE ponderada (AUC media 0,5504 → 0,5729), pero su intervalo pareado incluye cero y con BCE normal la diferencia es −0,0075. Los [resultados completos](RESULTADOS_CUATRO_MEJORAS.md) y el [protocolo previo](PROTOCOLO_CUATRO_MEJORAS.md) contienen la decisión y evidencia.
 
-Se conserva a continuación el razonamiento y plan anteriores al ensayo. Sus hipótesis y prioridades no son mejoras demostradas. El entrenador sigue sin los cuatro candidatos experimentales; se documentan como inconcluyentes en `EXPERIMENTOS_DESCARTADOS.md`.
+Se conserva a continuación el razonamiento y plan anteriores al ensayo. Sus hipótesis y prioridades no son mejoras demostradas. El entrenador sigue sin los cuatro candidatos experimentales; se documentan como inconcluyentes en [`EXPERIMENTOS_DESCARTADOS.md`](../EXPERIMENTOS_DESCARTADOS.md).
 
 Se revisaron el enunciado docente, README, entrenador, ensayos cerrados, curvas y metadatos de desarrollo. El [diagnóstico reproducible](diagnostico.json) identifica el commit, los archivos fuente y sus SHA-256. Esta investigación no entrena modelos ni abre imágenes de test o de la validación privada.
 
 ## Condiciones de la práctica
 
-El enunciado exige una CNN 2D propia, inicializada desde cero, entrada PRE/EARLY/LATE y salida de un logit con BCEWithLogitsLoss. Deben compararse BCE normal y ponderada. Prohíbe modelos preentrenados y transfer learning. El plan conserva los pasos 01–03 y `pipeline_datos.py`, y mantiene las tres imágenes como entrada de inferencia.
+El enunciado exige una CNN 2D propia, inicializada desde cero, entrada PRE/EARLY/LATE y salida de un logit con BCEWithLogitsLoss. Deben compararse BCE normal y ponderada. Prohíbe modelos preentrenados y transfer learning. El plan conserva los pasos 01–03 y `src/cancer_mama/datos.py`, y mantiene las tres imágenes como entrada de inferencia.
 
 HR y HER2 se usan aquí para describir heterogeneidad y errores; el plan principal no añade entradas clínicas. El enunciado no formula una prohibición explícita de usar metadatos, pero incorporar esos predictores cambiaría la entrada de la aplicación y exigiría verificar su disponibilidad en la evaluación docente. Esa ampliación queda fuera de esta propuesta.
 
@@ -67,7 +67,7 @@ Los controles deben reentrenarse bajo el protocolo elegido. Las AUC de ensayos a
 
 ## Gestión del código y decisiones
 
-La investigación deja el entrenador sin cambios. El ensayo futuro debe desarrollarse de forma aislada, con una configuración fija y un registro del protocolo, versiones, semillas, pesos y predicciones. Al terminar, se incorpora al entrenador únicamente si se adopta. Si empeora o queda inconcluyente, se retira el código candidato y se documentan resultados y decisión en `EXPERIMENTOS_DESCARTADOS.md`.
+La investigación deja el entrenador sin cambios. El ensayo futuro debe desarrollarse de forma aislada, con una configuración fija y un registro del protocolo, versiones, semillas, pesos y predicciones. Al terminar, se incorpora al entrenador únicamente si se adopta. Si empeora o queda inconcluyente, se retira el código candidato y se documentan resultados y decisión en [`EXPERIMENTOS_DESCARTADOS.md`](../EXPERIMENTOS_DESCARTADOS.md).
 
 El modelo histórico, su calibración y umbral siguen siendo los del informe. GroupNorm, BCE por paciente y la reducción de canales ya ensayada permanecen descartados. Una CNN más grande no es la primera prioridad cuando la actual alcanza AUC de entrenamiento cercana a 0,94 y muestra este desfase de validación. Modificar umbrales puede cambiar F1 y sensibilidad, pero no mejora la ordenación que mide la AUC.
 

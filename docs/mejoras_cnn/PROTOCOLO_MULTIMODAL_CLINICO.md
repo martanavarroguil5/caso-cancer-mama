@@ -73,13 +73,13 @@ Cambiar el umbral no puede utilizarse para afirmar que mejoró la AUC.
 ## Ejecución
 
 ```powershell
-.venv\Scripts\python.exe -B 04_entrenamiento.py entrenar `
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento entrenar `
   --configuraciones pool_dropout_wd_clinical `
   --perdidas normal ponderada --semillas 42 2026 --folds 0 1 2 3 4 `
   --epocas 46 --lote 64 --dispositivo cuda `
   --salida resultados/04_entrenamiento/multimodal_clinico_20261007
 
-.venv\Scripts\python.exe -B 04_entrenamiento.py comparar `
+.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento comparar `
   --salida resultados/04_entrenamiento/multimodal_clinico_20261007
 ```
 

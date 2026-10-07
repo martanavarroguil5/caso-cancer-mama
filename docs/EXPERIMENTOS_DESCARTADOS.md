@@ -1,7 +1,7 @@
 # Experimentos cerrados y retirados del entrenador
 
 Actualizado el 05/10/2026. Estos ensayos no forman parte del código activo de
-`04_entrenamiento.py` y sus comandos de comparación se han eliminado. No se
+`src/cancer_mama/entrenamiento.py` y sus comandos de comparación se han eliminado. No se
 vuelven a ejecutar automáticamente. Se conservan sus informes, predicciones,
 curvas, configuraciones y evidencia histórica en `resultados/04_entrenamiento/`.
 El código y README anteriores a esta limpieza quedan en
@@ -174,7 +174,7 @@ dio Δ +0.0004, IC95% [−0.0241, +0.0251]. No se demuestra un beneficio adicion
 del promedio de parámetros frente a recalcular BN. Ese control era diagnóstico,
 sin convertirlo después en un quinto candidato de búsqueda.
 
-Se conserva `04_entrenamiento.py` sin modificaciones: los candidatos se ejecutaron
+Se conserva `src/cancer_mama/entrenamiento.py` sin modificaciones: los candidatos se ejecutaron
 en código aislado y nunca se añadieron al entrenador activo. Los 3.334 archivos
 protegidos previos mantienen sus SHA-256. Se verificaron los 120 pesos de
 inferencia, su correspondencia con el mejor checkpoint y su compatibilidad exacta
@@ -183,7 +183,7 @@ ni de validación privada y no se sustituyen pesos, calibración o umbral histó
 
 Evidencia y scripts congelados: `resultados/04_entrenamiento/cuatro_mejoras_20261005/`.
 Detalles, métricas de ambas pérdidas y reconstrucción:
-[RESULTADOS_CUATRO_MEJORAS.md](docs/mejoras_cnn/RESULTADOS_CUATRO_MEJORAS.md).
+[RESULTADOS_CUATRO_MEJORAS.md](mejoras_cnn/RESULTADOS_CUATRO_MEJORAS.md).
 
 ## Límites de los ensayos por paciente, lotes y normalización
 
@@ -208,7 +208,7 @@ exclusivas. Se mantienen las pruebas de arquitectura, fases, pacientes, OOF,
 calibración, caché, reanudación e inferencia. El código activo conserva el diseño
 del informe, BatchNorm, BCE por corte, pooling aceptado y las revisiones por época.
 
-No se modifican datos, archivos 01–03, `pipeline_datos.py`, modelos históricos,
+No se modifican datos, archivos 01–03, `src/cancer_mama/datos.py`, modelos históricos,
 calibración, umbral ni evidencia previa. La verificación de conservación y las
 pruebas de la limpieza se guardan en `limpieza_20261005/`. El README de uso muestra
 solo comandos que existen en la versión actual. Para reconstruir los ensayos

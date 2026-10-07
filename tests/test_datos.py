@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-import pipeline_datos as pdatos
+from cancer_mama import datos as pdatos
 
 
 class TestPipelineDatos(unittest.TestCase):
