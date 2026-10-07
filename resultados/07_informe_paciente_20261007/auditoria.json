@@ -90,6 +90,6 @@
   "source_sha256": {
     "src/cancer_mama/entrenamiento.py": "9ba4a3d7b5840abc20ffa778fa9c283883091c16ddbb28336ee02e0be4d6768b",
     "src/cancer_mama/datos.py": "b61e550788d321536dccb96c87b09a3b04c1ef87f885c6945056b935215eb8eb",
-    "src/cancer_mama/informe_paciente.py": "cedca11bdf87977a23fcf683af5e010d831442e71288a1f8d57bad6945ec54b0"
+    "src/cancer_mama/informe_paciente.py": "0c7d40f324669e2529d98a108fae4f222329f9c39f13e4fad6cdb4e77533e020"
   }
 }
