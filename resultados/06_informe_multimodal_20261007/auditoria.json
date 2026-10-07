@@ -1,0 +1,78 @@
+{
+  "complete_runs": 20,
+  "expected_runs": 20,
+  "unit_tests_passed": 19,
+  "smoke_cuda_passed": true,
+  "oof_patients": 1097,
+  "oof_slices": 10945,
+  "test_images_loaded": 0,
+  "protected_files_verified": 88,
+  "bootstrap_implementation_check": {
+    "reference": "scikit-learn",
+    "cases_with_ties_and_repeated_patients": 3,
+    "passed": true
+  },
+  "manifest_sha256": "534521e1aa41fadc4276949071c8c3bd6839d297659d6ef06e7ca5dca699f62a",
+  "selected_models": [
+    {
+      "seed": 42,
+      "fold": 0,
+      "image_weights_max_abs": 0.014719555154442787,
+      "image_weights_all_zero": false
+    },
+    {
+      "seed": 42,
+      "fold": 1,
+      "image_weights_max_abs": 0.0,
+      "image_weights_all_zero": true
+    },
+    {
+      "seed": 42,
+      "fold": 2,
+      "image_weights_max_abs": 0.033269740641117096,
+      "image_weights_all_zero": false
+    },
+    {
+      "seed": 42,
+      "fold": 3,
+      "image_weights_max_abs": 0.0,
+      "image_weights_all_zero": true
+    },
+    {
+      "seed": 42,
+      "fold": 4,
+      "image_weights_max_abs": 0.04722993075847626,
+      "image_weights_all_zero": false
+    },
+    {
+      "seed": 2026,
+      "fold": 0,
+      "image_weights_max_abs": 0.018389791250228882,
+      "image_weights_all_zero": false
+    },
+    {
+      "seed": 2026,
+      "fold": 1,
+      "image_weights_max_abs": 0.0,
+      "image_weights_all_zero": true
+    },
+    {
+      "seed": 2026,
+      "fold": 2,
+      "image_weights_max_abs": 0.017781473696231842,
+      "image_weights_all_zero": false
+    },
+    {
+      "seed": 2026,
+      "fold": 3,
+      "image_weights_max_abs": 0.02205526828765869,
+      "image_weights_all_zero": false
+    },
+    {
+      "seed": 2026,
+      "fold": 4,
+      "image_weights_max_abs": 0.018252771347761154,
+      "image_weights_all_zero": false
+    }
+  ]
+}
