@@ -183,6 +183,27 @@ figuras y el informe con la evidencia conservada. La candidata se puede cargar c
 `modelos/versionar.py predecir v003_multimodal_loss_20261010 -- ...`, pasando las
 mismas imágenes y variables clínicas que a v002.
 
+## Transferencia visual y fusión regularizada
+
+El [protocolo de transferencia](docs/mejoras_cnn/PROTOCOLO_TRANSFER_MULTIMODAL.md)
+recoge estudios comparables, diferencias entre sus datos y los nuestros, y una
+rejilla fijada antes de entrenar. ResNet50 ImageNet V2 extrae características
+congeladas a dos escalas. Se entrenan tres formas de fusionarlas con la clínica,
+con imputación, PCA y elección de hiperparámetros dentro de fit/selección interna.
+
+```bash
+.venv/bin/python -m pip install -r requirements-transfer.txt
+.venv/bin/python -B -m cancer_mama.experimento_transfer ejecutar --prueba
+.venv/bin/python -u -B -m cancer_mama.experimento_transfer ejecutar
+```
+
+El servidor ya tiene torch 2.14.0; solo se añadió torchvision 0.29.0. La aplicación
+sigue usando v002. Se conservan probabilidades por paciente, selección de modelos,
+controles AUC/log-loss del ensayo anterior y diferencias pareadas con incertidumbre.
+Este módulo requiere la evidencia local del ensayo anterior para verificar su
+control. `estado.json` informa progreso y errores; el mismo comando reanuda fases
+completadas si fuentes, entorno y datos siguen siendo idénticos.
+
 ## Evidencia conservada y pruebas
 
 La base v002 obtuvo AUC OOF 0,724568 y AP 0,531646 sobre 1.097 pacientes de

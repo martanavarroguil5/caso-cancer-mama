@@ -65,3 +65,6 @@ Thumbs.db
 
 # Ensayo de LR y selección por pérdida: caché, checkpoints y ejecuciones locales
 /resultados/04_entrenamiento/loss_lr_multimodal_20261010/
+
+# Transferencia visual: pesos, características y clasificadores locales
+/resultados/04_entrenamiento/transfer_multimodal_20261010/
