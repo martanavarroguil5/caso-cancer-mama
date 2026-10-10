@@ -222,6 +222,15 @@ visual acotada. Entrena por paciente con dos semillas y selecciona por pérdida:
 .venv/bin/python -u -B -m cancer_mama.experimento_finetune
 ```
 
+La [cuarta tanda](docs/mejoras_cnn/PROTOCOLO_TEXTURA.md) extrae descriptores de
+textura y diferencias entre fases de los PNG, conservando las mismas variables
+clínicas. No interpreta esos descriptores como medidas físicas de perfusión:
+
+```bash
+.venv/bin/python -B -m cancer_mama.experimento_textura --prueba
+.venv/bin/python -u -B -m cancer_mama.experimento_textura
+```
+
 ## Evidencia conservada y pruebas
 
 La base v002 obtuvo AUC OOF 0,724568 y AP 0,531646 sobre 1.097 pacientes de
