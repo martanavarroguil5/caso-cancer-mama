@@ -1,0 +1,793 @@
+{
+  "schema_version": 1,
+  "status": "desarrollo_sin_test",
+  "models": [
+    {
+      "path": "../enhancement_clinical/weighted/seed_42/fold_0/inference.pt",
+      "sha256": "e2d47366bebf2e94323167605e74ee34c6ed37054dd60014157df2b0fc2f84f0",
+      "seed": 42,
+      "fold": 0,
+      "model_config": {
+        "representation": "raw_plus_deltas",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "pooling": "intermedio",
+        "clinical": {
+          "raw_columns": [
+            "age",
+            "tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "features": [
+            "age",
+            "log1p_tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "missing_indicators": true,
+          "preprocessing": {
+            "fit_scope": "unique_patients_in_training_partition",
+            "medians": [
+              48.0,
+              2.598021336849682,
+              1.0,
+              0.0
+            ],
+            "means": [
+              48.76136674259681,
+              2.6379275475839465,
+              0.5808656036446469,
+              0.27107061503416857
+            ],
+            "stds": [
+              10.36179148281712,
+              1.0845346302327539,
+              0.4934174238382595,
+              0.4445124708027517
+            ],
+            "n_patients": 878
+          },
+          "initialization": {
+            "method": "fold_train_logistic_balanced",
+            "coefficients": [
+              -0.2930202493708651,
+              -0.2264180592661049,
+              -0.5949942564219656,
+              0.4261716432148433,
+              0.24844809855851613,
+              0.22727697724448317,
+              0.0,
+              0.6147994506319894
+            ],
+            "intercept": -0.11379345865789398,
+            "n_patients": 878
+          }
+        }
+      }
+    },
+    {
+      "path": "../enhancement_clinical/weighted/seed_42/fold_1/inference.pt",
+      "sha256": "938acddb581ba2edf7ce56f82051b78f9e75c407fbc6d9976661c05039ca36d2",
+      "seed": 42,
+      "fold": 1,
+      "model_config": {
+        "representation": "raw_plus_deltas",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "pooling": "intermedio",
+        "clinical": {
+          "raw_columns": [
+            "age",
+            "tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "features": [
+            "age",
+            "log1p_tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "missing_indicators": true,
+          "preprocessing": {
+            "fit_scope": "unique_patients_in_training_partition",
+            "medians": [
+              49.0,
+              2.6252057673185245,
+              1.0,
+              0.0
+            ],
+            "means": [
+              48.71687927107061,
+              2.6638715679044482,
+              0.5740318906605922,
+              0.2539863325740319
+            ],
+            "stds": [
+              10.417521951480145,
+              1.1103598164250532,
+              0.4944889070193776,
+              0.4352898751862097
+            ],
+            "n_patients": 878
+          },
+          "initialization": {
+            "method": "fold_train_logistic_balanced",
+            "coefficients": [
+              -0.14603349232461127,
+              -0.2695109624956888,
+              -0.667953508279226,
+              0.44399614644992774,
+              0.22769683100410973,
+              0.24877431847180803,
+              -0.33010215231491147,
+              0.3269026189522698
+            ],
+            "intercept": -0.12517160568668062,
+            "n_patients": 878
+          }
+        }
+      }
+    },
+    {
+      "path": "../enhancement_clinical/weighted/seed_42/fold_2/inference.pt",
+      "sha256": "89ef348087537df6369d89f264354ec48e9affb1703d7a642dae40beda092a6a",
+      "seed": 42,
+      "fold": 2,
+      "model_config": {
+        "representation": "raw_plus_deltas",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "pooling": "intermedio",
+        "clinical": {
+          "raw_columns": [
+            "age",
+            "tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "features": [
+            "age",
+            "log1p_tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "missing_indicators": true,
+          "preprocessing": {
+            "fit_scope": "unique_patients_in_training_partition",
+            "medians": [
+              48.0,
+              2.633745730716905,
+              1.0,
+              0.0
+            ],
+            "means": [
+              48.60131128848347,
+              2.694424939385393,
+              0.572405929304447,
+              0.26567844925883694
+            ],
+            "stds": [
+              10.539232044013353,
+              1.090598184149803,
+              0.4947296043310527,
+              0.4416937976225835
+            ],
+            "n_patients": 877
+          },
+          "initialization": {
+            "method": "fold_train_logistic_balanced",
+            "coefficients": [
+              -0.26795906686256726,
+              -0.29020316116704364,
+              -0.6596999010933784,
+              0.45715379478594104,
+              0.393572416013041,
+              0.2180560249265478,
+              -0.2646136090741881,
+              0.37909004751518205
+            ],
+            "intercept": -0.13136717646297388,
+            "n_patients": 877
+          }
+        }
+      }
+    },
+    {
+      "path": "../enhancement_clinical/weighted/seed_42/fold_3/inference.pt",
+      "sha256": "fc32a7e3abc746091420b0e6e6b0b0eb3468e642833ea767a0fe2a0a6024adbe",
+      "seed": 42,
+      "fold": 3,
+      "model_config": {
+        "representation": "raw_plus_deltas",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "pooling": "intermedio",
+        "clinical": {
+          "raw_columns": [
+            "age",
+            "tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "features": [
+            "age",
+            "log1p_tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "missing_indicators": true,
+          "preprocessing": {
+            "fit_scope": "unique_patients_in_training_partition",
+            "medians": [
+              49.0,
+              2.6108084337598014,
+              1.0,
+              0.0
+            ],
+            "means": [
+              48.80200684150513,
+              2.664256525151022,
+              0.580387685290764,
+              0.2531356898517674
+            ],
+            "stds": [
+              10.467126934247512,
+              1.0768417500135943,
+              0.4934955116853579,
+              0.43480801783664913
+            ],
+            "n_patients": 877
+          },
+          "initialization": {
+            "method": "fold_train_logistic_balanced",
+            "coefficients": [
+              -0.28511686388160734,
+              -0.31139906055708894,
+              -0.6359006961931861,
+              0.42285828770422595,
+              -0.14966744731244325,
+              0.0,
+              -0.3386284761686785,
+              0.4023608657611141
+            ],
+            "intercept": -0.13386362363655452,
+            "n_patients": 877
+          }
+        }
+      }
+    },
+    {
+      "path": "../enhancement_clinical/weighted/seed_42/fold_4/inference.pt",
+      "sha256": "ebe7bd9a44b7699b07883d4b49fd76b84e42695c3f44effa842c73ea2920b1b8",
+      "seed": 42,
+      "fold": 4,
+      "model_config": {
+        "representation": "raw_plus_deltas",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "pooling": "intermedio",
+        "clinical": {
+          "raw_columns": [
+            "age",
+            "tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "features": [
+            "age",
+            "log1p_tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "missing_indicators": true,
+          "preprocessing": {
+            "fit_scope": "unique_patients_in_training_partition",
+            "medians": [
+              48.0,
+              2.6299158661841284,
+              1.0,
+              0.0
+            ],
+            "means": [
+              48.438576309794996,
+              2.680054863615748,
+              0.5820045558086561,
+              0.2642369020501139
+            ],
+            "stds": [
+              10.574632253167712,
+              1.087321204762085,
+              0.49322941196427095,
+              0.44092602740717707
+            ],
+            "n_patients": 878
+          },
+          "initialization": {
+            "method": "fold_train_logistic_balanced",
+            "coefficients": [
+              -0.26867996371664976,
+              -0.3275752420991374,
+              -0.6721231699369734,
+              0.49111856283313743,
+              0.2759855216756025,
+              0.18960842770791478,
+              -0.20821991192710776,
+              -0.20821991192710776
+            ],
+            "intercept": -0.13690483596108316,
+            "n_patients": 878
+          }
+        }
+      }
+    },
+    {
+      "path": "../enhancement_clinical/weighted/seed_2026/fold_0/inference.pt",
+      "sha256": "2f6908f7bb83b37d52004c225ad765872a23fbd5b83ec0036bbeade40151f59a",
+      "seed": 2026,
+      "fold": 0,
+      "model_config": {
+        "representation": "raw_plus_deltas",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "pooling": "intermedio",
+        "clinical": {
+          "raw_columns": [
+            "age",
+            "tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "features": [
+            "age",
+            "log1p_tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "missing_indicators": true,
+          "preprocessing": {
+            "fit_scope": "unique_patients_in_training_partition",
+            "medians": [
+              48.0,
+              2.598021336849682,
+              1.0,
+              0.0
+            ],
+            "means": [
+              48.76136674259681,
+              2.6379275475839465,
+              0.5808656036446469,
+              0.27107061503416857
+            ],
+            "stds": [
+              10.36179148281712,
+              1.0845346302327539,
+              0.4934174238382595,
+              0.4445124708027517
+            ],
+            "n_patients": 878
+          },
+          "initialization": {
+            "method": "fold_train_logistic_balanced",
+            "coefficients": [
+              -0.2930202493708651,
+              -0.2264180592661049,
+              -0.5949942564219656,
+              0.4261716432148433,
+              0.24844809855851613,
+              0.22727697724448317,
+              0.0,
+              0.6147994506319894
+            ],
+            "intercept": -0.11379345865789398,
+            "n_patients": 878
+          }
+        }
+      }
+    },
+    {
+      "path": "../enhancement_clinical/weighted/seed_2026/fold_1/inference.pt",
+      "sha256": "6fedfcb3f5eb14623b0d204b3903eb0beebb1de10d1497aa1a2122d2ad000865",
+      "seed": 2026,
+      "fold": 1,
+      "model_config": {
+        "representation": "raw_plus_deltas",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "pooling": "intermedio",
+        "clinical": {
+          "raw_columns": [
+            "age",
+            "tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "features": [
+            "age",
+            "log1p_tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "missing_indicators": true,
+          "preprocessing": {
+            "fit_scope": "unique_patients_in_training_partition",
+            "medians": [
+              49.0,
+              2.6252057673185245,
+              1.0,
+              0.0
+            ],
+            "means": [
+              48.71687927107061,
+              2.6638715679044482,
+              0.5740318906605922,
+              0.2539863325740319
+            ],
+            "stds": [
+              10.417521951480145,
+              1.1103598164250532,
+              0.4944889070193776,
+              0.4352898751862097
+            ],
+            "n_patients": 878
+          },
+          "initialization": {
+            "method": "fold_train_logistic_balanced",
+            "coefficients": [
+              -0.14603349232461127,
+              -0.2695109624956888,
+              -0.667953508279226,
+              0.44399614644992774,
+              0.22769683100410973,
+              0.24877431847180803,
+              -0.33010215231491147,
+              0.3269026189522698
+            ],
+            "intercept": -0.12517160568668062,
+            "n_patients": 878
+          }
+        }
+      }
+    },
+    {
+      "path": "../enhancement_clinical/weighted/seed_2026/fold_2/inference.pt",
+      "sha256": "cbe2e3afd1a4e2574261fc77f5d247eb2c922c6cda417ef959371657b595d764",
+      "seed": 2026,
+      "fold": 2,
+      "model_config": {
+        "representation": "raw_plus_deltas",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "pooling": "intermedio",
+        "clinical": {
+          "raw_columns": [
+            "age",
+            "tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "features": [
+            "age",
+            "log1p_tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "missing_indicators": true,
+          "preprocessing": {
+            "fit_scope": "unique_patients_in_training_partition",
+            "medians": [
+              48.0,
+              2.633745730716905,
+              1.0,
+              0.0
+            ],
+            "means": [
+              48.60131128848347,
+              2.694424939385393,
+              0.572405929304447,
+              0.26567844925883694
+            ],
+            "stds": [
+              10.539232044013353,
+              1.090598184149803,
+              0.4947296043310527,
+              0.4416937976225835
+            ],
+            "n_patients": 877
+          },
+          "initialization": {
+            "method": "fold_train_logistic_balanced",
+            "coefficients": [
+              -0.26795906686256726,
+              -0.29020316116704364,
+              -0.6596999010933784,
+              0.45715379478594104,
+              0.393572416013041,
+              0.2180560249265478,
+              -0.2646136090741881,
+              0.37909004751518205
+            ],
+            "intercept": -0.13136717646297388,
+            "n_patients": 877
+          }
+        }
+      }
+    },
+    {
+      "path": "../enhancement_clinical/weighted/seed_2026/fold_3/inference.pt",
+      "sha256": "aafccb120505f1cf1cc67ec88999037771078abf440f4d82be306d447bd6ca77",
+      "seed": 2026,
+      "fold": 3,
+      "model_config": {
+        "representation": "raw_plus_deltas",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "pooling": "intermedio",
+        "clinical": {
+          "raw_columns": [
+            "age",
+            "tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "features": [
+            "age",
+            "log1p_tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "missing_indicators": true,
+          "preprocessing": {
+            "fit_scope": "unique_patients_in_training_partition",
+            "medians": [
+              49.0,
+              2.6108084337598014,
+              1.0,
+              0.0
+            ],
+            "means": [
+              48.80200684150513,
+              2.664256525151022,
+              0.580387685290764,
+              0.2531356898517674
+            ],
+            "stds": [
+              10.467126934247512,
+              1.0768417500135943,
+              0.4934955116853579,
+              0.43480801783664913
+            ],
+            "n_patients": 877
+          },
+          "initialization": {
+            "method": "fold_train_logistic_balanced",
+            "coefficients": [
+              -0.28511686388160734,
+              -0.31139906055708894,
+              -0.6359006961931861,
+              0.42285828770422595,
+              -0.14966744731244325,
+              0.0,
+              -0.3386284761686785,
+              0.4023608657611141
+            ],
+            "intercept": -0.13386362363655452,
+            "n_patients": 877
+          }
+        }
+      }
+    },
+    {
+      "path": "../enhancement_clinical/weighted/seed_2026/fold_4/inference.pt",
+      "sha256": "47f1da55348ebb0193299132e4f1be32ecdbfccf14a6f32fcae4ad6c9dd307c5",
+      "seed": 2026,
+      "fold": 4,
+      "model_config": {
+        "representation": "raw_plus_deltas",
+        "channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "pooling": "intermedio",
+        "clinical": {
+          "raw_columns": [
+            "age",
+            "tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "features": [
+            "age",
+            "log1p_tum_vol",
+            "HR",
+            "HER2"
+          ],
+          "missing_indicators": true,
+          "preprocessing": {
+            "fit_scope": "unique_patients_in_training_partition",
+            "medians": [
+              48.0,
+              2.6299158661841284,
+              1.0,
+              0.0
+            ],
+            "means": [
+              48.438576309794996,
+              2.680054863615748,
+              0.5820045558086561,
+              0.2642369020501139
+            ],
+            "stds": [
+              10.574632253167712,
+              1.087321204762085,
+              0.49322941196427095,
+              0.44092602740717707
+            ],
+            "n_patients": 878
+          },
+          "initialization": {
+            "method": "fold_train_logistic_balanced",
+            "coefficients": [
+              -0.26867996371664976,
+              -0.3275752420991374,
+              -0.6721231699369734,
+              0.49111856283313743,
+              0.2759855216756025,
+              0.18960842770791478,
+              -0.20821991192710776,
+              -0.20821991192710776
+            ],
+            "intercept": -0.13690483596108316,
+            "n_patients": 878
+          }
+        }
+      }
+    }
+  ],
+  "aggregation": "mean",
+  "calibration": {
+    "method": "regularized_platt",
+    "input": "logit_patient_aggregated_probability",
+    "slope": 0.9305399015833764,
+    "intercept": -0.9033685263532237,
+    "C": 1.0,
+    "clip_epsilon": 1e-07,
+    "scope": "patient",
+    "fit_data": "train_oof",
+    "nonnegative_slope_constraint": true,
+    "boundary_solution": false
+  },
+  "threshold": 0.3314337791644529,
+  "decision_policy": {
+    "strategy": "youden",
+    "fit_data": "train_oof_apparent"
+  },
+  "test_evaluated_once": false,
+  "selection": {
+    "candidate": "enhancement_clinical_weighted_mean",
+    "configuration": "enhancement_clinical",
+    "loss": "weighted",
+    "aggregation": "mean",
+    "metrics": {
+      "n_patients": 1097,
+      "n_positive": 322,
+      "prevalence": 0.2935278030993619,
+      "roc_auc": 0.7260869565217392,
+      "average_precision": 0.536726158300461,
+      "brier": 0.21378849430799285,
+      "log_loss": 0.6176793811796968,
+      "accuracy": 0.6608933454876937,
+      "f1": 0.5474452554744526,
+      "precision": 0.45,
+      "recall": 0.6987577639751553,
+      "balanced_accuracy": 0.671959527148868,
+      "sensitivity": 0.6987577639751553,
+      "specificity": 0.6451612903225806,
+      "threshold": 0.5,
+      "tn": 500,
+      "fp": 275,
+      "fn": 97,
+      "tp": 225,
+      "confusion_matrix": [
+        [
+          500,
+          275
+        ],
+        [
+          97,
+          225
+        ]
+      ],
+      "fold_roc_auc": [
+        0.770866935483871,
+        0.7116293404561331,
+        0.7161806505947994,
+        0.7269885057471265,
+        0.7192315594822273
+      ],
+      "mean_fold_roc_auc": 0.7289793983528314,
+      "min_fold_roc_auc": 0.7116293404561331
+    }
+  },
+  "preprocessing": {
+    "phases": [
+      "PRE",
+      "EARLY",
+      "LATE"
+    ],
+    "shape": [
+      3,
+      256,
+      256
+    ],
+    "model_representation": "raw_plus_deltas",
+    "network_channels": 6,
+    "scaling": "uint8 / 255; CNN: 2*x-1 para PRE/EARLY/LATE; deltas: EARLY-PRE, LATE-PRE, LATE-EARLY",
+    "clinical_required": true,
+    "clinical_raw_columns": [
+      "age",
+      "tum_vol",
+      "HR",
+      "HER2"
+    ]
+  }
+}
