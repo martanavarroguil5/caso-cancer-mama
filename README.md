@@ -147,6 +147,25 @@ Para comprobar la instalación con un lote y una época, excluidos de comparaci�
 El [lanzador y guía GPU](docs/GUIA_GPU_MULTIMODAL.md) describen el mismo perfil
 en Windows. No se inicia ningún entrenamiento al abrir la aplicación o verificar pesos.
 
+## Ensayo de pérdidas y LR del multimodal
+
+El módulo experimental `cancer_mama.experimento_loss` compara LR 0,0008/0,0002
+con selección independiente por AUC o log-loss por paciente. Registra pérdidas
+comparables desde época 0 y reserva una selección interna separada del fold
+exterior. Conserva los pesos, la calibración y la aplicación de v002.
+
+El [protocolo del ensayo](docs/mejoras_cnn/PROTOCOLO_LOSS_LR_MULTIMODAL.md) fija
+particiones, métricas y criterios antes de entrenar. En el servidor Linux:
+
+```bash
+.venv/bin/python -u -B -m cancer_mama.experimento_loss ejecutar --prueba
+.venv/bin/python -u -B -m cancer_mama.experimento_loss ejecutar
+```
+
+El segundo comando ejecuta veinte trayectorias y genera la comparación al acabar.
+Se puede reanudar con el mismo comando; el progreso queda en
+`resultados/04_entrenamiento/loss_lr_multimodal_20261010/estado.json`.
+
 ## Evidencia conservada y pruebas
 
 La base v002 obtuvo AUC OOF 0,724568 y AP 0,531646 sobre 1.097 pacientes de
