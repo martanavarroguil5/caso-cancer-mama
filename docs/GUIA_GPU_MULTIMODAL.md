@@ -1,187 +1,76 @@
-# Traslado y entrenamiento multimodal en GPU
+# Guía GPU: base multimodal
 
-## Experimento nuevo: realce temporal y control de sobreajuste
+Actualizado el 10/10/2026. La base activa es `pool_dropout_wd_clinical` con
+BCE ponderada por corte. **v002 ya está entrenado**: para usarlo basta instalar
+las dependencias y cargar sus pesos. El ensayo de realce temporal terminó y
+queda [descartado](EXPERIMENTOS_DESCARTADOS.md).
 
-El experimento preparado el 09/10/2026 compara dos brazos preespecificados:
+## Preparar otro ordenador
 
-- `enhancement_clinical`: las tres fases normalizadas más `EARLY-PRE`,
-  `LATE-PRE` y `LATE-EARLY`, manteniendo la regularización de v002.
-- `enhancement_regularized_clinical`: la misma representación y además
-  Dropout2d 0,10, dropout final 0,45 y weight decay 0,003.
-
-Ambos conservan PRE/EARLY/LATE, las cuatro variables clínicas ajustadas solo
-con el train de cada fold y la selección del checkpoint por AUC de paciente. Se
-usa exclusivamente BCE ponderada: dos configuraciones, dos semillas y cinco
-folds, **20 entrenamientos**. El test reservado no se abre.
-
-En el ordenador con GPU, una vez creado el entorno y copiado `breastdcedl/`, el
-flujo completo es un único comando:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/entrenar_mejora_gpu.ps1
-```
-
-Para comprobar primero tests, CUDA y dos humos sin iniciar las 20 ejecuciones:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/entrenar_mejora_gpu.ps1 -SoloHumo
-```
-
-El script es reanudable: repetirlo con los mismos argumentos y la misma salida
-continúa cada run desde su última época completa. Por defecto escribe en
-`resultados/04_entrenamiento/realce_temporal_20261009/`. Esa carpeta completa es
-la que debe copiarse de vuelta.
-
-El umbral **no** forma parte de la mejora del ROC: cambiarlo solo desplaza el
-punto operativo por la misma curva. El 0,565719 encontrado para v002 puede
-usarse para mostrar su matriz equilibrada, pero no debe reutilizarse en estos
-modelos. Tras completar el OOF, el comparador calcula el umbral del candidato
-con sus propias probabilidades. El objetivo de AUC 0,80 es aspiracional; solo
-los resultados OOF dirán si se alcanza.
-
-## Estado
-
-La variante nueva `patient_level_clinical` usa BCE ponderada, dos semillas y
-cinco folds: **10 entrenamientos**. Agrupa seis pacientes completos por lote y
-calcula una sola pérdida por paciente. Para entrenar únicamente esta variante:
-
-```powershell
-.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento entrenar `
-  --configuraciones patient_level_clinical --perdidas ponderada `
-  --semillas 42 2026 --folds 0 1 2 3 4 `
-  --epocas 46 --lote 64 --workers 4 --dispositivo cuda `
-  --salida resultados/04_entrenamiento/patient_level_clinical_20261007
-
-.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento comparar `
-  --salida resultados/04_entrenamiento/patient_level_clinical_20261007
-```
-
-Los diez runs del 07/10/2026 están completos; el
-[informe por paciente](../resultados/07_informe_paciente_20261007/INFORME_RESULTADOS.md)
-conserva sus resultados. No se sustituyó v002 ni se publicó una nueva versión de
-pesos. Usar la carpeta anterior con el mismo código y configuración reconoce los
-runs completados; una configuración o un código distinto requiere otra salida.
-
-El multimodal anterior `pool_dropout_wd_clinical` usaba dos pérdidas, dos semillas
-y cinco folds: **20 entrenamientos**. Los comandos restantes de esta guía
-corresponden a esa variante anterior.
-
-```text
-pool_dropout_wd_clinical × (normal, ponderada) × (42, 2026) × (0,1,2,3,4)
-```
-
-Se ejecutan secuencialmente. Cada run guarda `last.pt`, `best.pt`,
-`inference.pt`, historia, revisiones y predicciones OOF. Si el proceso se
-interrumpe, repetir el mismo comando y la misma carpeta de salida reanuda desde
-`last.pt`.
-
-## Qué debe llegar al ordenador con GPU
-
-1. El código actual del proyecto, disponible al clonar o actualizar `main`.
-   Incluye ambas variantes de entrenamiento y las versiones publicadas de pesos.
-2. La carpeta `breastdcedl/` completa: 38.122 archivos y aproximadamente
-   1,28 GiB. Está ignorada por Git y no aparece al clonar el repositorio.
-3. No copiar ni reutilizar `.venv/`: depende del sistema y de la instalación de
-   PyTorch. Hay que crear un entorno nuevo en el ordenador con GPU.
-4. Reservar al menos 10 GiB libres para datos, entorno CUDA, checkpoints y resultados.
-   Es preferible un SSD local; OneDrive puede bloquear archivos temporales y
-   ralentizar la lectura de miles de PNG.
-
-No hace falta copiar las ejecuciones de humo de
-`resultados/04_entrenamiento/multimodal_clinico_20261007/`. Están ignoradas y no
-son seleccionables. Los checkpoints de trabajo siguen ignorados. Los modelos
-seleccionados se archivan con `modelos/versionar.py guardar` en
-`modelos/versiones/`, donde sus pesos sí se guardan en Git. El
-[historial de modelos](modelos/README.md) explica cómo publicar una versión nueva.
-
-## Preparación del entorno
-
-En PowerShell, dentro del repositorio:
+Clonar la versión actual del repositorio y crear un entorno propio. En Windows:
 
 ```powershell
 py -3.12 -m venv .venv
-.venv\Scripts\python.exe -m pip install --upgrade pip
 ```
 
-Instalar primero una compilación estable de PyTorch con CUDA usando el comando
-que genere el selector oficial para el sistema, GPU y controlador del ordenador:
-<https://pytorch.org/get-started/locally/>. Después instalar el resto:
+Instalar primero PyTorch CUDA con el comando del [selector oficial](https://pytorch.org/get-started/locally/)
+para el ordenador y después el paquete:
 
 ```powershell
-.venv\Scripts\python.exe -m pip install -e .
+.venv/Scripts/python.exe -m pip install -e .
+.venv/Scripts/python.exe -c "import torch; print(torch.__version__); print(torch.cuda.is_available())"
+.venv/Scripts/python.exe -B -m cancer_mama.entrenamiento verificar
 ```
 
-Si PyTorch CUDA ya satisface `torch>=2.4,<3`, este último comando no debe
-reemplazarlo. Verificarlo explícitamente:
+`git clone` incluye v002 y sus diez pesos. El dataset y checkpoints de trabajo
+se copian aparte si se va a entrenar; no copiar `.venv` de otra máquina.
+Los datos preparados deben quedar en `breastdcedl/dataset/` y
+`breastdcedl/metadata/`, incluyendo `samples.csv` y las cuatro variables clínicas
+en `patients.csv` o en los metadatos de muestras.
+
+## Comprobar la GPU sin ejecutar la matriz
 
 ```powershell
-nvidia-smi
-.venv\Scripts\python.exe -c "import torch; print(torch.__version__); print(torch.version.cuda); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'SIN CUDA')"
+powershell -ExecutionPolicy Bypass -File scripts/entrenar_multimodal_gpu.ps1 -SoloHumo
 ```
 
-El tercer valor debe ser `True`. `src/cancer_mama/entrenamiento.py` también se detiene con un
-error antes de empezar si se pide `--dispositivo cuda` y CUDA no está disponible.
+El lanzador verifica CUDA, ejecuta los tests y hace una prueba de un lote y una
+época. Esa prueba se guarda en `pruebas/` y se excluye de comparación.
+`-OmitirTests` permite omitir solo los tests, no la comprobación de CUDA ni el humo.
 
-## Comprobación corta obligatoria
+## Nuevo entrenamiento, cuando se decida
 
 ```powershell
-.venv\Scripts\python.exe -B -m unittest discover -s tests -v
-
-.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento entrenar `
-  --prueba --configuraciones pool_dropout_wd_clinical `
-  --perdidas ponderada --semillas 42 --folds 0 `
-  --epocas 1 --lote 8 --workers 0 --dispositivo cuda `
-  --salida resultados/04_entrenamiento/multimodal_clinico_20261007
+powershell -ExecutionPolicy Bypass -File scripts/entrenar_multimodal_gpu.ps1
 ```
 
-El humo debe mostrar `Baseline clínico fold-train`, aproximadamente 551.921
-parámetros y terminar una época. Su AUC no es una métrica válida porque carga
-solo un lote de cada clase.
+Son diez runs reanudables: semillas 42 y 2026 × folds 0–4. El único perfil
+usa PRE/EARLY/LATE, edad, volumen tumoral, HR y HER2; pooling intermedio,
+dropout 0,35, weight decay 0,001, LR 0,0008, lote 64 y hasta 46 épocas.
+Después se evalúan OOF con mediana entre cortes, calibración Platt y umbral Youden.
+Esa evaluación sigue siendo desarrollo interno y no utiliza imágenes de test.
 
-## Matriz completa
+La salida por defecto es `resultados/04_entrenamiento/multimodal_actual`.
+Puede cambiarse con `-Salida`; también existen `-Datos`, `-Workers`, `-Lote`
+y `-Epocas`. No sobrescribe ni promueve automáticamente la versión v002.
 
-```powershell
-.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento entrenar `
-  --configuraciones pool_dropout_wd_clinical `
-  --perdidas normal ponderada --semillas 42 2026 --folds 0 1 2 3 4 `
-  --epocas 46 --lote 64 --workers 4 --dispositivo cuda `
-  --salida resultados/04_entrenamiento/multimodal_clinico_20261007
+En Linux, desde la raíz:
+
+```bash
+.venv/bin/python -B -m unittest discover -s tests -v
+.venv/bin/python -B -m cancer_mama.entrenamiento entrenar --prueba \
+  --semillas 42 --folds 0 --epocas 1 --workers 0 --lote 8 --dispositivo cuda
+.venv/bin/python -B -m cancer_mama.entrenamiento entrenar \
+  --dispositivo cuda --salida resultados/04_entrenamiento/multimodal_actual
+.venv/bin/python -B -m cancer_mama.entrenamiento comparar \
+  --salida resultados/04_entrenamiento/multimodal_actual
 ```
 
-Si Windows presenta errores de procesos de carga, repetir con `--workers 0` o
-`--workers 2`; no cambia el diseño estadístico. Si falta memoria CUDA, reducir
-`--lote` exige usar una carpeta de salida nueva porque cambia la configuración.
-No mezclar runs con batch sizes diferentes en el comparador.
+Para continuar un run interrumpido, repetir el comando con el mismo código,
+datos, presupuesto y salida. Para revisar un bloque, añadir `--hasta-epoca N`;
+posteriormente continuar con la misma configuración. Si cambia el código,
+usar otra salida: los hashes impiden reinterpretar checkpoints anteriores.
 
-Evitar suspensión, reinicios automáticos y sincronización de la carpeta mientras
-entrena. Se puede parar con `Ctrl+C`; el último checkpoint de época completa se
-conserva.
-
-## Comparación al terminar
-
-Solo cuando los 20 runs estén completos:
-
-```powershell
-.venv\Scripts\python.exe -B -m cancer_mama.entrenamiento comparar `
-  --salida resultados/04_entrenamiento/multimodal_clinico_20261007
-```
-
-El comparador requiere los cinco folds y ambas semillas de las dos pérdidas.
-Genera `comparacion/seleccion.json`, `comparacion/comparacion.csv`, las
-predicciones OOF y `comparacion/modelo_desarrollo.json`. La adopción exige AUC
-media por fold y AUC OOF agrupada de al menos 0,70. No ejecuta ni reabre el test
-histórico.
-
-## Archivos que deben volver
-
-Copiar de vuelta la carpeta completa:
-
-```text
-resultados/04_entrenamiento/multimodal_clinico_20261007/
-```
-
-Incluye los checkpoints de entrenamiento, que no viajan automáticamente con Git.
-Con esa carpeta se pueden revisar las curvas, reanudar el entrenamiento y
-preparar el ensemble. Después se archiva la versión seleccionada en
-`modelos/versiones/` y se hace commit y push; esa versión completa se obtiene
-al clonar el repositorio.
+Copiar la carpeta completa de la ejecución para conservar estados de optimizador,
+RNG, revisiones, OOF y curvas. Una futura versión aceptada se archiva mediante
+[modelos/versionar.py](../modelos/README.md), conservando las anteriores.

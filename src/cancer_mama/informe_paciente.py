@@ -25,6 +25,26 @@ NAMES = {'clinical': 'Solo clínica', 'previous': 'Multimodal anterior', 'new': 
 COLORS = {'clinical': '#26917a', 'previous': '#567ba8', 'new': '#ba5b31'}
 
 
+def threshold_for_sensitivity(y: np.ndarray, p: np.ndarray, min_sensitivity: float) -> float:
+    """Máxima especificidad sujeta a una sensibilidad mínima, con empates deterministas."""
+    y, p = np.asarray(y), np.asarray(p, dtype=float)
+    e.binary_metrics(y, p)  # Validación común de etiquetas y probabilidades.
+    if len(np.unique(y)) != 2:
+        raise ValueError("La selección de umbral requiere ambas clases")
+    if not 0 < min_sensitivity <= 1:
+        raise ValueError("min_sensitivity debe pertenecer a (0,1]")
+    candidates = np.unique(np.concatenate(([0.0, 0.5, 1.0], p)))
+    feasible = []
+    for threshold in candidates:
+        metrics = e.binary_metrics(y, p, float(threshold))
+        if metrics["sensitivity"] + 1e-12 >= min_sensitivity:
+            feasible.append(metrics)
+    if not feasible:
+        raise RuntimeError("No existe un umbral que alcance la sensibilidad solicitada")
+    best = max(feasible, key=lambda m: (m["specificity"], m["precision"], m["threshold"]))
+    return float(best["threshold"])
+
+
 def crossfit_policy(frame, target=.90):
     """Calibración y umbral ajustados sin etiquetas del fold al que se aplican."""
     y, p = frame.label.to_numpy(), frame.probability.to_numpy()
@@ -37,7 +57,7 @@ def crossfit_policy(frame, target=.90):
         held_out = frame.fold.to_numpy() == fold
         calibration = e.fit_platt(y[~held_out], p[~held_out])
         fit_scores = e.apply_calibration(p[~held_out], calibration)
-        threshold = e.threshold_for_sensitivity(y[~held_out], fit_scores, target)
+        threshold = threshold_for_sensitivity(y[~held_out], fit_scores, target)
         probabilities[held_out] = e.apply_calibration(p[held_out], calibration)
         decisions[held_out] = probabilities[held_out] >= threshold
         policies.append({'fold': fold, 'threshold': threshold, 'calibration': calibration})
@@ -193,7 +213,7 @@ def analyze(args):
         comparison[name] = frame.probability
         calibration = e.fit_platt(frame.label.to_numpy(), frame.probability.to_numpy())
         calibrated = e.apply_calibration(frame.probability.to_numpy(), calibration)
-        threshold = e.threshold_for_sensitivity(frame.label.to_numpy(), calibrated, .9)
+        threshold = threshold_for_sensitivity(frame.label.to_numpy(), calibrated, .9)
         apparent = e.binary_metrics(frame.label, calibrated, threshold)
         if name == 'new':
             np.testing.assert_allclose(threshold, manifest['threshold'], atol=1e-12)

@@ -3,12 +3,16 @@ import unittest
 
 import numpy as np
 from PIL import Image
+import torch
 
 from cancer_mama.app_logic import (
     InputValidationError,
+    InferenceEngine,
     UploadedPhase,
     enhancement_map,
     validate_phase_uploads,
+    validate_clinical,
+    prediction_key,
 )
 
 
@@ -67,6 +71,43 @@ class AppLogicTests(unittest.TestCase):
         self.assertEqual(preview.shape, (256, 256, 3))
         self.assertEqual(preview.dtype, np.uint8)
         self.assertGreater(float(preview[..., 0].mean()), float(preview[..., 1].mean()))
+
+    def test_clinical_values_and_missing_indicators_input(self):
+        values = {"age": 49, "tum_vol": 12, "HR": 1, "HER2": None}
+        result = validate_clinical(values)
+        np.testing.assert_allclose(result[0, :3], [49, np.log1p(12), 1], rtol=1e-6)
+        self.assertTrue(np.isnan(result[0, 3]))
+        for change in ({"age": -1, "tum_vol": None}, {"HR": 2}, {"tum_vol": -1},
+                       {"age": float("inf")}, {"age": "incorrecto"}):
+            with self.subTest(change=change), self.assertRaises(InputValidationError):
+                validate_clinical(values | change)
+
+    def test_changed_images_or_clinical_values_invalidate_saved_prediction(self):
+        sample = validate_phase_uploads(self.valid_uploads())
+        values = {"age": 49, "tum_vol": 12, "HR": 1, "HER2": 0}
+        key = prediction_key(sample, values)
+        self.assertNotEqual(key, prediction_key(sample, values | {"HR": 0}))
+        uploads = self.valid_uploads()
+        uploads["PRE"] = UploadedPhase(uploads["PRE"].name, png_bytes(41))
+        self.assertNotEqual(key, prediction_key(validate_phase_uploads(uploads), values))
+
+    def test_single_slice_averages_models_before_patient_aggregation(self):
+        engine = InferenceEngine.__new__(InferenceEngine)
+        engine.device = torch.device("cpu")
+        engine.manifest = {"aggregation": "median", "threshold": .5,
+                           "calibration": {"slope": 1., "intercept": 0.}}
+        class FixedModel:
+            def __init__(self, p):
+                self.p = p
+            def __call__(self, image, clinical):
+                self.clinical = clinical.clone()
+                return torch.logit(torch.tensor([[self.p]]))
+        engine.models = [FixedModel(.1), FixedModel(.2), FixedModel(.9)]
+        sample = validate_phase_uploads(self.valid_uploads())
+        result = engine.predict(sample, {"age": 49, "tum_vol": 12, "HR": 1, "HER2": 0})
+        self.assertAlmostEqual(result.probability_raw, .4, places=6)
+        self.assertAlmostEqual(result.probability_calibrated, .4, places=6)
+        torch.testing.assert_close(engine.models[0].clinical, torch.tensor([[49., np.log1p(12), 1., 0.]], dtype=torch.float32))
 
 
 if __name__ == "__main__":

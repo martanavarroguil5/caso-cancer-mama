@@ -1,6 +1,6 @@
 param(
     [string]$Datos = "breastdcedl",
-    [string]$Salida = "resultados/04_entrenamiento/realce_temporal_20261009",
+    [string]$Salida = "resultados/04_entrenamiento/multimodal_actual",
     [int]$Workers = 4,
     [int]$Lote = 64,
     [int]$Epocas = 46,
@@ -28,10 +28,8 @@ if (-not $OmitirTests) {
     if ($LASTEXITCODE -ne 0) { throw "Los tests han fallado; no se inicia el entrenamiento." }
 }
 
-$Configuraciones = @("enhancement_clinical", "enhancement_regularized_clinical")
 & $Python -B -m cancer_mama.entrenamiento entrenar `
-    --prueba --configuraciones $Configuraciones `
-    --perdidas ponderada --semillas 42 --folds 0 `
+    --prueba --semillas 42 --folds 0 `
     --epocas 1 --lote 8 --workers 0 --dispositivo cuda `
     --datos $Datos --salida $Salida
 if ($LASTEXITCODE -ne 0) { throw "La prueba corta en GPU ha fallado." }
@@ -42,8 +40,7 @@ if ($SoloHumo) {
 }
 
 & $Python -B -m cancer_mama.entrenamiento entrenar `
-    --configuraciones $Configuraciones `
-    --perdidas ponderada --semillas 42 2026 --folds 0 1 2 3 4 `
+    --semillas 42 2026 --folds 0 1 2 3 4 `
     --epocas $Epocas --lote $Lote --workers $Workers --dispositivo cuda `
     --datos $Datos --salida $Salida
 if ($LASTEXITCODE -ne 0) { throw "La matriz de entrenamiento no ha terminado correctamente." }
@@ -51,4 +48,4 @@ if ($LASTEXITCODE -ne 0) { throw "La matriz de entrenamiento no ha terminado cor
 & $Python -B -m cancer_mama.entrenamiento comparar --datos $Datos --salida $Salida
 if ($LASTEXITCODE -ne 0) { throw "El comparador no ha terminado correctamente." }
 
-Write-Host "Experimento completo. Copia de vuelta la carpeta: $Salida"
+Write-Host "Multimodal completo. Copia de vuelta la carpeta: $Salida"
