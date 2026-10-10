@@ -1,0 +1,56 @@
+{
+  "status": "complete",
+  "eligible_for_comparison": true,
+  "config_hash": "bb47eb318f12fcc15d8760a58e1efe859092356b0927f632aaf6dd51c0fb13dc",
+  "arm": "lr_actual",
+  "seed": 42,
+  "fold": 4,
+  "epochs": 19,
+  "results": {
+    "auc": {
+      "selection": {
+        "criterion": "auc",
+        "best": 0.7741935483870968,
+        "reference": 0.7741935483870968,
+        "best_epoch": 0,
+        "bad_epochs": 12,
+        "stopped": true,
+        "stop_epoch": 12
+      },
+      "outer_metrics": {
+        "slice_weighted_bce": 0.8966249823570251,
+        "patient_auc": 0.6748510376001642,
+        "patient_logloss": 0.6416548674347852,
+        "patient_brier": 0.22482113495514647,
+        "patient_ap": 0.48681326346113163
+      }
+    },
+    "logloss": {
+      "selection": {
+        "criterion": "logloss",
+        "best": 0.5559865046472613,
+        "reference": 0.5559865046472613,
+        "best_epoch": 9,
+        "bad_epochs": 10,
+        "stopped": true,
+        "stop_epoch": 19
+      },
+      "outer_metrics": {
+        "slice_weighted_bce": 0.9208688735961914,
+        "patient_auc": 0.6947811793712759,
+        "patient_logloss": 0.5660492227830615,
+        "patient_brier": 0.19110854416114123,
+        "patient_ap": 0.5723329369239313
+      }
+    }
+  },
+  "test_images_loaded": 0,
+  "files": {
+    "history.csv": "127d4c64a4fa2158c50c75bd544a21fbb7f3824d73d7aec9bae2190f477c4722",
+    "particiones.csv": "5104bc9a3f3cf720347f43dc6797cfd6ea7acebdf090b0ebc5bd684522c5f5a1",
+    "best_auc.pt": "36301d27522b7b64a60c9abf688551b44e7d2ed062986cd24060c61d3c7eeec8",
+    "oof_auc.csv": "a8722a36dd3881d47c767d3a7b8b07de81750d7493105e9ce0378ff9173b4601",
+    "best_logloss.pt": "748bc8cf91ee92591d9c37e924c5dcdf16a07bf5144b17001256519bfe1d2f86",
+    "oof_logloss.csv": "4de407e099df8d917b0519f47c126c430450d47c23c0d304ff753332c4f9ccc8"
+  }
+}

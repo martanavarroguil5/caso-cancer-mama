@@ -1,0 +1,14 @@
+{
+  "scope": "entorno compatible usado al archivar; no afirma ser el entorno original de entrenamiento",
+  "python": "3.12.3",
+  "platform": "Linux-7.0.0-34-generic-x86_64-with-glibc2.39",
+  "packages": {
+    "torch": "2.14.0",
+    "numpy": "2.5.3",
+    "pandas": "3.0.6",
+    "Pillow": "12.3.0",
+    "scikit-learn": "1.9.1",
+    "matplotlib": "3.11.2",
+    "requests": "2.34.2"
+  }
+}
