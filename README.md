@@ -204,6 +204,15 @@ Este módulo requiere la evidencia local del ensayo anterior para verificar su
 control. `estado.json` informa progreso y errores; el mismo comando reanuda fases
 completadas si fuentes, entorno y datos siguen siendo idénticos.
 
+La primera tanda no mejoró al control. La [segunda tanda](docs/mejoras_cnn/PROTOCOLO_CARACTERISTICAS_LOCALES.md)
+usa características espaciales de AlexNet pool2, selección supervisada dentro de
+fit y SVM/logística. Mantiene los controles y reporta la búsqueda adaptativa:
+
+```bash
+.venv/bin/python -B -m cancer_mama.experimento_local --prueba
+.venv/bin/python -u -B -m cancer_mama.experimento_local
+```
+
 ## Evidencia conservada y pruebas
 
 La base v002 obtuvo AUC OOF 0,724568 y AP 0,531646 sobre 1.097 pacientes de
