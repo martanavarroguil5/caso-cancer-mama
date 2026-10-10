@@ -59,3 +59,6 @@ Thumbs.db
 /resultados/04_entrenamiento/multimodal_clinico_20261007/
 /resultados/04_entrenamiento/patient_level_clinical_20261007/
 /resultados/05_informe_mejora/.matplotlib/
+
+# Bloqueo de ejecución local
+/resultados/04_entrenamiento/realce_temporal_20261009/seguimiento/runner.lock
