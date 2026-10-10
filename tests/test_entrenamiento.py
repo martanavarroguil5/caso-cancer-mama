@@ -189,6 +189,32 @@ class TestEntrenamiento(unittest.TestCase):
             h.remove()
         self.assertEqual(sum(isinstance(m,torch.nn.MaxPool2d) for m in entrenamiento.CNN().modules()),1)
 
+    def test_representacion_de_realce_y_regularizacion(self):
+        control=entrenamiento.configuracion("enhancement_clinical")
+        regularized=entrenamiento.configuracion("enhancement_regularized_clinical")
+        self.assertEqual(control["model"]["representation"],"raw_plus_deltas")
+        self.assertEqual(control["model"]["dropout"],.35)
+        self.assertEqual(control["training"]["weight_decay"],.001)
+        self.assertEqual(regularized["model"]["spatial_dropout"],.10)
+        self.assertEqual(regularized["model"]["dropout"],.45)
+        self.assertEqual(regularized["training"]["weight_decay"],.003)
+
+        model=entrenamiento.CNN({"representation":"raw_plus_deltas",
+            "channels":[2,2,2,2],"hidden":4,"pooling":"intermedio",
+            "spatial_dropout":.10})
+        self.assertEqual(model.features[0][0].in_channels,6)
+        self.assertEqual(sum(isinstance(m,torch.nn.Dropout2d) for m in model.modules()),4)
+        x=torch.empty(1,3,256,256)
+        x[:,0],x[:,1],x[:,2]=.2,.7,.4
+        expected=torch.tensor([-.6,.4,-.2,.5,.2,-.3])
+        torch.testing.assert_close(model.preprocess(x)[0,:,0,0],expected)
+        result=model(torch.rand(2,3,256,256))
+        self.assertEqual(tuple(result.shape),(2,1))
+        result.sum().backward()
+        self.assertGreater(float(model.features[0][0].weight.grad.abs().sum()),0)
+        with self.assertRaisesRegex(ValueError,"spatial_dropout"):
+            entrenamiento.CNN({"spatial_dropout":1.0})
+
     def test_multimodal_ajusta_clinica_solo_con_train_del_fold(self):
         frame=datos_sinteticos(self.root,imagenes=True)
         patients=[]

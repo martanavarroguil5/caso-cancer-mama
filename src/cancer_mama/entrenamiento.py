@@ -53,7 +53,8 @@ CLINICAL_MODEL_FEATURES = ("age", "log1p_tum_vol", "HR", "HER2")
 
 def configuracion(nombre="raw_rot90"):
     if nombre not in {"base_raw", "raw_rot90", "pool_dropout_wd", "pool_dropout_wd_clinical",
-                      "patient_level_clinical"}:
+                      "patient_level_clinical", "enhancement_clinical",
+                      "enhancement_regularized_clinical"}:
         raise ValueError("Configuración desconocida")
     config = {
         "name": nombre,
@@ -67,15 +68,26 @@ def configuracion(nombre="raw_rot90"):
         "augmentation": {"hflip": 0.5, "rot90": nombre != "base_raw"},
         "evaluation": {"threshold": 0.5, "checkpoint_metric": "patient_auc"},
     }
-    if nombre in {"pool_dropout_wd", "pool_dropout_wd_clinical", "patient_level_clinical"}:
+    if nombre in {"pool_dropout_wd", "pool_dropout_wd_clinical", "patient_level_clinical",
+                  "enhancement_clinical", "enhancement_regularized_clinical"}:
         config["model"].update(pooling="intermedio", dropout=.35)
         config["training"]["weight_decay"] = .001
-    if nombre in {"pool_dropout_wd_clinical", "patient_level_clinical"}:
+    if nombre in {"pool_dropout_wd_clinical", "patient_level_clinical", "enhancement_clinical",
+                  "enhancement_regularized_clinical"}:
         config["model"]["clinical"] = {
             "raw_columns": list(CLINICAL_COLUMNS),
             "features": list(CLINICAL_MODEL_FEATURES),
             "missing_indicators": True,
         }
+    if nombre in {"enhancement_clinical", "enhancement_regularized_clinical"}:
+        # La entrada en disco sigue siendo PRE/EARLY/LATE. La red recibe además
+        # tres mapas firmados de realce calculados sin parámetros ni fuga de datos.
+        config["model"]["representation"] = "raw_plus_deltas"
+    if nombre == "enhancement_regularized_clinical":
+        # Segundo brazo preespecificado para comprobar si la brecha train/val
+        # disminuye; no se cambia el presupuesto ni la selección por AUC.
+        config["model"].update(dropout=.45, spatial_dropout=.10)
+        config["training"]["weight_decay"] = .003
     if nombre == "patient_level_clinical":
         # Cada paciente aparece una vez por época y todos sus cortes contribuyen
         # conjuntamente a una única BCE, igual que la unidad de evaluación.
@@ -88,7 +100,7 @@ def configuracion(nombre="raw_rot90"):
 
 
 class Bloque(nn.Sequential):
-    def __init__(self, entrada, salida, primero=False, pooling="original"):
+    def __init__(self, entrada, salida, primero=False, pooling="original", spatial_dropout=0.0):
         stride = 2 if pooling == "original" or primero else 1
         capas = [nn.Conv2d(entrada, salida, 3, stride=stride, padding=1, bias=False),
                  nn.BatchNorm2d(salida), nn.ReLU(inplace=True),
@@ -96,6 +108,8 @@ class Bloque(nn.Sequential):
                  nn.BatchNorm2d(salida), nn.ReLU(inplace=True)]
         if primero or pooling == "intermedio":
             capas.append(nn.MaxPool2d(2))
+        if spatial_dropout > 0:
+            capas.append(nn.Dropout2d(spatial_dropout))
         super().__init__(*capas)
 
 
@@ -115,8 +129,9 @@ class CNN(nn.Module):
         super().__init__()
         self.config = deepcopy(config or {})
         self.config = self.config.get("model", self.config)
-        if self.config.get("representation", "raw") != "raw":
-            raise ValueError("Este paso utiliza las fases originales PRE/EARLY/LATE")
+        representation = self.config.get("representation", "raw")
+        if representation not in {"raw", "raw_plus_deltas"}:
+            raise ValueError("Representación debe ser raw o raw_plus_deltas")
         pooling = self.config.get("pooling", "original")
         if pooling not in {"original", "intermedio"}:
             raise ValueError("Pooling debe ser original o intermedio")
@@ -125,8 +140,12 @@ class CNN(nn.Module):
             raise ValueError("Se requieren cuatro anchos de bloque positivos")
         if self.config.get("normalization", "batch") != "batch":
             raise ValueError("La red activa utiliza BatchNorm")
-        self.features = nn.Sequential(*[Bloque(a, b, i == 0, pooling)
-            for i, (a, b) in enumerate(zip([3, *canales[:-1]], canales))])
+        spatial_dropout = float(self.config.get("spatial_dropout", 0.0))
+        if not 0 <= spatial_dropout < 1:
+            raise ValueError("spatial_dropout debe pertenecer a [0,1)")
+        input_channels = 3 if representation == "raw" else 6
+        self.features = nn.Sequential(*[Bloque(a, b, i == 0, pooling, spatial_dropout)
+            for i, (a, b) in enumerate(zip([input_channels, *canales[:-1]], canales))])
         self.avgpool = nn.AdaptiveAvgPool2d(1)
         self.maxpool = GlobalMaxPool()
         hidden = int(self.config.get("hidden", 64))
@@ -182,7 +201,11 @@ class CNN(nn.Module):
             nn.init.zeros_(capa.bias)
 
     def preprocess(self, x):
-        return 2*x - 1
+        raw = 2*x - 1
+        if self.config.get("representation", "raw") == "raw":
+            return raw
+        pre, early, late = x[:, 0:1], x[:, 1:2], x[:, 2:3]
+        return torch.cat((raw, early-pre, late-pre, late-early), dim=1)
 
     def preprocess_clinical(self, clinical):
         if clinical is None or clinical.ndim != 2 or clinical.shape[1] != len(CLINICAL_MODEL_FEATURES):
@@ -1060,7 +1083,8 @@ def comparar_ejecuciones(root, output):
         oof = validate_oof(pd.read_csv(folder/"oof_slices.csv"), roster[roster.fold.eq(fold)])
         if config["name"] not in {"base_raw", "raw_rot90", "base_raw_pool", "raw_rot90_pool",
                                   "pool_dropout_wd", "pool_dropout_wd_clinical",
-                                  "patient_level_clinical"}:
+                                  "patient_level_clinical", "enhancement_clinical",
+                                  "enhancement_regularized_clinical"}:
             raise ValueError("Nombre de configuración desconocido")
         key = (config["name"], config["loss"], int(config["seed"]))
         groups.setdefault(key, {})
@@ -1082,7 +1106,9 @@ def comparar_ejecuciones(root, output):
         fingerprints[config["name"]] = fingerprint
     candidates, predictions = [], {}
     for name in sorted({key[0] for key in groups}):
-        losses = ("weighted",) if name in {"pool_dropout_wd", "patient_level_clinical"} else ("normal", "weighted")
+        losses = (("weighted",) if name in {"pool_dropout_wd", "patient_level_clinical",
+                  "enhancement_clinical", "enhancement_regularized_clinical"}
+                  else ("normal", "weighted"))
         expected = {(name, loss, seed) for loss in losses for seed in (42, 2026)}
         if not expected.issubset(groups) or any(set(groups[key]) != set(range(5)) for key in expected):
             raise ValueError(f"{name}: se requieren pérdidas {losses}, dos semillas y cinco folds completos")
@@ -1152,12 +1178,18 @@ def comparar_ejecuciones(root, output):
             models.append({"path": os.path.relpath(path.resolve(), dest.resolve()), "sha256": sha256(path),
                 "seed": seed, "fold": fold, "model_config": config["model"]})
     selected_clinical = any(item["model_config"].get("clinical") is not None for item in models)
+    representation = selected_config["model"].get("representation", "raw")
     manifest = {"schema_version": 1, "status": "desarrollo_sin_test", "models": models,
         "aggregation": selected["aggregation"], "calibration": calibration, "threshold": threshold,
         "decision_policy": decision_policy,
         "test_evaluated_once": False, "selection": selected,
         "preprocessing": {"phases": list(pdatos.FASES), "shape": [3,256,256],
-                          "scaling": "uint8 / 255; CNN: 2*x-1",
+                          "model_representation": representation,
+                          "network_channels": 6 if representation == "raw_plus_deltas" else 3,
+                          "scaling": ("uint8 / 255; CNN: 2*x-1 para PRE/EARLY/LATE; "
+                                      "deltas: EARLY-PRE, LATE-PRE, LATE-EARLY"
+                                      if representation == "raw_plus_deltas" else
+                                      "uint8 / 255; CNN: 2*x-1"),
                           "clinical_required": selected_clinical,
                           "clinical_raw_columns": list(CLINICAL_COLUMNS) if selected_clinical else []}}
     json_write(dest/"modelo_desarrollo.json", manifest)
@@ -1382,7 +1414,8 @@ def main():
     parser.add_argument("--salida",type=Path,default=None)
     parser.add_argument("--manifest",type=Path,default=SALIDA/"modelo_final.json")
     parser.add_argument("--configuraciones",nargs="+",choices=("base_raw","raw_rot90","pool_dropout_wd",
-        "pool_dropout_wd_clinical","patient_level_clinical"),default=["raw_rot90"])
+        "pool_dropout_wd_clinical","patient_level_clinical","enhancement_clinical",
+        "enhancement_regularized_clinical"),default=["raw_rot90"])
     parser.add_argument("--perdidas",nargs="+",choices=("normal","ponderada"),default=["normal","ponderada"])
     parser.add_argument("--semillas",nargs="+",type=int,default=[42,2026])
     parser.add_argument("--folds",nargs="+",type=int,choices=range(5),default=list(range(5)))

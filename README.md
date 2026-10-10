@@ -41,6 +41,21 @@ y los checkpoints de trabajo siguen fuera de Git. Consulta el
 
 ## Abrir y entrenar en otro ordenador con GPU
 
+El experimento nuevo de realce temporal ya tiene un lanzador que comprueba
+tests y CUDA, ejecuta dos humos, entrena 20 runs reanudables y genera la
+comparación OOF:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/entrenar_mejora_gpu.ps1
+```
+
+Compara `enhancement_clinical` (PRE/EARLY/LATE más tres diferencias temporales)
+con `enhancement_regularized_clinical` (el mismo modelo con regularización más
+fuerte). Ambos usan BCE ponderada, semillas 42/2026 y cinco folds. Para validar
+la instalación sin lanzar la matriz completa, añadir `-SoloHumo`. La
+[guía GPU](docs/GUIA_GPU_MULTIMODAL.md) detalla el protocolo y qué carpeta debe
+volver al ordenador principal.
+
 Git solo descarga archivos confirmados y enviados al remoto. Antes de cambiar de
 ordenador hay que comprobar que el código multimodal está en un commit y se ha
 hecho `git push`. `git clone` incluye las versiones archivadas de los modelos;
@@ -135,6 +150,27 @@ ensemble. Para publicar el modelo seleccionado se usa
 Se recomienda entrenar en un SSD local, evitar que el ordenador se suspenda y disponer de al menos 10 GiB
 libres. La versión ampliada de esta lista está en
 [guía GPU](docs/GUIA_GPU_MULTIMODAL.md).
+
+## Aplicación web
+
+La interfaz de demostración está en `app.py`. Valida de forma estricta las tres
+fases, muestra PRE/EARLY/LATE y el mapa de realce, y conserva exactamente el
+preprocesamiento, calibración y umbral del manifiesto. Para abrirla localmente:
+
+```powershell
+.venv\Scripts\python.exe -m streamlit run app.py
+```
+
+La inferencia requiere los diez pesos referenciados por
+`resultados/04_entrenamiento/modelo_final.json`. Deben copiarse a
+`resultados/04_entrenamiento/modelos/` antes de desplegar; la interfaz detecta
+su ausencia y nunca muestra una predicción simulada. El servidor limita cada
+archivo a 5 MB y solo admite PNG monocromos de 256×256 con nombres terminados
+en `_PRE`, `_EARLY` y `_LATE` para el mismo corte.
+
+Para la defensa, desplegar `app.py` en Streamlit Community Cloud o un servicio
+equivalente y comprobar la URL desde otro dispositivo. No deben publicarse la
+validación privada, sus etiquetas ni rutas locales del sistema.
 
 ## Pasos
 
@@ -300,6 +336,20 @@ del diseño del informe. Esa comparación sigue siendo desarrollo interno y
 usa validación para seleccionar checkpoints.
 
 ## Investigación y ensayos de mejora
+
+### Candidato con realce temporal explícito
+
+`enhancement_clinical` mantiene como entrada las tres fases originales y deriva
+dentro de la red tres canales firmados: `EARLY-PRE`, `LATE-PRE` y
+`LATE-EARLY`. Así el modelo ve a la vez anatomía e información dinámica sin
+generar nuevos archivos ni ajustar el preprocesamiento con validación. El brazo
+`enhancement_regularized_clinical` prueba si Dropout2d y una penalización mayor
+reducen la divergencia observada entre las curvas de train y validación.
+
+La comparación usa AUC por paciente; el umbral se decide después con predicciones
+OOF. Por tanto, mover el umbral puede reducir falsos positivos o falsos negativos,
+pero no modifica el ROC-AUC. No se promete alcanzar 0,80 y no se consulta el test
+reservado para escoger entre los dos brazos.
 
 [Investigación de mejoras de la CNN](docs/mejoras_cnn/INVESTIGACION_MEJORAS.md)
 recoge la revisión del enunciado, curvas, metadatos y fuentes primarias realizada
