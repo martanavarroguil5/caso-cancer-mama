@@ -213,6 +213,15 @@ fit y SVM/logística. Mantiene los controles y reporta la búsqueda adaptativa:
 .venv/bin/python -u -B -m cancer_mama.experimento_local
 ```
 
+La [tercera tanda](docs/mejoras_cnn/PROTOCOLO_AJUSTE_PARCIAL.md) permite adaptar
+layer4 de ResNet18 con L2-SP, conservando una base clínica fija y una corrección
+visual acotada. Entrena por paciente con dos semillas y selecciona por pérdida:
+
+```bash
+.venv/bin/python -B -m cancer_mama.experimento_finetune --prueba
+.venv/bin/python -u -B -m cancer_mama.experimento_finetune
+```
+
 ## Evidencia conservada y pruebas
 
 La base v002 obtuvo AUC OOF 0,724568 y AP 0,531646 sobre 1.097 pacientes de

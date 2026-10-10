@@ -69,3 +69,4 @@ Thumbs.db
 # Transferencia visual: pesos, características y clasificadores locales
 /resultados/04_entrenamiento/transfer_multimodal_20261010/
 /resultados/04_entrenamiento/local_multimodal_20261010/
+/resultados/04_entrenamiento/finetune_multimodal_20261010/
