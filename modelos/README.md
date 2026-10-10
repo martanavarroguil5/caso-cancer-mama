@@ -16,12 +16,21 @@ sobrescribir una carpeta o reutilizar su número de versión.
 | Versión | Entrada | Estado | AUC OOF cruda | Pesos |
 | --- | --- | --- | --- | --- |
 | `v001_cnn_historica_20260930` | PRE, EARLY y LATE | Histórico; test original conservado | 0,5945 | 10 archivos; 21,25 MiB |
-| `v002_multimodal_clinico_20261007` | Imágenes, edad, volumen tumoral, HR y HER2 | Desarrollo; sin evaluación nueva de test | 0,7246 | 10 archivos; 21,27 MiB |
+| `v002_multimodal_clinico_20261007` | Imágenes, edad, volumen tumoral, HR y HER2 | Activa; desarrollo sin evaluación nueva de test | 0,7246 | 10 archivos; 21,27 MiB |
+| `v003_multimodal_loss_20261010` | Imágenes y las mismas variables clínicas | Candidata; selección interna por log-loss; sin test | 0,7061 | 10 archivos; 21,27 MiB |
 
 La segunda versión usa BCE ponderada y mediana de cortes por paciente. La
 disponibilidad de las variables clínicas en la prueba privada es un supuesto
 de trabajo. Las métricas OOF proceden de desarrollo interno y no equivalen al
 rendimiento de la prueba privada.
+
+La candidata v003 conserva LR 0,0008 y elige épocas por log-loss de una selección
+interna. Su AUC no es comparable directamente con la histórica de v002: reserva
+pacientes adicionales para elegir checkpoints y calibrar. Frente al control AUC
+equiparado, la pérdida cruda baja de 0,6177 a 0,5831; tras calibración interna baja
+de 0,5615 a 0,5563, pero el intervalo de la diferencia incluye cero. Por eso v002
+continúa activa. El [informe del candidato](../resultados/08_informe_loss_20261010/INFORME_RESULTADOS.md)
+guarda métricas, curvas, incertidumbre y limitaciones. No se abrió el test reservado.
 
 `catalogo.json` resume las versiones. Cada carpeta contiene:
 
@@ -87,6 +96,10 @@ Para el multimodal, con valores clínicos de ejemplo:
   --edad 49 --volumen-tumoral 12 --hr 1 --her2 0
 ```
 
+Para probar la candidata con su calibración y pesos conservados, sustituye el
+identificador del comando anterior por `v003_multimodal_loss_20261010`. Esto no
+cambia la versión que carga la aplicación.
+
 Se admiten varios cortes de la misma paciente, en el mismo orden en las tres
 fases. Deben ser PNG monocromos de 8 bits, de 256 × 256. No se necesita descargar
 el dataset de entrenamiento para utilizar el modelo con nuevas imágenes.
@@ -101,13 +114,13 @@ el manifiesto elegido con el siguiente número disponible:
 
 ```bash
 .venv/bin/python -B modelos/versionar.py guardar \
-  --id v003_multimodal_clinico_20261008 \
+  --id v004_multimodal_clinico_AAAAMMDD \
   --manifest resultados/04_entrenamiento/nueva_ejecucion/comparacion/modelo_desarrollo.json \
   --descripcion "Nueva actualización del modelo multimodal"
 
 .venv/bin/python -B modelos/versionar.py verificar
 git add modelos
-git commit -m "Conserva la tercera versión del modelo"
+git commit -m "Conserva la siguiente versión del modelo"
 git push origin main
 ```
 

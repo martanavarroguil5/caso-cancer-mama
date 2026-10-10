@@ -166,6 +166,23 @@ El segundo comando ejecuta veinte trayectorias y genera la comparación al acaba
 Se puede reanudar con el mismo comando; el progreso queda en
 `resultados/04_entrenamiento/loss_lr_multimodal_20261010/estado.json`.
 
+El ensayo terminó y la variante LR 0,0008 con selección por log-loss se conserva
+como `v003_multimodal_loss_20261010`. **Es candidata; v002 sigue activa.** El
+[informe de resultados](resultados/08_informe_loss_20261010/INFORME_RESULTADOS.md)
+muestra una reducción de pérdida cruda del 5,6 % frente al control equiparado.
+Tras calibrar ambos con selección interna, la reducción es del 0,9 % y el intervalo
+de diferencia incluye cero; no demuestra superioridad sobre v002.
+
+```bash
+.venv/bin/python -B -m cancer_mama.informe_loss
+.venv/bin/python -B -m cancer_mama.informe_loss --solo-presentacion
+```
+
+El primer comando requiere la ejecución local completa; el segundo regenera las
+figuras y el informe con la evidencia conservada. La candidata se puede cargar con
+`modelos/versionar.py predecir v003_multimodal_loss_20261010 -- ...`, pasando las
+mismas imágenes y variables clínicas que a v002.
+
 ## Evidencia conservada y pruebas
 
 La base v002 obtuvo AUC OOF 0,724568 y AP 0,531646 sobre 1.097 pacientes de
@@ -173,7 +190,7 @@ desarrollo. Es evaluación interna con selección de checkpoints y calibración
 sobre OOF; no equivale a validación externa. No se vuelve a abrir el test reservado
 para escoger modelos.
 
-- [Historial de versiones](modelos/README.md): v001 y v002 con pesos y código propios.
+- [Historial de versiones](modelos/README.md): v001, v002 y candidata v003 con pesos y código propios.
 - [Registro de ensayos descartados](docs/EXPERIMENTOS_DESCARTADOS.md).
 - [Protocolo multimodal original](docs/mejoras_cnn/PROTOCOLO_MULTIMODAL_CLINICO.md).
 - `resultados/06_informe_multimodal_20261007/`: informe del multimodal.

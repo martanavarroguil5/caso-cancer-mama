@@ -85,6 +85,30 @@
         "mean_fold_roc_auc": 0.7243111595174071,
         "min_fold_roc_auc": 0.7081364290117116
       }
+    },
+    {
+      "id": "v003_multimodal_loss_20261010",
+      "description": "Candidato multimodal LR 0,0008 y selección interna por log-loss; v002 permanece activa",
+      "archived_at": "2026-10-10T21:47:29.825737+02:00",
+      "status": "candidato_desarrollo_sin_test",
+      "clinical_required": true,
+      "n_models": 10,
+      "weights_bytes": 22305750,
+      "metrics_raw_oof": {
+        "n_patients": 1097,
+        "roc_auc": 0.7060669204568224,
+        "average_precision": 0.5142558541500755,
+        "log_loss": 0.5830752874248024,
+        "brier": 0.19734944700257206,
+        "mean_fold_auc": 0.7117799359116772,
+        "fold_auc": [
+          0.7653225806451613,
+          0.7058763098417917,
+          0.6861774923676176,
+          0.7060229885057471,
+          0.6955003081980686
+        ]
+      }
     }
   ]
 }
