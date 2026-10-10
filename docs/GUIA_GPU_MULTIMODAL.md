@@ -1,5 +1,44 @@
 # Traslado y entrenamiento multimodal en GPU
 
+## Experimento nuevo: realce temporal y control de sobreajuste
+
+El experimento preparado el 09/10/2026 compara dos brazos preespecificados:
+
+- `enhancement_clinical`: las tres fases normalizadas más `EARLY-PRE`,
+  `LATE-PRE` y `LATE-EARLY`, manteniendo la regularización de v002.
+- `enhancement_regularized_clinical`: la misma representación y además
+  Dropout2d 0,10, dropout final 0,45 y weight decay 0,003.
+
+Ambos conservan PRE/EARLY/LATE, las cuatro variables clínicas ajustadas solo
+con el train de cada fold y la selección del checkpoint por AUC de paciente. Se
+usa exclusivamente BCE ponderada: dos configuraciones, dos semillas y cinco
+folds, **20 entrenamientos**. El test reservado no se abre.
+
+En el ordenador con GPU, una vez creado el entorno y copiado `breastdcedl/`, el
+flujo completo es un único comando:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/entrenar_mejora_gpu.ps1
+```
+
+Para comprobar primero tests, CUDA y dos humos sin iniciar las 20 ejecuciones:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/entrenar_mejora_gpu.ps1 -SoloHumo
+```
+
+El script es reanudable: repetirlo con los mismos argumentos y la misma salida
+continúa cada run desde su última época completa. Por defecto escribe en
+`resultados/04_entrenamiento/realce_temporal_20261009/`. Esa carpeta completa es
+la que debe copiarse de vuelta.
+
+El umbral **no** forma parte de la mejora del ROC: cambiarlo solo desplaza el
+punto operativo por la misma curva. El 0,565719 encontrado para v002 puede
+usarse para mostrar su matriz equilibrada, pero no debe reutilizarse en estos
+modelos. Tras completar el OOF, el comparador calcula el umbral del candidato
+con sus propias probabilidades. El objetivo de AUC 0,80 es aspiracional; solo
+los resultados OOF dirán si se alcanza.
+
 ## Estado
 
 La variante nueva `patient_level_clinical` usa BCE ponderada, dos semillas y
