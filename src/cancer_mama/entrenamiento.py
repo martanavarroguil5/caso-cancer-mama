@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Paso 04: CNN, entrenamiento por paciente, comparación OOF e inferencia.
+"""CNN multimodal: imágenes PRE/EARLY/LATE y edad, volumen tumoral, HR y HER2.
 
-Reutiliza pipeline_datos.py del commit de Marta 69a44eb. El test reservado
-ya fue evaluado: aquí se conservan sus resultados y no se vuelve a abrir.
-Las variantes descartadas se documentan en EXPERIMENTOS_DESCARTADOS.md.
-Las ejecuciones nuevas se guardan aparte del modelo final histórico.
+Base activa: pool_dropout_wd_clinical con BCE ponderada por corte.
+Los pesos ya entrenados de v002 se utilizan directamente para inferencia.
+Los ensayos retirados se conservan como evidencia histórica y en Git.
 """
 from __future__ import annotations
 
@@ -40,7 +39,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from . import datos as pdatos
-from .paths import PACKAGE_DIR, PROJECT_ROOT, RESULTS_DIR
+from .paths import PACKAGE_DIR, PROJECT_ROOT, RESULTS_DIR, MULTIMODAL_MANIFEST, MULTIMODAL_RUNS
 
 RAIZ = PROJECT_ROOT
 SALIDA = RESULTS_DIR / "04_entrenamiento"
@@ -51,66 +50,38 @@ CLINICAL_COLUMNS = ("age", "tum_vol", "HR", "HER2")
 CLINICAL_MODEL_FEATURES = ("age", "log1p_tum_vol", "HR", "HER2")
 
 
-def configuracion(nombre="raw_rot90"):
-    if nombre not in {"base_raw", "raw_rot90", "pool_dropout_wd", "pool_dropout_wd_clinical",
-                      "patient_level_clinical", "enhancement_clinical",
-                      "enhancement_regularized_clinical"}:
-        raise ValueError("Configuración desconocida")
-    config = {
-        "name": nombre,
+ACTIVE_CONFIGURATION = "pool_dropout_wd_clinical"
+PATIENT_AGGREGATION = "median"
+
+
+def configuracion(nombre=ACTIVE_CONFIGURATION):
+    """Único perfil activo; los experimentos retirados no se reinterpretan."""
+    if nombre != ACTIVE_CONFIGURATION:
+        raise ValueError("Configuración retirada; solo está activo pool_dropout_wd_clinical")
+    return {
+        "name": ACTIVE_CONFIGURATION,
         "model": {"representation": "raw", "channels": [24, 48, 96, 160],
-                  "hidden": 64, "dropout": 0.20},
+                  "hidden": 64, "dropout": 0.35, "pooling": "intermedio",
+                  "clinical": {"raw_columns": list(CLINICAL_COLUMNS),
+                               "features": list(CLINICAL_MODEL_FEATURES),
+                               "missing_indicators": True}},
         "training": {"epochs": 46, "min_epochs": 12, "patience": 10,
                      "min_delta": 0.001, "batch_size": 64, "lr": 0.0008,
-                     "min_lr": 0.00001, "weight_decay": 0.0001,
+                     "min_lr": 0.00001, "weight_decay": 0.001,
                      "clip_grad_norm": 5.0, "amp": True, "num_workers": 4,
                      "cpu_threads": 8, "deterministic": True, "review_interval": 10},
-        "augmentation": {"hflip": 0.5, "rot90": nombre != "base_raw"},
+        "augmentation": {"hflip": 0.5, "rot90": True},
         "evaluation": {"threshold": 0.5, "checkpoint_metric": "patient_auc"},
     }
-    if nombre in {"pool_dropout_wd", "pool_dropout_wd_clinical", "patient_level_clinical",
-                  "enhancement_clinical", "enhancement_regularized_clinical"}:
-        config["model"].update(pooling="intermedio", dropout=.35)
-        config["training"]["weight_decay"] = .001
-    if nombre in {"pool_dropout_wd_clinical", "patient_level_clinical", "enhancement_clinical",
-                  "enhancement_regularized_clinical"}:
-        config["model"]["clinical"] = {
-            "raw_columns": list(CLINICAL_COLUMNS),
-            "features": list(CLINICAL_MODEL_FEATURES),
-            "missing_indicators": True,
-        }
-    if nombre in {"enhancement_clinical", "enhancement_regularized_clinical"}:
-        # La entrada en disco sigue siendo PRE/EARLY/LATE. La red recibe además
-        # tres mapas firmados de realce calculados sin parámetros ni fuga de datos.
-        config["model"]["representation"] = "raw_plus_deltas"
-    if nombre == "enhancement_regularized_clinical":
-        # Segundo brazo preespecificado para comprobar si la brecha train/val
-        # disminuye; no se cambia el presupuesto ni la selección por AUC.
-        config["model"].update(dropout=.45, spatial_dropout=.10)
-        config["training"]["weight_decay"] = .003
-    if nombre == "patient_level_clinical":
-        # Cada paciente aparece una vez por época y todos sus cortes contribuyen
-        # conjuntamente a una única BCE, igual que la unidad de evaluación.
-        config["training"].update(loss_unit="patient", patients_per_batch=6)
-        config["evaluation"].update(
-            threshold_strategy="max_specificity_at_min_sensitivity",
-            min_sensitivity=.90,
-        )
-    return config
 
 
 class Bloque(nn.Sequential):
-    def __init__(self, entrada, salida, primero=False, pooling="original", spatial_dropout=0.0):
-        stride = 2 if pooling == "original" or primero else 1
-        capas = [nn.Conv2d(entrada, salida, 3, stride=stride, padding=1, bias=False),
-                 nn.BatchNorm2d(salida), nn.ReLU(inplace=True),
-                 nn.Conv2d(salida, salida, 3, padding=1, bias=False),
-                 nn.BatchNorm2d(salida), nn.ReLU(inplace=True)]
-        if primero or pooling == "intermedio":
-            capas.append(nn.MaxPool2d(2))
-        if spatial_dropout > 0:
-            capas.append(nn.Dropout2d(spatial_dropout))
-        super().__init__(*capas)
+    def __init__(self, entrada, salida, primero=False):
+        super().__init__(
+            nn.Conv2d(entrada, salida, 3, stride=2 if primero else 1, padding=1, bias=False),
+            nn.BatchNorm2d(salida), nn.ReLU(inplace=True),
+            nn.Conv2d(salida, salida, 3, padding=1, bias=False),
+            nn.BatchNorm2d(salida), nn.ReLU(inplace=True), nn.MaxPool2d(2))
 
 
 class GlobalMaxPool(nn.Module):
@@ -120,65 +91,54 @@ class GlobalMaxPool(nn.Module):
 
 
 class CNN(nn.Module):
-    """Ocho convoluciones y 551.913 parámetros; original o pooling intermedio.
+    """Multimodal de v002: ocho convoluciones, pooling intermedio y rama clínica.
 
-    La variante conserva las salidas 64/32/16/8. En los bloques 2-4 sustituye
-    la reducción por stride 2 por Conv stride 1 y MaxPool 2 al terminar el bloque.
+    Conserva los nombres y formas del state_dict de los diez pesos congelados.
+    La configuración clínica debe estar ajustada solo con train de cada fold.
     """
     def __init__(self, config=None):
         super().__init__()
-        self.config = deepcopy(config or {})
+        self.config = deepcopy(config if config is not None else configuracion()["model"])
         self.config = self.config.get("model", self.config)
-        representation = self.config.get("representation", "raw")
-        if representation not in {"raw", "raw_plus_deltas"}:
-            raise ValueError("Representación debe ser raw o raw_plus_deltas")
-        pooling = self.config.get("pooling", "original")
-        if pooling not in {"original", "intermedio"}:
-            raise ValueError("Pooling debe ser original o intermedio")
+        if self.config.get("representation") != "raw" or self.config.get("pooling") != "intermedio":
+            raise ValueError("La red activa requiere raw y pooling intermedio")
+        if self.config.get("normalization", "batch") != "batch":
+            raise ValueError("La red activa utiliza BatchNorm")
+        if self.config.get("spatial_dropout", 0) != 0:
+            raise ValueError("spatial_dropout es una variante retirada")
         canales = self.config.get("channels", [24, 48, 96, 160])
         if len(canales) != 4 or any(not isinstance(c, int) or c < 1 for c in canales):
             raise ValueError("Se requieren cuatro anchos de bloque positivos")
-        if self.config.get("normalization", "batch") != "batch":
-            raise ValueError("La red activa utiliza BatchNorm")
-        spatial_dropout = float(self.config.get("spatial_dropout", 0.0))
-        if not 0 <= spatial_dropout < 1:
-            raise ValueError("spatial_dropout debe pertenecer a [0,1)")
-        input_channels = 3 if representation == "raw" else 6
-        self.features = nn.Sequential(*[Bloque(a, b, i == 0, pooling, spatial_dropout)
-            for i, (a, b) in enumerate(zip([input_channels, *canales[:-1]], canales))])
+        self.features = nn.Sequential(*[Bloque(a, b, i == 0)
+            for i, (a, b) in enumerate(zip([3, *canales[:-1]], canales))])
         self.avgpool = nn.AdaptiveAvgPool2d(1)
         self.maxpool = GlobalMaxPool()
         hidden = int(self.config.get("hidden", 64))
-        dropout = float(self.config.get("dropout", 0.20))
+        dropout = float(self.config.get("dropout", 0.35))
         clinical = self.config.get("clinical")
-        self.clinical_enabled = clinical is not None
-        if self.clinical_enabled:
-            if clinical.get("features") != list(CLINICAL_MODEL_FEATURES):
-                raise ValueError("Variables clínicas incompatibles")
-            preprocessing = clinical.get("preprocessing")
-            if not isinstance(preprocessing, dict):
-                raise ValueError("Falta el preprocesado clínico ajustado en train")
-            expected = len(CLINICAL_MODEL_FEATURES)
-            for key in ("medians", "means", "stds"):
-                values = preprocessing.get(key)
-                if not isinstance(values, list) or len(values) != expected or not np.isfinite(values).all():
-                    raise ValueError(f"Preprocesado clínico inválido: {key}")
-                self.register_buffer("clinical_" + key, torch.tensor(values, dtype=torch.float32))
-            if (self.clinical_stds <= 0).any():
-                raise ValueError("Las desviaciones clínicas deben ser positivas")
-            clinical_width = expected * (2 if clinical.get("missing_indicators", True) else 1)
-            self.image_projection = nn.Sequential(
-                nn.Dropout(dropout), nn.Linear(canales[-1] * 2, hidden), nn.ReLU(inplace=True),
-                nn.Dropout(dropout))
-            # Las variables estandarizadas entran directamente en el único logit.
-            # Así la rama clínica puede reproducir un baseline lineal sin obligar
-            # a la CNN a reaprender HR/HER2 a partir de la imagen.
-            self.classifier = nn.Linear(hidden + clinical_width, 1)
-        else:
-            self.classifier = nn.Sequential(nn.Dropout(dropout), nn.Linear(canales[-1]*2, hidden),
-                nn.ReLU(inplace=True), nn.Dropout(dropout), nn.Linear(hidden, 1))
+        if (not isinstance(clinical, dict) or clinical.get("features") != list(CLINICAL_MODEL_FEATURES)
+                or clinical.get("raw_columns") != list(CLINICAL_COLUMNS)
+                or clinical.get("missing_indicators") is not True):
+            raise ValueError("Variables clínicas incompatibles con el multimodal")
+        self.clinical_enabled = True
+        preprocessing = clinical.get("preprocessing")
+        if not isinstance(preprocessing, dict):
+            raise ValueError("Falta el preprocesado clínico ajustado en train")
+        expected = len(CLINICAL_MODEL_FEATURES)
+        for key in ("medians", "means", "stds"):
+            values = preprocessing.get(key)
+            if not isinstance(values, list) or len(values) != expected or not np.isfinite(values).all():
+                raise ValueError(f"Preprocesado clínico inválido: {key}")
+            self.register_buffer("clinical_" + key, torch.tensor(values, dtype=torch.float32))
+        if (self.clinical_stds <= 0).any():
+            raise ValueError("Las desviaciones clínicas deben ser positivas")
+        clinical_width = expected * 2
+        self.image_projection = nn.Sequential(
+            nn.Dropout(dropout), nn.Linear(canales[-1] * 2, hidden), nn.ReLU(inplace=True),
+            nn.Dropout(dropout))
+        self.classifier = nn.Linear(hidden + clinical_width, 1)
         self.apply(self._initialize)
-        if self.clinical_enabled and clinical.get("initialization") is not None:
+        if clinical.get("initialization") is not None:
             initialization = clinical["initialization"]
             coefficients = initialization.get("coefficients")
             if (not isinstance(coefficients, list) or len(coefficients) != clinical_width or
@@ -201,11 +161,7 @@ class CNN(nn.Module):
             nn.init.zeros_(capa.bias)
 
     def preprocess(self, x):
-        raw = 2*x - 1
-        if self.config.get("representation", "raw") == "raw":
-            return raw
-        pre, early, late = x[:, 0:1], x[:, 1:2], x[:, 2:3]
-        return torch.cat((raw, early-pre, late-pre, late-early), dim=1)
+        return 2*x - 1
 
     def preprocess_clinical(self, clinical):
         if clinical is None or clinical.ndim != 2 or clinical.shape[1] != len(CLINICAL_MODEL_FEATURES):
@@ -214,19 +170,14 @@ class CNN(nn.Module):
         missing = torch.isnan(clinical)
         values = torch.where(missing, self.clinical_medians, clinical)
         values = (values - self.clinical_means) / self.clinical_stds
-        if self.config["clinical"].get("missing_indicators", True):
-            values = torch.cat((values, missing.to(values.dtype)), dim=1)
-        return values
+        return torch.cat((values, missing.to(values.dtype)), dim=1)
 
     def forward(self, x, clinical=None):
         if x.ndim != 4 or tuple(x.shape[1:]) != (3, 256, 256):
             raise ValueError(f"Esperado [N,3,256,256], recibido {tuple(x.shape)}")
         z = self.features(self.preprocess(x))
         z = torch.cat((self.avgpool(z).flatten(1), self.maxpool(z).flatten(1)), dim=1)
-        if self.clinical_enabled:
-            z = torch.cat((self.image_projection(z), self.preprocess_clinical(clinical)), dim=1)
-        elif clinical is not None:
-            raise ValueError("Este modelo histórico no admite variables clínicas")
+        z = torch.cat((self.image_projection(z), self.preprocess_clinical(clinical)), dim=1)
         return self.classifier(z)
 
 
@@ -296,10 +247,18 @@ def clinical_matrix(frame: pd.DataFrame) -> np.ndarray:
     missing = set(CLINICAL_COLUMNS) - set(frame.columns)
     if missing:
         raise ValueError(f"Faltan variables clínicas: {sorted(missing)}")
-    raw = frame[list(CLINICAL_COLUMNS)].apply(pd.to_numeric, errors="coerce")
+    try:
+        raw = frame[list(CLINICAL_COLUMNS)].apply(pd.to_numeric, errors="raise")
+    except (ValueError, TypeError) as exc:
+        raise ValueError("Las variables clínicas deben ser numéricas o ausentes") from exc
     observed = raw.to_numpy(dtype=np.float64)
     if not np.isfinite(observed[~np.isnan(observed)]).all():
         raise ValueError("Las variables clínicas contienen infinitos")
+    if (raw[["age", "tum_vol"]] < 0).any().any():
+        raise ValueError("Edad y volumen tumoral no pueden ser negativos")
+    for column in ("HR", "HER2"):
+        if not raw[column].dropna().isin([0, 1]).all():
+            raise ValueError(f"{column} debe ser binaria o ausente")
     tumor_volume = raw["tum_vol"].to_numpy(dtype=np.float64)
     if np.any(tumor_volume[np.isfinite(tumor_volume)] < 0):
         raise ValueError("El volumen tumoral no puede ser negativo")
@@ -401,47 +360,13 @@ class DatasetEntrenamiento(pdatos.BreastDCESliceDataset):
         return result
 
 
-class PatientBatchSampler:
-    """Agrupa pacientes completos sin ponderarlos por su número de cortes."""
-    def __init__(self, samples, patients_per_batch, generator, shuffle=True):
-        if not isinstance(patients_per_batch, int) or patients_per_batch < 1:
-            raise ValueError("patients_per_batch debe ser un entero positivo")
-        self.generator = generator
-        self.shuffle = bool(shuffle)
-        self.patients_per_batch = patients_per_batch
-        self.patient_ids = list(dict.fromkeys(samples.patient_id.astype(str)))
-        self.indices = {patient: [] for patient in self.patient_ids}
-        for index, patient in enumerate(samples.patient_id.astype(str)):
-            self.indices[patient].append(index)
-        if not self.patient_ids or any(not indices for indices in self.indices.values()):
-            raise ValueError("No se pudieron construir lotes completos por paciente")
-
-    def __iter__(self):
-        order = list(range(len(self.patient_ids)))
-        if self.shuffle:
-            order = torch.randperm(len(order), generator=self.generator).tolist()
-        for start in range(0, len(order), self.patients_per_batch):
-            batch = []
-            for position in order[start:start + self.patients_per_batch]:
-                batch.extend(self.indices[self.patient_ids[position]])
-            yield batch
-
-    def __len__(self):
-        return (len(self.patient_ids) + self.patients_per_batch - 1) // self.patients_per_batch
-
-
-def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None, clinical=False,
-                patients_per_batch=None):
+def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None, clinical=False):
     # Los lectores trabajan en CPU; Linux usa fork y Windows/macOS spawn.
     context = ("fork" if sys.platform.startswith("linux") else "spawn") if workers else None
     dataset = DatasetEntrenamiento(samples, root, cache, clinical)
-    common = dict(num_workers=workers, pin_memory=torch.cuda.is_available(), persistent_workers=False,
-                  worker_init_fn=pdatos.inicializar_worker, generator=generator,
-                  multiprocessing_context=context)
-    if patients_per_batch is not None:
-        sampler = PatientBatchSampler(samples, patients_per_batch, generator, shuffle)
-        return DataLoader(dataset, batch_sampler=sampler, **common)
-    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, **common)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle,
+        num_workers=workers, pin_memory=torch.cuda.is_available(), persistent_workers=False,
+        worker_init_fn=pdatos.inicializar_worker, generator=generator, multiprocessing_context=context)
 
 
 def aumentar_geometria(x, generator, hflip=0.5, rot90=True):
@@ -468,25 +393,6 @@ def batch_device(batch, device):
 def batch_clinical(batch, device):
     clinical = batch.get("clinical")
     return clinical.to(device, non_blocking=True) if clinical is not None else None
-
-
-def aggregate_patient_logits(logits, labels, patient_ids):
-    """Convierte logits por corte en una decisión diferenciable por paciente."""
-    if logits.ndim != 1 or labels.ndim != 1 or len(logits) != len(labels) or len(logits) != len(patient_ids):
-        raise ValueError("Logits, etiquetas y pacientes deben estar alineados")
-    groups = {}
-    for index, patient in enumerate(map(str, patient_ids)):
-        groups.setdefault(patient, []).append(index)
-    patient_logits, patient_labels = [], []
-    for indices in groups.values():
-        index = torch.tensor(indices, device=logits.device)
-        current_labels = labels.index_select(0, index)
-        if not torch.equal(current_labels, current_labels[:1].expand_as(current_labels)):
-            raise ValueError("Etiquetas inconsistentes dentro de una paciente")
-        probability = torch.sigmoid(logits.index_select(0, index).float()).mean()
-        patient_logits.append(torch.logit(probability.clamp(EPS, 1 - EPS)))
-        patient_labels.append(current_labels[0].float())
-    return torch.stack(patient_logits), torch.stack(patient_labels)
 
 
 def sha256(path):
@@ -614,7 +520,7 @@ def amp_context(device, enabled):
 
 
 def train_epoch(model, loader, optimizer, scaler, criterion, device, amp, augmentation,
-                augmentation_generator, clip_norm=5.0, max_batches=None, loss_unit="slice"):
+                augmentation_generator, clip_norm=5.0, max_batches=None):
     model.train()
     losses = torch.zeros((), device=device)
     count = 0
@@ -628,12 +534,7 @@ def train_epoch(model, loader, optimizer, scaler, criterion, device, amp, augmen
         optimizer.zero_grad(set_to_none=True)
         with amp_context(device, amp):
             logits = model(x, clinical).squeeze(1)
-            targets = y
-            if loss_unit == "patient":
-                logits, targets = aggregate_patient_logits(logits, y, batch["patient_id"])
-            elif loss_unit != "slice":
-                raise ValueError("Unidad de pérdida desconocida")
-            loss = criterion(logits, targets)
+            loss = criterion(logits, y)
         if not torch.isfinite(loss):
             raise FloatingPointError("Pérdida no finita; no se seleccionará este run")
         scaler.scale(loss).backward()
@@ -643,7 +544,7 @@ def train_epoch(model, loader, optimizer, scaler, criterion, device, amp, augmen
         nn.utils.clip_grad_norm_(model.parameters(), clip_norm, error_if_nonfinite=not amp)
         scaler.step(optimizer)
         scaler.update()
-        units = len(targets)
+        units = len(y)
         losses += loss.detach() * units
         count += units
     return float(losses / count)
@@ -683,8 +584,12 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
                  resume="last", until_epoch=None, cache=None):
     config = deepcopy(config)
     config["loss"], config["seed"], config["fold"] = loss_name, seed, fold
-    if loss_name not in {"normal", "weighted"}:
-        raise ValueError("Pérdida desconocida")
+    if config.get("name") != ACTIVE_CONFIGURATION or loss_name != "weighted":
+        raise ValueError("Solo está activo el multimodal con BCE ponderada por corte")
+    model_config = config["model"]
+    if (model_config.get("representation") != "raw" or model_config.get("pooling") != "intermedio"
+            or model_config.get("spatial_dropout", 0) != 0 or model_config.get("clinical") is None):
+        raise ValueError("Configuración de modelo retirada del entrenamiento activo")
     config["smoke"] = bool(smoke)
     config["source_sha256"] = {
         "04_entrenamiento.py": sha256(Path(__file__)),
@@ -692,40 +597,27 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
     }
     config["device_type"] = device.type
     tconf = config["training"]
-    loss_unit = tconf.get("loss_unit", "slice")
-    if loss_unit not in {"slice", "patient"}:
-        raise ValueError("La unidad de pérdida debe ser slice o patient")
-    patients_per_batch = tconf.get("patients_per_batch")
-    if loss_unit == "patient" and (not isinstance(patients_per_batch, int) or patients_per_batch < 1):
-        raise ValueError("La BCE por paciente requiere patients_per_batch positivo")
-    if loss_unit == "slice" and patients_per_batch is not None:
-        raise ValueError("patients_per_batch solo se admite con BCE por paciente")
     unsupported_batch = any(key in tconf for key in
-        ("batch_policy", "patient_batch_size", "paired_augmentation"))
-    if unsupported_batch or config["evaluation"].get("protocol") == "nested_holdout":
+        ("patients_per_batch", "batch_policy", "patient_batch_size", "paired_augmentation"))
+    if (tconf.get("loss_unit", "slice") != "slice" or unsupported_batch
+            or config["evaluation"].get("protocol") == "nested_holdout"
+            or config["evaluation"].get("threshold_strategy", "youden") != "youden"):
         raise ValueError("Configuración experimental retirada del entrenamiento activo")
     if until_epoch is not None and not 1 <= until_epoch <= int(tconf["epochs"]):
         raise ValueError("La época objetivo debe estar dentro del presupuesto fijado")
     torch.set_num_threads(int(tconf.get("cpu_threads", 8)))
     seed_everything(seed, tconf.get("deterministic", True))
-    clinical_enabled = config["model"].get("clinical") is not None
-    all_train = cargar_train(root, include_clinical=clinical_enabled)
+    all_train = cargar_train(root, include_clinical=True)
     train, val = particion(all_train, fold)
     signature_frame = all_train.drop(columns=list(CLINICAL_COLUMNS), errors="ignore")
     config["data_signature"] = hashlib.sha256(signature_frame.to_csv(index=False).encode()).hexdigest()
-    if clinical_enabled:
-        clinical_roster = all_train.drop_duplicates("patient_id").sort_values("patient_id")
-        clinical_values = clinical_roster[["patient_id", *CLINICAL_COLUMNS]]
-        config["clinical_signature"] = hashlib.sha256(
-            clinical_values.to_csv(index=False).encode()).hexdigest()
-        preprocessing = fit_clinical_preprocessing(train)
-        config["model"]["clinical"]["preprocessing"] = preprocessing
-        config["model"]["clinical"]["initialization"] = fit_clinical_initializer(train, preprocessing)
-    if loss_name == "weighted" and loss_unit == "patient":
-        patient_labels = train.drop_duplicates("patient_id").pCR
-        config["pos_weight"] = float((patient_labels == 0).sum() / (patient_labels == 1).sum())
-    else:
-        config["pos_weight"] = pdatos.pos_weight_cortes(train) if loss_name == "weighted" else 1.0
+    clinical_roster = all_train.drop_duplicates("patient_id").sort_values("patient_id")
+    clinical_values = clinical_roster[["patient_id", *CLINICAL_COLUMNS]]
+    config["clinical_signature"] = hashlib.sha256(clinical_values.to_csv(index=False).encode()).hexdigest()
+    preprocessing = fit_clinical_preprocessing(train)
+    config["model"]["clinical"]["preprocessing"] = preprocessing
+    config["model"]["clinical"]["initialization"] = fit_clinical_initializer(train, preprocessing)
+    config["pos_weight"] = pdatos.pos_weight_cortes(train)
     config["n_train_slices"], config["n_val_slices"] = len(train), len(val)
     config["n_train_patients"], config["n_val_patients"] = train.patient_id.nunique(), val.patient_id.nunique()
     run_dir = out / config["name"] / loss_name / f"seed_{seed}" / f"fold_{fold}"
@@ -765,12 +657,11 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
     workers = 0 if smoke else int(tconf["num_workers"])
     batch_size = min(8, tconf["batch_size"]) if smoke else tconf["batch_size"]
     train_loader = make_loader(train, root, batch_size, workers, generator, shuffle=True,
-                               cache=cache, clinical=clinical_enabled,
-                               patients_per_batch=patients_per_batch if loss_unit == "patient" else None)
+                               cache=cache, clinical=True)
     val_loader = make_loader(val, root, batch_size, workers, val_generator, cache=cache,
-                             clinical=clinical_enabled)
+                             clinical=True)
     train_eval_loader = make_loader(train, root, batch_size, workers,
-        torch.Generator().manual_seed(seed+70000+fold), cache=cache, clinical=clinical_enabled)
+        torch.Generator().manual_seed(seed+70000+fold), cache=cache, clinical=True)
     model = CNN(config).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=tconf["lr"], weight_decay=tconf["weight_decay"])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=tconf["epochs"], eta_min=tconf["min_lr"])
@@ -787,7 +678,7 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
         bad_epochs, history = loaded["bad_epochs"], loaded["history"]
         best_epoch = loaded["best_epoch"]
         print(f"Reanudando {run_dir} época {start_epoch + 1}", flush=True)
-    elif clinical_enabled:
+    else:
         baseline_probabilities, _ = predict(model, val_loader, device, False, criterion)
         baseline_metrics = patient_metrics(val, baseline_probabilities, config["evaluation"]["threshold"])
         best_auc = baseline_metrics["patient_auc"]
@@ -812,7 +703,7 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
         lr = optimizer.param_groups[0]["lr"]
         train_loss = train_epoch(model, train_loader, optimizer, scaler, criterion, device, amp,
                                  config["augmentation"], aug_generator, tconf["clip_grad_norm"],
-                                 max_batches=1 if smoke else None, loss_unit=loss_unit)
+                                 max_batches=1 if smoke else None)
         probabilities, val_loss = predict(model, val_loader, device, False, criterion)
         metrics = patient_metrics(val, probabilities, config["evaluation"]["threshold"])
         scheduler.step()
@@ -877,7 +768,7 @@ def run_training(config: dict, loss_name: str, seed: int, fold: int, root: Path,
                "current_session_seconds": time.perf_counter() - wall_start,
                "peak_vram_gib": max(r["peak_vram_gib"] for r in history),
                "checkpoint": "best.pt", "test_images_loaded": 0,
-               "inference_amp": False, "patient_aggregation": "mean", "loss_unit": loss_unit}
+               "inference_amp": False, "patient_aggregation": "mean", "loss_unit": "slice"}
     export_inference_checkpoint(run_dir)
     summary["inference_sha256"] = sha256(run_dir/"inference.pt")
     summary["oof_sha256"] = sha256(run_dir/"oof_slices.csv")
@@ -1038,28 +929,8 @@ def youden_threshold(y: np.ndarray, p: np.ndarray) -> float:
     return float(sorted(best, key=lambda t: (abs(t - 0.5), -t))[0])
 
 
-def threshold_for_sensitivity(y: np.ndarray, p: np.ndarray, min_sensitivity: float) -> float:
-    """Máxima especificidad sujeta a una sensibilidad mínima, con empates deterministas."""
-    y, p = np.asarray(y), np.asarray(p, dtype=float)
-    binary_metrics(y, p)  # Validación común de etiquetas y probabilidades.
-    if len(np.unique(y)) != 2:
-        raise ValueError("La selección de umbral requiere ambas clases")
-    if not 0 < min_sensitivity <= 1:
-        raise ValueError("min_sensitivity debe pertenecer a (0,1]")
-    candidates = np.unique(np.concatenate(([0.0, 0.5, 1.0], p)))
-    feasible = []
-    for threshold in candidates:
-        metrics = binary_metrics(y, p, float(threshold))
-        if metrics["sensitivity"] + 1e-12 >= min_sensitivity:
-            feasible.append(metrics)
-    if not feasible:
-        raise RuntimeError("No existe un umbral que alcance la sensibilidad solicitada")
-    best = max(feasible, key=lambda m: (m["specificity"], m["precision"], m["threshold"]))
-    return float(best["threshold"])
-
-
 def comparar_ejecuciones(root, output):
-    """Compara ejecuciones nuevas completas; no altera el modelo final histórico."""
+    """Evalúa el multimodal ponderado con la mediana ya adoptada; conserva v002."""
     train = cargar_train(root)
     data_signature = hashlib.sha256(train.to_csv(index=False).encode()).hexdigest()
     roster = train.rename(columns={"pCR": "label", "dataset": "cohort"})
@@ -1070,6 +941,8 @@ def comparar_ejecuciones(root, output):
             continue
         folder = path.parent
         config = json.loads((folder/"config.json").read_text())
+        if config.get("name") != ACTIVE_CONFIGURATION or config.get("loss") != "weighted":
+            continue
         if summary["config_hash"] != config_hash(config):
             raise ValueError(f"Configuración modificada: {folder}")
         if config.get("smoke"):
@@ -1081,18 +954,12 @@ def comparar_ejecuciones(root, output):
                 raise ValueError(f"Artefacto modificado: {folder/name}")
         fold = int(config["fold"])
         oof = validate_oof(pd.read_csv(folder/"oof_slices.csv"), roster[roster.fold.eq(fold)])
-        if config["name"] not in {"base_raw", "raw_rot90", "base_raw_pool", "raw_rot90_pool",
-                                  "pool_dropout_wd", "pool_dropout_wd_clinical",
-                                  "patient_level_clinical", "enhancement_clinical",
-                                  "enhancement_regularized_clinical"}:
-            raise ValueError("Nombre de configuración desconocido")
-        key = (config["name"], config["loss"], int(config["seed"]))
-        groups.setdefault(key, {})
-        if fold in groups[key]:
+        key = (int(config["seed"]), fold)
+        if key in groups:
             raise ValueError("Fold duplicado")
         if not (folder/"inference.pt").exists():
             raise ValueError("Faltan pesos de inferencia")
-        groups[key][fold] = (oof, folder/"inference.pt", config)
+        groups[key] = (oof, folder/"inference.pt", config)
         comparable = {k: v for k, v in config.items() if k not in {
             "loss", "seed", "fold", "pos_weight", "n_train_slices", "n_val_slices",
             "n_train_patients", "n_val_patients", "clinical_signature"}}
@@ -1104,94 +971,63 @@ def comparar_ejecuciones(root, output):
         if config["name"] in fingerprints and fingerprints[config["name"]] != fingerprint:
             raise ValueError("Comparación con distinto código, datos o presupuesto")
         fingerprints[config["name"]] = fingerprint
-    candidates, predictions = [], {}
-    for name in sorted({key[0] for key in groups}):
-        losses = (("weighted",) if name in {"pool_dropout_wd", "patient_level_clinical",
-                  "enhancement_clinical", "enhancement_regularized_clinical"}
-                  else ("normal", "weighted"))
-        expected = {(name, loss, seed) for loss in losses for seed in (42, 2026)}
-        if not expected.issubset(groups) or any(set(groups[key]) != set(range(5)) for key in expected):
-            raise ValueError(f"{name}: se requieren pérdidas {losses}, dos semillas y cinco folds completos")
-        for loss in losses:
-            by_seed = []
-            for seed in (42, 2026):
-                by_seed.append(validate_oof(pd.concat([groups[name,loss,seed][fold][0]
-                    for fold in range(5)], ignore_index=True), roster))
-            slices = by_seed[0].copy()
-            if not slices.sample_id.equals(by_seed[1].sample_id):
-                raise ValueError("Semillas con distinto índice OOF")
-            slices["probability"] = (slices.probability.to_numpy()+by_seed[1].probability.to_numpy())/2
-            for method in METHODS:
-                patients = aggregate_patients(slices, method)
-                metrics = binary_metrics(patients.label, patients.probability)
-                fold_auc = []
-                for fold in range(5):
-                    held_out = patients[patients.fold.eq(fold)]
-                    auc = binary_metrics(held_out.label, held_out.probability)["roc_auc"]
-                    if auc is None:
-                        raise ValueError(f"Fold {fold} sin ambas clases; AUC no definida")
-                    fold_auc.append(auc)
-                metrics["fold_roc_auc"] = fold_auc
-                metrics["mean_fold_roc_auc"] = float(np.mean(fold_auc))
-                metrics["min_fold_roc_auc"] = float(np.min(fold_auc))
-                candidate = f"{name}_{loss}_{method}"
-                candidates.append({"candidate": candidate, "configuration": name, "loss": loss,
-                    "aggregation": method, "metrics": metrics})
-                predictions[candidate] = patients
-    if not candidates:
+    if not groups:
         raise ValueError("No hay comparaciones completas; las pruebas no son seleccionables")
-    selected = min(candidates, key=lambda c: (-c["metrics"]["mean_fold_roc_auc"],
-        -c["metrics"]["roc_auc"], c["metrics"]["brier"],
-        c["aggregation"] != "mean", c["candidate"]))
-    patients = predictions[selected["candidate"]]
+    expected = {(seed, fold) for seed in (42, 2026) for fold in range(5)}
+    if set(groups) != expected:
+        raise ValueError("Se requieren dos semillas y cinco folds completos: 42/2026 × 0–4")
+    by_seed = [validate_oof(pd.concat([groups[seed, fold][0] for fold in range(5)],
+                                    ignore_index=True), roster) for seed in (42, 2026)]
+    slices = by_seed[0].copy()
+    if not slices.sample_id.equals(by_seed[1].sample_id):
+        raise ValueError("Semillas con distinto índice OOF")
+    slices["probability"] = (slices.probability.to_numpy()+by_seed[1].probability.to_numpy())/2
+    patients = aggregate_patients(slices, PATIENT_AGGREGATION)
+    metrics = binary_metrics(patients.label, patients.probability)
+    fold_auc = []
+    for fold in range(5):
+        held_out = patients[patients.fold.eq(fold)]
+        auc = binary_metrics(held_out.label, held_out.probability)["roc_auc"]
+        if auc is None:
+            raise ValueError(f"Fold {fold} sin ambas clases; AUC no definida")
+        fold_auc.append(auc)
+    metrics.update(fold_roc_auc=fold_auc, mean_fold_roc_auc=float(np.mean(fold_auc)),
+                   min_fold_roc_auc=float(np.min(fold_auc)))
+    selected = {"candidate": f"{ACTIVE_CONFIGURATION}_weighted_{PATIENT_AGGREGATION}",
+                "configuration": ACTIVE_CONFIGURATION, "loss": "weighted",
+                "aggregation": PATIENT_AGGREGATION, "metrics": metrics}
     calibration = fit_platt(patients.label.to_numpy(), patients.probability.to_numpy())
     patients["calibrated_crossfit"] = crossfit_calibration(patients)
     patients["calibrated_fit"] = apply_calibration(patients.probability.to_numpy(), calibration)
-    selected_config = groups[selected["configuration"], selected["loss"], 42][0][2]
-    evaluation = selected_config.get("evaluation", {})
-    if evaluation.get("threshold_strategy") == "max_specificity_at_min_sensitivity":
-        target_sensitivity = float(evaluation.get("min_sensitivity", .90))
-        threshold = threshold_for_sensitivity(
-            patients.label.to_numpy(), patients.calibrated_fit.to_numpy(), target_sensitivity)
-        decision_policy = {"strategy": "max_specificity_at_min_sensitivity",
-                           "min_sensitivity": target_sensitivity,
-                           "fit_data": "train_oof_apparent"}
-    else:
-        threshold = youden_threshold(patients.label.to_numpy(), patients.calibrated_fit.to_numpy())
-        decision_policy = {"strategy": "youden", "fit_data": "train_oof_apparent"}
+    threshold = youden_threshold(patients.label.to_numpy(), patients.calibrated_fit.to_numpy())
+    decision_policy = {"strategy": "youden", "fit_data": "train_oof_apparent"}
     dest = Path(output)/"comparacion"
     dest.mkdir(parents=True, exist_ok=True)
     report = {"status": "desarrollo_sin_test", "warning":
-        "La selección de candidatos y checkpoints con OOF introduce optimismo; no es validación anidada.",
-        "candidates": candidates, "selected": selected,
+        "Los checkpoints se seleccionan con los folds usados para OOF; no es validación anidada.",
+        "candidates": [selected], "selected": selected,
         "decision_policy": decision_policy,
         "calibrated_crossfit_at_0_5": binary_metrics(patients.label, patients.calibrated_crossfit),
         "calibrated_apparent": binary_metrics(patients.label, patients.calibrated_fit, threshold)}
     json_write(dest/"seleccion.json", report)
     patients.to_csv(dest/"oof_pacientes.csv", index=False)
-    records = [{"candidate": c["candidate"], **c["metrics"]} for c in candidates]
+    records = [{"candidate": selected["candidate"], **metrics}]
     pd.DataFrame(records).drop(columns="confusion_matrix").to_csv(dest/"comparacion.csv", index=False)
     models = []
     for seed in (42, 2026):
         for fold in range(5):
-            _, path, config = groups[selected["configuration"], selected["loss"], seed][fold]
+            _, path, config = groups[seed, fold]
             models.append({"path": os.path.relpath(path.resolve(), dest.resolve()), "sha256": sha256(path),
                 "seed": seed, "fold": fold, "model_config": config["model"]})
-    selected_clinical = any(item["model_config"].get("clinical") is not None for item in models)
-    representation = selected_config["model"].get("representation", "raw")
     manifest = {"schema_version": 1, "status": "desarrollo_sin_test", "models": models,
-        "aggregation": selected["aggregation"], "calibration": calibration, "threshold": threshold,
+        "aggregation": PATIENT_AGGREGATION, "calibration": calibration, "threshold": threshold,
         "decision_policy": decision_policy,
         "test_evaluated_once": False, "selection": selected,
         "preprocessing": {"phases": list(pdatos.FASES), "shape": [3,256,256],
-                          "model_representation": representation,
-                          "network_channels": 6 if representation == "raw_plus_deltas" else 3,
-                          "scaling": ("uint8 / 255; CNN: 2*x-1 para PRE/EARLY/LATE; "
-                                      "deltas: EARLY-PRE, LATE-PRE, LATE-EARLY"
-                                      if representation == "raw_plus_deltas" else
-                                      "uint8 / 255; CNN: 2*x-1"),
-                          "clinical_required": selected_clinical,
-                          "clinical_raw_columns": list(CLINICAL_COLUMNS) if selected_clinical else []}}
+                          "model_representation": "raw", "network_channels": 3,
+                          "scaling": "uint8 / 255; CNN: 2*x-1",
+                          "clinical_required": True,
+                          "clinical_raw_columns": list(CLINICAL_COLUMNS)}}
     json_write(dest/"modelo_desarrollo.json", manifest)
     (dest/"modelo_desarrollo.json.sha256").write_text(sha256(dest/"modelo_desarrollo.json")+"\n")
     return report
@@ -1214,12 +1050,12 @@ def cargar_manifest(path):
     if calibration.get("clip_epsilon") != EPS or calibration["slope"] < 0 or not np.isfinite(
             [calibration["slope"], calibration["intercept"]]).all():
         raise ValueError("Calibración incompatible")
-    clinical_flags = {item["model_config"].get("clinical") is not None for item in manifest["models"]}
-    if len(clinical_flags) != 1:
-        raise ValueError("El ensemble mezcla modelos con y sin variables clínicas")
-    clinical_required = clinical_flags.pop()
-    if bool(manifest.get("preprocessing", {}).get("clinical_required", False)) != clinical_required:
-        raise ValueError("El manifiesto no describe correctamente las variables clínicas")
+    if (manifest.get("preprocessing", {}).get("clinical_required") is not True or
+            any(item["model_config"].get("clinical") is None or
+                item["model_config"].get("representation") != "raw" or
+                item["model_config"].get("pooling") != "intermedio" or
+                item["model_config"].get("spatial_dropout", 0) != 0 for item in manifest["models"])):
+        raise ValueError("El código activo solo admite el multimodal; usa el código archivado para otras versiones")
     for item in manifest["models"]:
         model_path = path.parent/item["path"]
         if sha256(model_path) != item["sha256"]:
@@ -1239,8 +1075,6 @@ def verificar_modelo_final(path):
             raise ValueError("Configuración de pesos y manifiesto diferentes")
         model = CNN(artifact["model_config"])
         parameters = numero_parametros(model)
-        if not model.clinical_enabled and parameters != 551913:
-            raise ValueError("La arquitectura no coincide con el PDF")
         parameter_counts.add(parameters)
         model.load_state_dict(artifact["state_dict"], strict=True)
     if len(parameter_counts) != 1:
@@ -1254,16 +1088,11 @@ def verificar_modelo_final(path):
 @torch.inference_mode()
 def predecir_cortes(path, triples, clinical=None):
     manifest = cargar_manifest(path)
-    clinical_required = bool(manifest.get("preprocessing", {}).get("clinical_required", False))
-    if clinical_required and clinical is None:
+    if clinical is None:
         raise ValueError("El modelo multimodal requiere edad, volumen tumoral, HR y HER2")
-    if not clinical_required and clinical is not None:
-        raise ValueError("El modelo histórico no admite variables clínicas")
-    clinical_values = None
-    if clinical_required:
-        if set(clinical) != set(CLINICAL_COLUMNS):
-            raise ValueError(f"Se requieren exactamente estas variables clínicas: {list(CLINICAL_COLUMNS)}")
-        clinical_values = clinical_matrix(pd.DataFrame([clinical])).astype(np.float32)
+    if set(clinical) != set(CLINICAL_COLUMNS):
+        raise ValueError(f"Se requieren exactamente estas variables clínicas: {list(CLINICAL_COLUMNS)}")
+    clinical_values = clinical_matrix(pd.DataFrame([clinical])).astype(np.float32)
     images, sample_ids, patient_ids = [], set(), set()
     for triple in triples:
         if len(triple) != 3:
@@ -1290,9 +1119,7 @@ def predecir_cortes(path, triples, clinical=None):
     if not images or len(patient_ids) != 1:
         raise ValueError("Se necesitan cortes de una sola paciente")
     x = torch.stack(images)
-    clinical_tensor = None
-    if clinical_values is not None:
-        clinical_tensor = torch.from_numpy(clinical_values).repeat(len(images), 1)
+    clinical_tensor = torch.from_numpy(clinical_values).repeat(len(images), 1)
     predictions = []
     for item in manifest["models"]:
         artifact = torch.load(Path(path).parent/item["path"],map_location="cpu",weights_only=True)
@@ -1305,7 +1132,7 @@ def predecir_cortes(path, triples, clinical=None):
     return {"patient_id": next(iter(patient_ids)), "n_slices": len(images), "probability_raw": raw,
         "probability_calibrated": calibrated, "threshold": manifest["threshold"],
         "pCR": int(calibrated >= manifest["threshold"]), "models": len(predictions),
-        "clinical_used": clinical_required,
+        "clinical_used": True,
         "notice": "Uso educativo. La calibración se ajustó con varios cortes por paciente."}
 
 
@@ -1412,11 +1239,7 @@ def main():
     parser.add_argument("accion", nargs="?", choices=("verificar", "entrenar", "comparar", "predecir"), default="verificar")
     parser.add_argument("--datos",type=Path,default=pdatos.DATOS)
     parser.add_argument("--salida",type=Path,default=None)
-    parser.add_argument("--manifest",type=Path,default=SALIDA/"modelo_final.json")
-    parser.add_argument("--configuraciones",nargs="+",choices=("base_raw","raw_rot90","pool_dropout_wd",
-        "pool_dropout_wd_clinical","patient_level_clinical","enhancement_clinical",
-        "enhancement_regularized_clinical"),default=["raw_rot90"])
-    parser.add_argument("--perdidas",nargs="+",choices=("normal","ponderada"),default=["normal","ponderada"])
+    parser.add_argument("--manifest",type=Path,default=MULTIMODAL_MANIFEST)
     parser.add_argument("--semillas",nargs="+",type=int,default=[42,2026])
     parser.add_argument("--folds",nargs="+",type=int,choices=range(5),default=list(range(5)))
     parser.add_argument("--workers",type=int,default=4)
@@ -1424,7 +1247,6 @@ def main():
     parser.add_argument("--epocas",type=int,default=46)
     parser.add_argument("--revision-cada",type=int,default=10)
     parser.add_argument("--hasta-epoca",type=int)
-    parser.add_argument("--pooling",choices=("original","intermedio"),default="original")
     parser.add_argument("--dispositivo",choices=("auto","cpu","cuda"),default="auto")
     parser.add_argument("--prueba",action="store_true",help="Un lote y una época; excluido de la selección")
     for phase in ("pre","early","late"):
@@ -1434,7 +1256,7 @@ def main():
     parser.add_argument("--hr", type=float, choices=(0.0, 1.0))
     parser.add_argument("--her2", type=float, choices=(0.0, 1.0))
     args = parser.parse_args()
-    args.salida = args.salida or SALIDA/"ejecuciones"
+    args.salida = args.salida or MULTIMODAL_RUNS
     if args.workers < 0 or args.lote < 1 or args.epocas < 1 or args.revision_cada < 1:
         parser.error("workers >= 0, lote >= 1 y epocas >= 1")
     if args.accion == "entrenar":
@@ -1442,19 +1264,14 @@ def main():
         if device_name == "cuda" and not torch.cuda.is_available():
             parser.error("CUDA no está disponible")
         output = args.salida/"pruebas" if args.prueba else args.salida
-        for name in dict.fromkeys(args.configuraciones):
-            config = configuracion(name)
-            if args.pooling == "intermedio" and config["model"].get("pooling", "original") != "intermedio":
-                config["model"]["pooling"]="intermedio"
-                config["name"]+="_pool"
-            config["training"]["review_interval"]=args.revision_cada
-            config["training"].update(num_workers=args.workers,batch_size=args.lote,epochs=args.epocas,
-                                      min_epochs=min(12,args.epocas))
-            for loss in dict.fromkeys(args.perdidas):
-                for seed in dict.fromkeys(args.semillas):
-                    for fold in dict.fromkeys(args.folds):
-                        run_training(config,"weighted" if loss == "ponderada" else loss,seed,fold,
-                                     args.datos,output,torch.device(device_name),smoke=args.prueba,until_epoch=args.hasta_epoca)
+        config = configuracion()
+        config["training"]["review_interval"] = args.revision_cada
+        config["training"].update(num_workers=args.workers, batch_size=args.lote, epochs=args.epocas,
+                                  min_epochs=min(12, args.epocas))
+        for seed in dict.fromkeys(args.semillas):
+            for fold in dict.fromkeys(args.folds):
+                run_training(config, "weighted", seed, fold, args.datos, output, torch.device(device_name),
+                             smoke=args.prueba, until_epoch=args.hasta_epoca)
     elif args.accion == "comparar":
         result = comparar_ejecuciones(args.datos,args.salida)
         print(json.dumps(result["selected"],ensure_ascii=False,indent=2))

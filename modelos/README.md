@@ -1,5 +1,10 @@
 # Historial de versiones de los modelos
 
+La base activa es **v002_multimodal_clinico_20261007**, ya entrenada. El módulo
+actual de entrenamiento y la aplicación la usan por defecto. No hace falta
+reentrenar para cargar sus diez pesos. El experimento de realce temporal queda
+descartado en [EXPERIMENTOS_DESCARTADOS.md](../docs/EXPERIMENTOS_DESCARTADOS.md).
+
 Cada versión guarda un ensemble completo, listo para predecir desde otro
 ordenador después de clonar el repositorio e instalar sus dependencias. Los
 pesos, la calibración, el preprocesado y el código compatible quedan juntos.
@@ -87,7 +92,7 @@ fases. Deben ser PNG monocromos de 8 bits, de 256 × 256. No se necesita descarg
 el dataset de entrenamiento para utilizar el modelo con nuevas imágenes.
 La herramienta verifica la versión y usa su código conservado aunque el módulo
 de entrenamiento cambie en el futuro. No hay un alias que sustituya automáticamente
-el modelo histórico: se elige la versión de forma explícita.
+el modelo histórico en este archivador: aquí se elige la versión de forma explícita.
 
 ## Guardar una actualización sin perder las anteriores
 

@@ -14,13 +14,14 @@ from cancer_mama.app_logic import (
     discover_local_examples,
     enhancement_map,
     read_model_card,
+    prediction_key,
     uploads_from_paths,
     validate_phase_uploads,
 )
-from cancer_mama.paths import DATA_DIR, RESULTS_DIR
+from cancer_mama.paths import DATA_DIR, MULTIMODAL_MANIFEST
 
 
-MANIFEST_PATH = RESULTS_DIR / "04_entrenamiento" / "modelo_final.json"
+MANIFEST_PATH = MULTIMODAL_MANIFEST
 
 st.set_page_config(
     page_title="Breast DCE · pCR Explorer",
@@ -108,8 +109,8 @@ st.markdown(
 <section class="hero">
   <div class="eyebrow"><span class="dot"></span> Inteligencia artificial aplicada a DCE-MRI</div>
   <h1>Explora la respuesta <span>pCR</span> antes del tratamiento.</h1>
-  <p>Una demostración educativa que combina las fases PRE, EARLY y LATE para estimar la
-  probabilidad de respuesta patológica completa con una CNN 2D creada desde cero.</p>
+  <p>Una demostración educativa que combina las fases PRE, EARLY y LATE con edad,
+  volumen tumoral, HR y HER2 para estimar la probabilidad de respuesta patológica completa.</p>
   <div class="chips"><span class="chip">CNN 2D propia</span><span class="chip">3 fases alineadas</span>
   <span class="chip">Ensemble de 10 modelos</span><span class="chip">Inferencia reproducible</span></div>
 </section>
@@ -137,9 +138,10 @@ with st.sidebar:
         st.caption(f"{model_card.model_count} pesos verificados al ejecutar la inferencia")
     else:
         st.warning("Faltan los pesos finales")
-        st.caption("La exploración visual funciona; la predicción se activará al incorporar `resultados/04_entrenamiento/modelos/`.")
+        st.caption("Faltan archivos de la versión multimodal conservada en este proyecto.")
     if model_card:
         st.markdown("**Versión del modelo**")
+        st.caption("v002 · Multimodal clínico")
         st.markdown(f'<div class="model-id">sha256:{model_card.checksum[:12]}…</div>', unsafe_allow_html=True)
         st.caption(f"Umbral congelado: {model_card.threshold:.3f}  ·  Agregación: {model_card.aggregation}")
     st.divider()
@@ -195,6 +197,21 @@ if sample:
         st.image(enhancement_map(sample), use_container_width=True)
         st.caption("Coral: aumento · Turquesa: descenso")
 
+    st.subheader("Datos clínicos de la paciente")
+    st.caption("Introduce los datos correspondientes a estas imágenes. Los desconocidos se imputan con las estadísticas guardadas de cada modelo.")
+    clinical_columns = st.columns(4)
+    clinical = {}
+    with clinical_columns[0]:
+        clinical["age"] = st.number_input("Edad (años)", min_value=0.0, value=None, step=1.0)
+    with clinical_columns[1]:
+        clinical["tum_vol"] = st.number_input("Volumen tumoral", min_value=0.0, value=None, step=0.1)
+    for column, name in zip(clinical_columns[2:], ("HR", "HER2")):
+        with column:
+            choice = st.selectbox(name, ("Desconocido", "Negativo", "Positivo"))
+            clinical[name] = {"Desconocido": None, "Negativo": 0.0, "Positivo": 1.0}[choice]
+    current_key = prediction_key(sample, clinical)
+    st.caption("La estimación usa un único corte; la calibración de desarrollo se ajustó con varios cortes por paciente.")
+
     st.markdown('<div class="section-kicker">03 · Estimación</div>', unsafe_allow_html=True)
     st.subheader("Resultado del ensemble")
     can_predict = bool(model_card and model_card.weights_ready)
@@ -205,12 +222,12 @@ if sample:
         try:
             engine = load_engine(str(MANIFEST_PATH))
             with st.spinner("Analizando las tres fases con el ensemble…"):
-                st.session_state["prediction"] = (sample.sample_id, engine.predict(sample))
+                st.session_state["prediction"] = (current_key, engine.predict(sample, clinical))
         except Exception as exc:
             st.error(f"No se pudo ejecutar la inferencia: {exc}")
 
     saved = st.session_state.get("prediction")
-    if saved and saved[0] == sample.sample_id:
+    if saved and saved[0] == current_key:
         prediction = saved[1]
         probability = prediction.probability_calibrated
         label = "pCR" if prediction.predicted_class else "no pCR"
@@ -246,8 +263,8 @@ with details_left:
     with st.expander("Arquitectura y entrenamiento"):
         st.markdown(
             """
-- **Entrada:** PRE, EARLY y LATE apiladas como `[3, 256, 256]`.
-- **Arquitectura:** CNN 2D propia, inicializada desde cero.
+- **Entrada:** PRE, EARLY y LATE apiladas como `[3, 256, 256]`, edad, volumen tumoral, HR y HER2.
+- **Arquitectura:** CNN 2D propia con pooling intermedio y rama clínica.
 - **Ensemble:** 2 semillas × 5 folds, diez modelos.
 - **Pérdida seleccionada:** BCE ponderada.
 - **Inferencia:** `model.eval()`, sin gradientes y escalado `uint8 / 255`.

@@ -11,10 +11,11 @@ import re
 from time import perf_counter
 
 import numpy as np
+import pandas as pd
 from PIL import Image, UnidentifiedImageError
 import torch
 
-from cancer_mama.entrenamiento import CNN, apply_calibration, cargar_manifest
+from cancer_mama.entrenamiento import CNN, CLINICAL_COLUMNS, apply_calibration, cargar_manifest, clinical_matrix
 
 
 PHASES = ("PRE", "EARLY", "LATE")
@@ -172,6 +173,25 @@ def uploads_from_paths(paths: dict[str, Path]) -> dict[str, UploadedPhase]:
     return {phase: UploadedPhase(path.name, path.read_bytes()) for phase, path in paths.items()}
 
 
+def validate_clinical(values: dict[str, float | None]) -> np.ndarray:
+    """Valida entradas originales; los ausentes se imputan dentro de cada modelo."""
+    if set(values) != set(CLINICAL_COLUMNS):
+        raise InputValidationError("Se necesitan edad, volumen tumoral, HR y HER2; pueden indicarse como desconocidos.")
+    try:
+        return clinical_matrix(pd.DataFrame([values])).astype(np.float32)
+    except (ValueError, TypeError) as exc:
+        raise InputValidationError(str(exc)) from exc
+
+
+def prediction_key(sample: ValidatedSample, clinical: dict[str, float | None]) -> str:
+    """Invalida resultados al cambiar las imágenes o cualquier dato clínico."""
+    digest = sha256(sample.sample_id.encode())
+    for phase in PHASES:
+        digest.update(sample.arrays[phase].tobytes())
+    digest.update(validate_clinical(clinical).tobytes())
+    return digest.hexdigest()
+
+
 def read_model_card(manifest_path: Path) -> ModelCard:
     """Lee la ficha del modelo y comprueba qué pesos están disponibles."""
     manifest_path = Path(manifest_path).resolve()
@@ -188,7 +208,8 @@ def read_model_card(manifest_path: Path) -> ModelCard:
     missing = tuple(
         item["path"] for item in manifest["models"] if not (manifest_path.parent / item["path"]).is_file()
     )
-    metrics = manifest.get("selection", {}).get("metrics_raw_oof", {})
+    selection = manifest.get("selection", {})
+    metrics = selection.get("metrics_raw_oof", selection.get("metrics", {}))
     return ModelCard(
         manifest_path=manifest_path,
         checksum=checksum,
@@ -213,8 +234,6 @@ class InferenceEngine:
     def __init__(self, manifest_path: Path, device: str | None = None):
         self.manifest_path = Path(manifest_path).resolve()
         self.manifest = cargar_manifest(self.manifest_path)
-        if self.manifest.get("preprocessing", {}).get("clinical_required", False):
-            raise ValueError("Esta interfaz está configurada para el modelo de imagen de tres fases.")
         requested = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.device = torch.device(requested)
         self.models: list[CNN] = []
@@ -224,21 +243,26 @@ class InferenceEngine:
                 map_location=self.device,
                 weights_only=True,
             )
+            if artifact["model_config"] != item["model_config"]:
+                raise ValueError("Configuración de pesos y manifiesto diferentes.")
             model = CNN(artifact["model_config"]).to(self.device)
             model.load_state_dict(artifact["state_dict"], strict=True)
             model.eval()
             self.models.append(model)
 
     @torch.inference_mode()
-    def predict(self, sample: ValidatedSample) -> Prediction:
+    def predict(self, sample: ValidatedSample, clinical: dict[str, float | None]) -> Prediction:
         started = perf_counter()
+        clinical_tensor = torch.from_numpy(validate_clinical(clinical)).to(self.device)
         tensor = torch.from_numpy(
             np.stack([sample.arrays[phase] for phase in PHASES]).astype(np.float32) / 255.0
         ).unsqueeze(0).to(self.device)
         values = np.array(
-            [torch.sigmoid(model(tensor).squeeze()).item() for model in self.models], dtype=np.float64
+            [torch.sigmoid(model(tensor, clinical_tensor).squeeze()).item() for model in self.models], dtype=np.float64
         )
-        raw = float(getattr(np, self.manifest["aggregation"])(values))
+        # El ensemble promedia modelos por corte; la mediana se aplica entre
+        # cortes de una paciente. Aquí solo se recibe un corte.
+        raw = float(values.mean())
         calibrated = float(apply_calibration(np.array([raw]), self.manifest["calibration"])[0])
         if self.device.type == "cuda":
             torch.cuda.synchronize(self.device)

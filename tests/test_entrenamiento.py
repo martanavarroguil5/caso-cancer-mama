@@ -1,4 +1,4 @@
-"""Contratos del PDF, separación de pacientes y reanudación por época."""
+"""Contratos del multimodal, separación de pacientes y reanudación por época."""
 import hashlib
 import json
 import pickle
@@ -39,7 +39,19 @@ def datos_sinteticos(root, imagenes=False, folds=(0,1,2)):
     rows.append(row)
     frame = pd.DataFrame(rows)
     frame.to_csv(root/"metadata/samples.csv",index=False)
+    patients = frame[frame.split.eq("train")].drop_duplicates("patient_id")
+    pd.DataFrame({"pid": patients.patient_id, "split": "train", "dataset": "spy1",
+                  "age": 40.0 + patients.fold, "tum_vol": 10.0 + patients.fold,
+                  "HR": 1.0 - patients.pCR, "HER2": patients.pCR}).to_csv(
+        root/"metadata/patients.csv", index=False)
     return frame
+
+
+def config_modelo():
+    config = entrenamiento.configuracion()
+    config["model"]["clinical"]["preprocessing"] = {
+        "medians": [0.0]*4, "means": [0.0]*4, "stds": [1.0]*4}
+    return config
 
 
 class TestEntrenamiento(unittest.TestCase):
@@ -52,15 +64,15 @@ class TestEntrenamiento(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.addCleanup(self.temp.cleanup)
 
-    def test_arquitectura_del_pdf_y_gradientes(self):
-        model = entrenamiento.CNN()
-        self.assertEqual(entrenamiento.numero_parametros(model),551913)
+    def test_arquitectura_multimodal_y_gradientes(self):
+        model = entrenamiento.CNN(config_modelo())
+        self.assertEqual(entrenamiento.numero_parametros(model),551921)
         self.assertEqual([sum(p.numel() for p in b.parameters()) for b in model.features],
                          [5928,31296,124800,369280])
         shapes=[]
         handles=[b.register_forward_hook(lambda m,i,o: shapes.append(tuple(o.shape[1:])))
                  for b in model.features]
-        result=model(torch.rand(2,3,256,256))
+        result=model(torch.rand(2,3,256,256),torch.zeros(2,4))
         self.assertEqual(shapes,[(24,64,64),(48,32,32),(96,16,16),(160,8,8)])
         self.assertEqual(tuple(result.shape),(2,1))
         torch.nn.BCEWithLogitsLoss()(result[:,0],torch.tensor([0.,1.])).backward()
@@ -153,7 +165,7 @@ class TestEntrenamiento(unittest.TestCase):
             with self.assertRaises(KeyboardInterrupt):
                 entrenamiento.run_training(*args,b,torch.device("cpu"))
         entrenamiento.run_training(*args,b,torch.device("cpu"))
-        relative=Path("raw_rot90/weighted/seed_42/fold_0")
+        relative=Path("pool_dropout_wd_clinical/weighted/seed_42/fold_0")
         ca=torch.load(a/relative/"last.pt",map_location="cpu",weights_only=False)
         cb=torch.load(b/relative/"last.pt",map_location="cpu",weights_only=False)
         for name,value in ca["state_dict"].items():
@@ -174,46 +186,21 @@ class TestEntrenamiento(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"Configuración distinta"):
             entrenamiento.run_training(changed,"weighted",42,0,self.root,b,torch.device("cpu"))
 
-    def test_pooling_intermedio_no_cambia_la_red_historica(self):
-        model=entrenamiento.CNN({"pooling":"intermedio"})
-        self.assertEqual(entrenamiento.numero_parametros(model),551913)
-        self.assertEqual(sum(isinstance(m,torch.nn.MaxPool2d) for m in model.modules()),4)
-        shapes=[]
-        handles=[b.register_forward_hook(lambda m,i,o: shapes.append(tuple(o.shape[1:])))
-                 for b in model.features]
-        result=model(torch.rand(2,3,256,256))
-        self.assertEqual(shapes,[(24,64,64),(48,32,32),(96,16,16),(160,8,8)])
-        torch.nn.BCEWithLogitsLoss()(result[:,0],torch.tensor([0.,1.])).backward()
-        self.assertGreater(float(model.features[0][0].weight.grad.abs().sum()),0)
-        for h in handles:
-            h.remove()
-        self.assertEqual(sum(isinstance(m,torch.nn.MaxPool2d) for m in entrenamiento.CNN().modules()),1)
-
-    def test_representacion_de_realce_y_regularizacion(self):
-        control=entrenamiento.configuracion("enhancement_clinical")
-        regularized=entrenamiento.configuracion("enhancement_regularized_clinical")
-        self.assertEqual(control["model"]["representation"],"raw_plus_deltas")
-        self.assertEqual(control["model"]["dropout"],.35)
-        self.assertEqual(control["training"]["weight_decay"],.001)
-        self.assertEqual(regularized["model"]["spatial_dropout"],.10)
-        self.assertEqual(regularized["model"]["dropout"],.45)
-        self.assertEqual(regularized["training"]["weight_decay"],.003)
-
-        model=entrenamiento.CNN({"representation":"raw_plus_deltas",
-            "channels":[2,2,2,2],"hidden":4,"pooling":"intermedio",
-            "spatial_dropout":.10})
-        self.assertEqual(model.features[0][0].in_channels,6)
-        self.assertEqual(sum(isinstance(m,torch.nn.Dropout2d) for m in model.modules()),4)
-        x=torch.empty(1,3,256,256)
-        x[:,0],x[:,1],x[:,2]=.2,.7,.4
-        expected=torch.tensor([-.6,.4,-.2,.5,.2,-.3])
-        torch.testing.assert_close(model.preprocess(x)[0,:,0,0],expected)
-        result=model(torch.rand(2,3,256,256))
-        self.assertEqual(tuple(result.shape),(2,1))
-        result.sum().backward()
-        self.assertGreater(float(model.features[0][0].weight.grad.abs().sum()),0)
-        with self.assertRaisesRegex(ValueError,"spatial_dropout"):
-            entrenamiento.CNN({"spatial_dropout":1.0})
+    def test_rechaza_variantes_retiradas(self):
+        for name in ("base_raw", "raw_rot90", "pool_dropout_wd", "patient_level_clinical",
+                     "enhancement_clinical", "enhancement_regularized_clinical"):
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "retirada"):
+                entrenamiento.configuracion(name)
+        for change in ({"representation": "raw_plus_deltas"}, {"pooling": "original"},
+                       {"clinical": None}, {"spatial_dropout": .1}):
+            config = config_modelo()
+            config["model"].update(change)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                entrenamiento.CNN(config)
+        with self.assertRaisesRegex(ValueError, "ponderada"):
+            entrenamiento.run_training(entrenamiento.configuracion(), "normal", 42, 0,
+                self.root, self.root/"salida", torch.device("cpu"))
+        self.assertFalse((self.root/"salida").exists())
 
     def test_multimodal_ajusta_clinica_solo_con_train_del_fold(self):
         frame=datos_sinteticos(self.root,imagenes=True)
@@ -264,41 +251,6 @@ class TestEntrenamiento(unittest.TestCase):
         self.assertEqual(metrics["patient_recall"],.5)
         self.assertEqual(metrics["patient_balanced_accuracy"],.5)
 
-    def test_lotes_y_bce_por_paciente(self):
-        samples=pd.DataFrame({"patient_id":["a","a","b","c","c","c"],
-                              "pCR":[0,0,1,1,1,1]})
-        sampler=entrenamiento.PatientBatchSampler(samples,2,torch.Generator().manual_seed(7),shuffle=False)
-        self.assertEqual(list(sampler),[[0,1,2],[3,4,5]])
-        logits=torch.tensor([-2.,0.,1.,-1.,1.,2.],requires_grad=True)
-        labels=torch.tensor([0.,0.,1.,1.,1.,1.])
-        patient_logits,patient_labels=entrenamiento.aggregate_patient_logits(
-            logits,labels,samples.patient_id.tolist())
-        self.assertEqual(patient_labels.tolist(),[0.,1.,1.])
-        expected=torch.stack([
-            torch.sigmoid(logits[:2]).mean(),torch.sigmoid(logits[2:3]).mean(),
-            torch.sigmoid(logits[3:]).mean()]).detach()
-        torch.testing.assert_close(torch.sigmoid(patient_logits),expected)
-        torch.nn.BCEWithLogitsLoss()(patient_logits,patient_labels).backward()
-        self.assertGreater(float(logits.grad.abs().sum()),0)
-
-    def test_umbral_prioriza_sensibilidad_minima(self):
-        y=np.array([0,0,0,0,1,1,1,1])
-        p=np.array([.1,.2,.55,.8,.3,.6,.7,.9])
-        threshold=entrenamiento.threshold_for_sensitivity(y,p,.75)
-        metrics=entrenamiento.binary_metrics(y,p,threshold)
-        self.assertEqual(threshold,.6)
-        self.assertGreaterEqual(metrics["sensitivity"],.75)
-        self.assertEqual(metrics["specificity"],.75)
-        with self.assertRaises(ValueError):
-            entrenamiento.threshold_for_sensitivity(y,p,0)
-
-    def test_configuracion_por_paciente_es_explicita(self):
-        config=entrenamiento.configuracion("patient_level_clinical")
-        self.assertEqual(config["training"]["loss_unit"],"patient")
-        self.assertEqual(config["training"]["patients_per_batch"],6)
-        self.assertEqual(config["evaluation"]["min_sensitivity"],.90)
-        self.assertIn("clinical",config["model"])
-
     def test_cache_y_bloques_conservan_pesos_y_presupuesto(self):
         datos_sinteticos(self.root,imagenes=True)
         samples=entrenamiento.cargar_train(self.root)
@@ -328,7 +280,7 @@ class TestEntrenamiento(unittest.TestCase):
         self.assertFalse(first["eligible_for_selection"])
         final=entrenamiento.run_training(*args,b,torch.device("cpu"),until_epoch=4,cache=cache)
         self.assertEqual(final["status"],"complete")
-        relative=Path("raw_rot90/weighted/seed_42/fold_0")
+        relative=Path("pool_dropout_wd_clinical/weighted/seed_42/fold_0")
         ca=torch.load(a/relative/"last.pt",map_location="cpu",weights_only=False)
         cb=torch.load(b/relative/"last.pt",map_location="cpu",weights_only=False)
         for name,value in ca["state_dict"].items():
@@ -345,7 +297,9 @@ class TestEntrenamiento(unittest.TestCase):
 
     def test_no_reinterpreta_configuraciones_retiradas(self):
         with self.assertRaisesRegex(ValueError,"BatchNorm"):
-            entrenamiento.CNN({"normalization":"group"})
+            config = config_modelo()
+            config["model"]["normalization"] = "group"
+            entrenamiento.CNN(config)
         changes=[{"loss_unit":"patient"},{"batch_policy":"pacientes_completas"},
                  {"patient_batch_size":6},{"paired_augmentation":True}]
         for change in changes:
@@ -363,31 +317,33 @@ class TestEntrenamiento(unittest.TestCase):
         output=self.root/"ejecuciones"
         signature=hashlib.sha256(train.to_csv(index=False).encode()).hexdigest()
         omitted=None
-        for name in ("base_raw","raw_rot90","pool_dropout_wd"):
-            losses=("weighted",) if name=="pool_dropout_wd" else ("normal","weighted")
-            for loss in losses:
-                for seed in (42,2026):
-                    for fold in range(5):
-                        folder=output/name/loss/f"seed_{seed}"/f"fold_{fold}"
-                        folder.mkdir(parents=True)
-                        config=entrenamiento.configuracion(name)
-                        config.update(loss=loss,seed=seed,fold=fold,smoke=False,data_signature=signature)
-                        oof=train[train.fold.eq(fold)].copy()
-                        confidence=.95 if name=="raw_rot90" and loss=="weighted" else .6
-                        oof["prob"]=np.where(oof.pCR.eq(1),confidence,1-confidence)
-                        oof.to_csv(folder/"oof_slices.csv",index=False)
-                        (folder/"inference.pt").write_bytes(b"fixture: comparison only, not loaded")
-                        (folder/"config.json").write_text(json.dumps(config))
-                        summary={"status":"complete","eligible_for_selection":True,
-                                 "config_hash":entrenamiento.config_hash(config),
-                                 "oof_sha256":entrenamiento.sha256(folder/"oof_slices.csv"),
-                                 "inference_sha256":entrenamiento.sha256(folder/"inference.pt")}
-                        (folder/"summary.json").write_text(json.dumps(summary))
-                        omitted=folder/"summary.json"
+        name, loss = entrenamiento.ACTIVE_CONFIGURATION, "weighted"
+        for seed in (42,2026):
+            for fold in range(5):
+                folder=output/name/loss/f"seed_{seed}"/f"fold_{fold}"
+                folder.mkdir(parents=True)
+                config=config_modelo()
+                config.update(loss=loss,seed=seed,fold=fold,smoke=False,data_signature=signature)
+                oof=train[train.fold.eq(fold)].copy()
+                oof["prob"]=np.where(oof.pCR.eq(1),.95,.05)
+                oof.to_csv(folder/"oof_slices.csv",index=False)
+                (folder/"inference.pt").write_bytes(b"fixture: comparison only, not loaded")
+                (folder/"config.json").write_text(json.dumps(config))
+                summary={"status":"complete","eligible_for_selection":True,
+                         "config_hash":entrenamiento.config_hash(config),
+                         "oof_sha256":entrenamiento.sha256(folder/"oof_slices.csv"),
+                         "inference_sha256":entrenamiento.sha256(folder/"inference.pt")}
+                (folder/"summary.json").write_text(json.dumps(summary))
+                omitted=folder/"summary.json"
+        # Los antiguos ensayos en la misma carpeta no vuelven a competir.
+        retired=output/"ensayo_retirado"
+        retired.mkdir()
+        (retired/"summary.json").write_text(json.dumps({"status":"complete","eligible_for_selection":True}))
+        (retired/"config.json").write_text(json.dumps({"name":"enhancement_clinical","loss":"weighted"}))
         report=entrenamiento.comparar_ejecuciones(self.root,output)
-        self.assertEqual(report["selected"]["configuration"],"raw_rot90")
+        self.assertEqual(report["selected"]["configuration"],entrenamiento.ACTIVE_CONFIGURATION)
         self.assertEqual(report["selected"]["loss"],"weighted")
-        self.assertEqual(report["selected"]["aggregation"],"mean")
+        self.assertEqual(report["selected"]["aggregation"],"median")
         self.assertEqual(report["selected"]["metrics"]["mean_fold_roc_auc"],1.0)
         self.assertEqual(report["selected"]["metrics"]["fold_roc_auc"],[1.0]*5)
         manifest_path=output/"comparacion/modelo_desarrollo.json"
