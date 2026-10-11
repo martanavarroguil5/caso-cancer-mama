@@ -36,3 +36,11 @@ Las decisiones de checkpoint, umbral y calibración se ajustan solo con selecci�
 Se conservan configuración, entorno, hashes, curvas, métricas por semilla y checkpoints seleccionados. Los pesos y estados completos permanecen en el directorio local de entrenamiento. El informe se regenera con `.venv/bin/python -B -m cancer_mama.informe_bce_mixup`.
 
 [Mixup, ICLR 2018](https://arxiv.org/abs/1710.09412) · [Calibración, ICML 2022](https://proceedings.mlr.press/v162/zhang22f.html) · [Límites con calibración posterior, CVPR 2023](https://openaccess.thecvf.com/content/CVPR2023/html/Wang_On_the_Pitfall_of_Mixup_for_Uncertainty_Calibration_CVPR_2023_paper.html)
+
+## Comprobación de precisión del bootstrap
+
+Con 10.000 réplicas y el mismo alpha=0,05/12, el intervalo de delta log-loss es [-0.028051; -0.002503]. Se mantiene por debajo de cero. Es una comprobación numérica adicional; no añade pacientes ni corrige toda la búsqueda adaptativa.
+
+## Diagnóstico de la contribución visual
+
+El inicializador clínico solo obtiene log-loss 0.548954 y AUC media 0.706179; la CNN seleccionada obtiene 0,546255 y 0,710686. Es una comparación descriptiva posterior, que no cambió las decisiones ni el protocolo de repetición. No constituye por sí sola una demostración del valor adicional de la imagen.

@@ -1,0 +1,28 @@
+{
+  "repetitions": 10000,
+  "alpha": 0.004166666666666667,
+  "seed": 20261010,
+  "purpose": "Precision check of the predeclared bootstrap, no model changes",
+  "sources": {
+    "resultados/08_informe_loss_20261010/oof_calibrated_inner_auc.csv": "5db83c9a5a645a55c5095aa1c65cf588f96ebac34724fce0f3ba8679eb7e5030",
+    "resultados/10_informe_bce_mixup_20261011/oof_raw_bce_normal.csv": "17cc5ee11313eda29a87675ad30581176959ad30b144ecbcc7084481a258b139"
+  },
+  "intervals": {
+    "log_loss": {
+      "lower": -0.028051412321699835,
+      "upper": -0.002502850012795433
+    },
+    "brier": {
+      "lower": -0.009638246289166652,
+      "upper": -0.0004879131534235722
+    },
+    "roc_auc": {
+      "lower": -0.00029365357643760024,
+      "upper": 0.034717165898617744
+    },
+    "mean_fold_auc": {
+      "lower": -0.00554698331548265,
+      "upper": 0.01784726805877391
+    }
+  }
+}
