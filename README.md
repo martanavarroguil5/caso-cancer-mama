@@ -231,6 +231,24 @@ clínicas. No interpreta esos descriptores como medidas físicas de perfusión:
 .venv/bin/python -u -B -m cancer_mama.experimento_textura
 ```
 
+## Restricción docente y siguiente ensayo compatible
+
+El enunciado PDF (página 6, sección 7) obliga a usar una CNN 2D desde cero y
+prohíbe modelos preentrenados y transfer learning. Las tandas ResNet/AlexNet
+anteriores quedan descartadas para la entrega; la textura es un comparador
+auxiliar. Se conservan por trazabilidad en el
+[informe de investigación descartada](resultados/09_informe_transferencia_20261010/INFORME_RESULTADOS.md).
+Ninguna sustituyó v002.
+
+La [comparación BCE normal y mixup](docs/mejoras_cnn/PROTOCOLO_BCE_MIXUP.md)
+conserva la CNN original y el contrato PNG. Usa como control la BCE ponderada ya
+entrenada con la misma separación interna por paciente:
+
+```bash
+.venv/bin/python -B -m cancer_mama.experimento_bce_mixup --prueba
+.venv/bin/python -u -B -m cancer_mama.experimento_bce_mixup
+```
+
 ## Evidencia conservada y pruebas
 
 La base v002 obtuvo AUC OOF 0,724568 y AP 0,531646 sobre 1.097 pacientes de
