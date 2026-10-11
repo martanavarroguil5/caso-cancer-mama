@@ -109,6 +109,30 @@
           0.6955003081980686
         ]
       }
+    },
+    {
+      "id": "v004_multimodal_bce_normal_20261011",
+      "description": "Multimodal BCE normal: reducción interna de log-loss repetida con semillas 73/1701; sin evaluación del test reservado",
+      "archived_at": "2026-10-11T17:19:10.152420+02:00",
+      "status": "mejora_interna_replicada_sin_test",
+      "clinical_required": true,
+      "n_models": 10,
+      "weights_bytes": 22279750,
+      "metrics_raw_oof": {
+        "n_patients": 1097,
+        "roc_auc": 0.7108875976758164,
+        "average_precision": 0.5086925891561067,
+        "log_loss": 0.5462550585086009,
+        "brier": 0.1826256447423952,
+        "mean_fold_auc": 0.7106864921668385,
+        "fold_auc": [
+          0.7652217741935483,
+          0.7033079926032463,
+          0.6743867775555321,
+          0.7222068965517241,
+          0.6883090199301417
+        ]
+      }
     }
   ]
 }

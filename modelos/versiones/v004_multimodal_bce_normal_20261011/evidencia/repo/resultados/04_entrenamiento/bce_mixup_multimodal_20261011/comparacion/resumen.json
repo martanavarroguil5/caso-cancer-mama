@@ -1,0 +1,162 @@
+{
+  "metrics": [
+    {
+      "candidate": "weighted_auc_control",
+      "n_patients": 1097,
+      "roc_auc": 0.6940372670807453,
+      "average_precision": 0.4858140954352368,
+      "log_loss": 0.5615173945380193,
+      "brier": 0.18772280029464278,
+      "mean_fold_auc": 0.7046842697828468,
+      "fold_auc": [
+        0.7653225806451613,
+        0.7058763098417917,
+        0.6721760185282661,
+        0.7051954022988507,
+        0.6748510376001642
+      ]
+    },
+    {
+      "candidate": "weighted_logloss_control",
+      "n_patients": 1097,
+      "roc_auc": 0.6989741534762572,
+      "average_precision": 0.509180835468175,
+      "log_loss": 0.5563345915291847,
+      "brier": 0.18574497135130702,
+      "mean_fold_auc": 0.7117799359116772,
+      "fold_auc": [
+        0.7653225806451613,
+        0.7058763098417917,
+        0.6861774923676176,
+        0.7060229885057471,
+        0.6955003081980686
+      ]
+    },
+    {
+      "candidate": "bce_normal",
+      "n_patients": 1097,
+      "roc_auc": 0.7108875976758164,
+      "average_precision": 0.5086925891561067,
+      "log_loss": 0.5462550585086009,
+      "brier": 0.1826256447423952,
+      "mean_fold_auc": 0.7106864921668385,
+      "fold_auc": [
+        0.7652217741935483,
+        0.7033079926032463,
+        0.6743867775555321,
+        0.7222068965517241,
+        0.6883090199301417
+      ]
+    },
+    {
+      "candidate": "bce_normal_platt_diagnostic",
+      "n_patients": 1097,
+      "roc_auc": 0.7021558805850532,
+      "average_precision": 0.4968335611535831,
+      "log_loss": 0.5552021036296585,
+      "brier": 0.18588875656706605,
+      "mean_fold_auc": 0.7106864921668385,
+      "fold_auc": [
+        0.7652217741935483,
+        0.7033079926032463,
+        0.6743867775555321,
+        0.7222068965517241,
+        0.6883090199301417
+      ]
+    },
+    {
+      "candidate": "bce_mixup",
+      "n_patients": 1097,
+      "roc_auc": 0.7048607493488279,
+      "average_precision": 0.5010226236572162,
+      "log_loss": 0.5493933620179786,
+      "brier": 0.18400669422593455,
+      "mean_fold_auc": 0.7080985012049535,
+      "fold_auc": [
+        0.7673387096774194,
+        0.7033079926032463,
+        0.6743867775555321,
+        0.7121839080459771,
+        0.683275118142593
+      ]
+    },
+    {
+      "candidate": "bce_mixup_platt_diagnostic",
+      "n_patients": 1097,
+      "roc_auc": 0.6966700060108194,
+      "average_precision": 0.48933885664965066,
+      "log_loss": 0.5577121324859652,
+      "brier": 0.1870645459498991,
+      "mean_fold_auc": 0.7080985012049535,
+      "fold_auc": [
+        0.7673387096774194,
+        0.7033079926032463,
+        0.6743867775555321,
+        0.7121839080459771,
+        0.683275118142593
+      ]
+    }
+  ],
+  "comparisons": {
+    "bce_normal": {
+      "delta_vs_control": {
+        "log_loss": -0.0152623360294184,
+        "brier": -0.005097155552247573,
+        "roc_auc": 0.016850330595071128,
+        "mean_fold_auc": 0.006002222383991729
+      },
+      "intervals_99_58": {
+        "log_loss": {
+          "lower": -0.02815739837772656,
+          "upper": -0.001347565776301247
+        },
+        "brier": {
+          "lower": -0.009926268451557807,
+          "upper": -0.00016086294769691943
+        },
+        "roc_auc": {
+          "lower": -0.00040353469578574856,
+          "upper": 0.035776255593401626
+        },
+        "mean_fold_auc": {
+          "lower": -0.005437494500836233,
+          "upper": 0.018764126459460646
+        }
+      },
+      "promising_internal_result": true
+    },
+    "bce_mixup": {
+      "delta_vs_control": {
+        "log_loss": -0.012124032520040684,
+        "brier": -0.0037161060687082303,
+        "roc_auc": 0.010823482268082607,
+        "mean_fold_auc": 0.0034142314221067283
+      },
+      "intervals_99_58": {
+        "log_loss": {
+          "lower": -0.02556142422097116,
+          "upper": 0.002036994423243664
+        },
+        "brier": {
+          "lower": -0.008608893250144035,
+          "upper": 0.0013649533845491925
+        },
+        "roc_auc": {
+          "lower": -0.007656715421091383,
+          "upper": 0.03044213751419229
+        },
+        "mean_fold_auc": {
+          "lower": -0.008499238173624725,
+          "upper": 0.015226845549835843
+        }
+      },
+      "promising_internal_result": false
+    }
+  },
+  "test_images_loaded": 0,
+  "primary": "Raw probabilities for the two new unweighted arms; control uses its inner Platt.",
+  "selection": "Inner patient log-loss; same outer folds and inner partitions as weighted control.",
+  "adaptive_search": true,
+  "automatic_promotion": false,
+  "bootstrap_repetitions": 2000
+}
