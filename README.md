@@ -114,6 +114,23 @@ ramas adicionales ni copias de archivo en el árbol actual. El
 motivos del descarte y commits para recuperar las fuentes.
 El PDF exige CNN 2D desde cero y prohíbe transfer learning y redes preentrenadas.
 
+## Ensayo FiLM en curso
+
+Se prueba una capa de modulación clínica de las características visuales,
+comparada con la CNN original reentrenada en las mismas condiciones. El modelo
+activo sigue siendo **v002**. Código y resultados se gestionan en `main`.
+
+El [protocolo FiLM](docs/mejoras_cnn/PROTOCOLO_FILM.md) fija arquitectura,
+comparadores, particiones y criterios antes de entrenar. El ensayo mantiene CNN
+propia desde cero y compara BCE normal/ponderada; no incluye SAM ni transferencia.
+
+```bash
+.venv/bin/python -u -B -m cancer_mama.experimento_film ejecutar
+```
+
+El comando reanuda una ejecución compatible y genera la comparación al terminar.
+Las ejecuciones pesadas quedan fuera de Git; no se activa automáticamente el candidato.
+
 ## Evidencia y comprobaciones
 
 V002 obtuvo ROC-AUC OOF **0,7246**. Con su calibración y umbral guardados:
