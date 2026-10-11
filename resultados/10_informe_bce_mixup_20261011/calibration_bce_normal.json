@@ -1,0 +1,87 @@
+[
+  {
+    "fold": 0,
+    "platt_diagnostic": {
+      "method": "regularized_platt",
+      "input": "logit_patient_aggregated_probability",
+      "slope": 0.46504607157093475,
+      "intercept": -0.4509464509686219,
+      "C": 1.0,
+      "clip_epsilon": 1e-07,
+      "scope": "patient",
+      "fit_data": "inner_selection_only_after_checkpoint_selection",
+      "nonnegative_slope_constraint": true,
+      "boundary_solution": false
+    },
+    "primary_threshold": 0.2246962875,
+    "platt_threshold": 0.2636839101294842
+  },
+  {
+    "fold": 1,
+    "platt_diagnostic": {
+      "method": "regularized_platt",
+      "input": "logit_patient_aggregated_probability",
+      "slope": 0.4861703764854972,
+      "intercept": -0.3831580177055207,
+      "C": 1.0,
+      "clip_epsilon": 1e-07,
+      "scope": "patient",
+      "fit_data": "inner_selection_only_after_checkpoint_selection",
+      "nonnegative_slope_constraint": true,
+      "boundary_solution": false
+    },
+    "primary_threshold": 0.41704896,
+    "platt_threshold": 0.3667984475416501
+  },
+  {
+    "fold": 2,
+    "platt_diagnostic": {
+      "method": "regularized_platt",
+      "input": "logit_patient_aggregated_probability",
+      "slope": 0.8961098958656979,
+      "intercept": -0.17071722373633302,
+      "C": 1.0,
+      "clip_epsilon": 1e-07,
+      "scope": "patient",
+      "fit_data": "inner_selection_only_after_checkpoint_selection",
+      "nonnegative_slope_constraint": true,
+      "boundary_solution": false
+    },
+    "primary_threshold": 0.18599024,
+    "platt_threshold": 0.18337830460455085
+  },
+  {
+    "fold": 3,
+    "platt_diagnostic": {
+      "method": "regularized_platt",
+      "input": "logit_patient_aggregated_probability",
+      "slope": 1.127924837888783,
+      "intercept": 0.0299023458102497,
+      "C": 1.0,
+      "clip_epsilon": 1e-07,
+      "scope": "patient",
+      "fit_data": "inner_selection_only_after_checkpoint_selection",
+      "nonnegative_slope_constraint": true,
+      "boundary_solution": false
+    },
+    "primary_threshold": 0.2416121675,
+    "platt_threshold": 0.22092449457192623
+  },
+  {
+    "fold": 4,
+    "platt_diagnostic": {
+      "method": "regularized_platt",
+      "input": "logit_patient_aggregated_probability",
+      "slope": 1.1376915329350445,
+      "intercept": 0.10752598450450244,
+      "C": 1.0,
+      "clip_epsilon": 1e-07,
+      "scope": "patient",
+      "fit_data": "inner_selection_only_after_checkpoint_selection",
+      "nonnegative_slope_constraint": true,
+      "boundary_solution": false
+    },
+    "primary_threshold": 0.376094015,
+    "platt_threshold": 0.38501192345290103
+  }
+]

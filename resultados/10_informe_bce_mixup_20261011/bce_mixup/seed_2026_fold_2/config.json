@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "model": {
+    "representation": "raw",
+    "channels": [
+      24,
+      48,
+      96,
+      160
+    ],
+    "hidden": 64,
+    "dropout": 0.35,
+    "pooling": "intermedio",
+    "clinical": {
+      "raw_columns": [
+        "age",
+        "tum_vol",
+        "HR",
+        "HER2"
+      ],
+      "features": [
+        "age",
+        "log1p_tum_vol",
+        "HR",
+        "HER2"
+      ],
+      "missing_indicators": true,
+      "preprocessing": {
+        "fit_scope": "unique_patients_in_training_partition",
+        "medians": [
+          48.57,
+          2.6582454170350887,
+          1.0,
+          0.0
+        ],
+        "means": [
+          48.66452348993288,
+          2.7045677091974754,
+          0.5704697986577181,
+          0.25771812080536916
+        ],
+        "stds": [
+          10.605190109383226,
+          1.082448577634858,
+          0.49500909837814155,
+          0.43737797271229906
+        ],
+        "n_patients": 745
+      },
+      "initialization": {
+        "method": "fit_only_unweighted_logistic",
+        "coefficients": [
+          -0.25186773801293866,
+          -0.2536987479103994,
+          -0.680689929544082,
+          0.4407014727979118,
+          0.4024138650042748,
+          0.26361991546308194,
+          -0.2030601206198344,
+          0.3651709236214683
+        ],
+        "intercept": -0.9720964040364267,
+        "n_patients": 745
+      }
+    }
+  },
+  "training": {
+    "epochs": 46,
+    "min_epochs": 12,
+    "patience": 10,
+    "min_delta": 0.001,
+    "batch_size": 64,
+    "lr": 0.0008,
+    "min_lr": 1e-05,
+    "weight_decay": 0.001,
+    "clip_grad_norm": 5.0,
+    "amp": true,
+    "num_workers": 0,
+    "cpu_threads": 8,
+    "deterministic": true,
+    "review_interval": 10
+  },
+  "augmentation": {
+    "hflip": 0.5,
+    "rot90": true
+  },
+  "smoke": false,
+  "inner_fraction": 0.15,
+  "split_seed": 20261010,
+  "aggregation": "median",
+  "loss_min_delta": 0.001,
+  "learning_rate": 0.0008,
+  "seeds": [
+    42,
+    2026
+  ],
+  "inference": "raw_probability_without_posthoc_calibration",
+  "mixup_scope": "images_and_imputed_standardized_clinical_and_target",
+  "bootstrap_alpha": 0.004166666666666667,
+  "arm": "bce_mixup",
+  "mixup_alpha": 0.2,
+  "seed": 2026,
+  "fold": 2,
+  "sources": {
+    "experimento_bce_mixup.py": "d3b0af9fa78855e264dc31f6696dd1e1e9d12c9564d01afbf29d3f73d86dbf7e",
+    "entrenamiento.py": "532141a28947f657bb0d920e6ce798cebb8b0da698572d91d682c8dadedf66b0",
+    "experimento_loss.py": "0b91cd3f8b8b3734debd5573493a27531072bab03a42289f78d0cfde9f5c78ed",
+    "informe_loss.py": "c40345de45e9962a8e111099ec5006f382c81ddeb09f0ab0ecaa58f94c31b785"
+  },
+  "data": "5e309e6c65b73f5626b25762d4566d30f628322546dc659d814f26457695ec5b",
+  "partitions": {
+    "fit": "08ba9884cf13d4c7ad9fa34b72bb173f5d9654130fad194702205d14170f4b11",
+    "selection": "193529207fe2b157b6e4ef490c10214ed6cdcb66b90f6ac8a0455bed936b3c8d",
+    "outer": "5b884fffbc22c3ca03828781150eeaa01a73b7f16345cfc94d15afa196610ac3"
+  }
+}

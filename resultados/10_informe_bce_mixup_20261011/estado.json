@@ -1,0 +1,29 @@
+{
+  "status": "complete",
+  "pid": 110009,
+  "smoke": false,
+  "started_at": "2026-10-11T00:39:54.741509+00:00",
+  "stage": "complete",
+  "updated_at": "2026-10-11T00:55:10.856172+00:00",
+  "arm": "bce_mixup",
+  "seed": 2026,
+  "fold": 4,
+  "epoch": 12,
+  "best_epoch": 0,
+  "metrics": {
+    "epoch": 12,
+    "optimized_bce": 0.5262145646477259,
+    "seconds": 3.241793907000101,
+    "lr": 0.0006746084915713685,
+    "fit_log_loss": 0.50301242586703,
+    "fit_brier": 0.16407578911233525,
+    "fit_roc_auc": 0.7876578323637148,
+    "fit_slice_bce": 0.5074921608612102,
+    "selection_log_loss": 0.582481232140474,
+    "selection_brier": 0.18922162218735475,
+    "selection_roc_auc": 0.7099531293079681,
+    "selection_slice_bce": 0.5821881944482977
+  },
+  "protected_unchanged": true,
+  "finished_at": "2026-10-11T00:55:10.856160+00:00"
+}
