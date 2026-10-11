@@ -141,7 +141,7 @@ with st.sidebar:
         st.caption("Faltan archivos de la versión multimodal conservada en este proyecto.")
     if model_card:
         st.markdown("**Versión del modelo**")
-        st.caption("v002 · Multimodal clínico")
+        st.caption(f"{MANIFEST_PATH.parent.name.split('_', 1)[0]} · Multimodal clínico")
         st.markdown(f'<div class="model-id">sha256:{model_card.checksum[:12]}…</div>', unsafe_allow_html=True)
         st.caption(f"Umbral congelado: {model_card.threshold:.3f}  ·  Agregación: {model_card.aggregation}")
     st.divider()
@@ -210,7 +210,7 @@ if sample:
             choice = st.selectbox(name, ("Desconocido", "Negativo", "Positivo"))
             clinical[name] = {"Desconocido": None, "Negativo": 0.0, "Positivo": 1.0}[choice]
     current_key = prediction_key(sample, clinical)
-    st.caption("La estimación usa un único corte; la calibración de desarrollo se ajustó con varios cortes por paciente.")
+    st.caption("Las métricas de desarrollo se calcularon con varios cortes por paciente; aquí se usa uno.")
 
     st.markdown('<div class="section-kicker">03 · Estimación</div>', unsafe_allow_html=True)
     st.subheader("Resultado del ensemble")
@@ -236,7 +236,7 @@ if sample:
             st.markdown(
                 f"""
 <div class="result-card">
-  <div class="result-label">Probabilidad calibrada de pCR</div>
+  <div class="result-label">Probabilidad de pCR</div>
   <div class="result-value">{probability:.1%}</div>
   <span class="result-class">Clase estimada · {label}</span>
   <div class="meter"><div style="width:{probability * 100:.2f}%"></div></div>
@@ -247,7 +247,7 @@ if sample:
             )
         with right:
             metrics = st.columns(2)
-            metrics[0].metric("Probabilidad sin calibrar", f"{prediction.probability_raw:.1%}")
+            metrics[0].metric("Salida del ensemble", f"{prediction.probability_raw:.1%}")
             metrics[1].metric("Tiempo de inferencia", f"{prediction.elapsed_ms:.0f} ms")
             metrics[0].metric("Modelos", str(prediction.model_count))
             metrics[1].metric("Dispositivo", prediction.device.upper())
@@ -261,12 +261,17 @@ st.divider()
 details_left, details_right = st.columns(2)
 with details_left:
     with st.expander("Arquitectura y entrenamiento"):
+        loss_label = {"normal": "BCE normal", "ponderada": "BCE ponderada", "weighted": "BCE ponderada"}.get(
+            model_card.loss_name if model_card else "", "No disponible")
+        probability_label = ("Platt posterior" if model_card.has_posthoc_calibration else
+                             "Salida directa de BCE normal, sin Platt posterior") if model_card else "No disponible"
         st.markdown(
-            """
+            f"""
 - **Entrada:** PRE, EARLY y LATE apiladas como `[3, 256, 256]`, edad, volumen tumoral, HR y HER2.
 - **Arquitectura:** CNN 2D propia con pooling intermedio y rama clínica.
 - **Ensemble:** 2 semillas × 5 folds, diez modelos.
-- **Pérdida seleccionada:** BCE ponderada.
+- **Pérdida seleccionada:** {loss_label}.
+- **Probabilidades:** {probability_label}.
 - **Inferencia:** `model.eval()`, sin gradientes y escalado `uint8 / 255`.
 """
         )

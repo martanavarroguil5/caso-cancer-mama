@@ -1,4 +1,8 @@
 import io
+import json
+from hashlib import sha256
+from pathlib import Path
+import tempfile
 import unittest
 
 import numpy as np
@@ -13,6 +17,7 @@ from cancer_mama.app_logic import (
     validate_phase_uploads,
     validate_clinical,
     prediction_key,
+    read_model_card,
 )
 
 
@@ -90,6 +95,32 @@ class AppLogicTests(unittest.TestCase):
         uploads = self.valid_uploads()
         uploads["PRE"] = UploadedPhase(uploads["PRE"].name, png_bytes(41))
         self.assertNotEqual(key, prediction_key(validate_phase_uploads(uploads), values))
+
+    def test_model_card_reads_loss_and_identity_calibration_without_changing_legacy(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root/"weight.pt").write_bytes(b"metadata fixture; not loaded as weights")
+            path = root/"manifest.json"
+            manifest = {"models": [{"path": "weight.pt"}], "threshold": .3,
+                        "aggregation": "median", "selection": {"metrics": {"roc_auc": .7}},
+                        "calibration": {"slope": .8, "intercept": -.3}}
+            def write():
+                path.write_text(json.dumps(manifest))
+                path.with_suffix(".json.sha256").write_text(sha256(path.read_bytes()).hexdigest())
+            write()
+            card = read_model_card(path)
+            self.assertEqual(card.loss_name, "ponderada")
+            self.assertTrue(card.has_posthoc_calibration)
+            manifest["selection"]["loss"] = "weighted"
+            write()
+            self.assertEqual(read_model_card(path).loss_name, "weighted")
+            manifest["training"] = {"loss": "normal"}
+            manifest["calibration"] = {"method": "identity", "slope": 1., "intercept": 0.}
+            write()
+            card = read_model_card(path)
+            self.assertEqual(card.loss_name, "normal")
+            self.assertFalse(card.has_posthoc_calibration)
+            self.assertTrue(card.weights_ready)
 
     def test_single_slice_averages_models_before_patient_aggregation(self):
         engine = InferenceEngine.__new__(InferenceEngine)
