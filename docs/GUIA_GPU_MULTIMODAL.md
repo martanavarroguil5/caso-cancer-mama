@@ -1,9 +1,10 @@
 # Guía GPU: base multimodal
 
-Actualizado el 10/10/2026. La base activa es `pool_dropout_wd_clinical` con
+Actualizado el 11/10/2026. La base activa es `pool_dropout_wd_clinical` con
 BCE ponderada por corte. **v002 ya está entrenado**: para usarlo basta instalar
-las dependencias y cargar sus pesos. El ensayo de realce temporal terminó y
-queda [descartado](EXPERIMENTOS_DESCARTADOS.md).
+las dependencias y cargar sus pesos. Los ensayos posteriores quedan
+[cerrados y descartados](EXPERIMENTOS_DESCARTADOS.md), incluidos v003 y v004.
+El código experimental está archivado fuera del paquete activo.
 
 ## Preparar otro ordenador
 

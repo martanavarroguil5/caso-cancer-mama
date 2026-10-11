@@ -1,3 +1,5 @@
+> **Cierre del 11/10/2026:** ensayo descartado como intento de superar al v002 original. La versión activa vuelve a ser v002; v003/v004 se conservan como experimentos. Los resultados frente al control reentrenado no prueban superioridad sobre el original. Las decisiones de promoción que aparecen más abajo son históricas y quedan revocadas. Véase el [registro de cierre](../../docs/EXPERIMENTOS_DESCARTADOS.md).
+
 # CNN desde cero: BCE normal y mixup
 
 La tanda conserva la arquitectura, las cuatro variables clínicas y el contrato PNG de v002. Entrena veinte modelos con BCE normal y BCE normal + mixup, comparados con los controles ponderados ya entrenados. No se cargaron imágenes del test. La versión activa no se modifica.

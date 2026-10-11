@@ -1,0 +1,143 @@
+{
+  "metrics": [
+    {
+      "model": "v002_original",
+      "evaluation": "manifest_calibration_and_threshold",
+      "n_patients": 1097,
+      "n_positive": 322,
+      "prevalence": 0.2935278030993619,
+      "roc_auc": 0.7245682228010419,
+      "average_precision": 0.531645920079384,
+      "brier": 0.17905961237198886,
+      "log_loss": 0.5366562529113456,
+      "accuracy": 0.7128532360984503,
+      "f1": 0.5519203413940256,
+      "precision": 0.5091863517060368,
+      "recall": 0.6024844720496895,
+      "balanced_accuracy": 0.6805970747345221,
+      "sensitivity": 0.6024844720496895,
+      "specificity": 0.7587096774193548,
+      "threshold": 0.35433316934837994,
+      "tn": 588,
+      "fp": 187,
+      "fn": 128,
+      "tp": 194,
+      "confusion_matrix": [
+        [
+          588,
+          187
+        ],
+        [
+          128,
+          194
+        ]
+      ]
+    },
+    {
+      "model": "v002_original",
+      "evaluation": "raw_at_0.5",
+      "n_patients": 1097,
+      "n_positive": 322,
+      "prevalence": 0.2935278030993619,
+      "roc_auc": 0.7245682228010419,
+      "average_precision": 0.531645920079384,
+      "brier": 0.2108519049246439,
+      "log_loss": 0.6097532019513768,
+      "accuracy": 0.6654512306289881,
+      "f1": 0.5529841656516443,
+      "precision": 0.45490981963927857,
+      "recall": 0.7049689440993789,
+      "balanced_accuracy": 0.6770006010819476,
+      "sensitivity": 0.7049689440993789,
+      "specificity": 0.6490322580645161,
+      "threshold": 0.5,
+      "tn": 503,
+      "fp": 272,
+      "fn": 95,
+      "tp": 227,
+      "confusion_matrix": [
+        [
+          503,
+          272
+        ],
+        [
+          95,
+          227
+        ]
+      ]
+    },
+    {
+      "model": "v004_nuevo",
+      "evaluation": "manifest_calibration_and_threshold",
+      "n_patients": 1097,
+      "n_positive": 322,
+      "prevalence": 0.2935278030993619,
+      "roc_auc": 0.7108875976758164,
+      "average_precision": 0.5086925891561067,
+      "brier": 0.1826256447423952,
+      "log_loss": 0.5462550585086009,
+      "accuracy": 0.6937101185050136,
+      "f1": 0.5384615384615384,
+      "precision": 0.4827586206896552,
+      "recall": 0.6086956521739131,
+      "balanced_accuracy": 0.6688639551192146,
+      "sensitivity": 0.6086956521739131,
+      "specificity": 0.7290322580645161,
+      "threshold": 0.3489952149999999,
+      "tn": 565,
+      "fp": 210,
+      "fn": 126,
+      "tp": 196,
+      "confusion_matrix": [
+        [
+          565,
+          210
+        ],
+        [
+          126,
+          196
+        ]
+      ]
+    },
+    {
+      "model": "v004_nuevo",
+      "evaluation": "raw_at_0.5",
+      "n_patients": 1097,
+      "n_positive": 322,
+      "prevalence": 0.2935278030993619,
+      "roc_auc": 0.7108875976758164,
+      "average_precision": 0.5086925891561067,
+      "brier": 0.1826256447423952,
+      "log_loss": 0.5462550585086009,
+      "accuracy": 0.7228805834092981,
+      "f1": 0.32142857142857145,
+      "precision": 0.5714285714285714,
+      "recall": 0.2236024844720497,
+      "balanced_accuracy": 0.5769625325586055,
+      "sensitivity": 0.2236024844720497,
+      "specificity": 0.9303225806451613,
+      "threshold": 0.5,
+      "tn": 721,
+      "fp": 54,
+      "fn": 250,
+      "tp": 72,
+      "confusion_matrix": [
+        [
+          721,
+          54
+        ],
+        [
+          250,
+          72
+        ]
+      ]
+    }
+  ],
+  "sources_sha256": {
+    "modelos/versiones/v002_multimodal_clinico_20261007/manifiesto.json": "59a540c8949827becca7e5e9bf70698cc2faed94dd63b2c1872f47a2854e9292",
+    "resultados/06_informe_multimodal_20261007/oof_weighted_median.csv": "e51ffccafe137a18b8d2d03f5c6f045b1026cb983def543212b6e6458590d239",
+    "modelos/versiones/v004_multimodal_bce_normal_20261011/manifiesto.json": "dc7dac4739f1f5d559e9ca058c11452aed3eac688095b9ac832c0667781130ba",
+    "resultados/04_entrenamiento/bce_mixup_multimodal_20261011/comparacion/oof_raw_bce_normal.csv": "17cc5ee11313eda29a87675ad30581176959ad30b144ecbcc7084481a258b139"
+  },
+  "interpretation": "Historical selected OOF predictions for each saved model, with each frozen calibration and threshold. Calibration and Youden thresholds fit on OOF: apparent development performance, not independent test. Different checkpoint selection protocols prevent a controlled causal superiority claim."
+}

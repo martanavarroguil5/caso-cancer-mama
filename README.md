@@ -1,36 +1,32 @@
 # Caso cáncer de mama
 
-Predicción educativa de respuesta patológica completa (pCR) a partir de resonancia
-DCE anterior al tratamiento y variables clínicas. La base activa es el **multimodal
-clínico v002**, ya entrenado: `pool_dropout_wd_clinical`, BCE ponderada por corte
-y ensemble de diez modelos. Sus pesos se cargan directamente; no hace falta
-volver a entrenarlos.
+Predicción educativa de respuesta patológica completa (pCR) a partir de RM DCE
+y variables clínicas. El modelo activo vuelve a ser **v002_multimodal_clinico_20261007**:
+CNN 2D propia, BCE ponderada y diez pesos ya entrenados. La aplicación y la CLI
+cargan su calibración Platt y su umbral originales, sin necesidad de reentrenar.
 
-El ensayo de realce temporal, con y sin mayor regularización, queda cerrado como
-**fracaso del objetivo de mejora**. Se conserva el multimodal anterior. Métricas,
-decisión y límites están en [EXPERIMENTOS_DESCARTADOS.md](docs/EXPERIMENTOS_DESCARTADOS.md).
-Los modelos y resultados anteriores permanecen como histórico.
+Los ensayos posteriores no demostraron superar al v002 original y quedan
+cerrados como **fracasos del objetivo de mejora**. Esto incluye v003 y v004.
+La mejora de BCE normal frente a un control reentrenado no justificaba sustituir
+v002. Se conservan los resultados y todas las versiones de pesos.
+Véase el [registro de experimentos descartados](docs/EXPERIMENTOS_DESCARTADOS.md).
 
 ## Estructura
 
 ```text
-caso-cancer-mama/
-├── src/cancer_mama/       # datos, EDA, multimodal e informes
-├── tests/                # contratos de datos, pesos y reproducibilidad
-├── docs/                 # guías, protocolos y experimentos cerrados
-├── resultados/           # evidencia y ejecuciones locales por etapa
-├── modelos/versiones/    # pesos, manifiestos y código compatible congelado
-├── scripts/entrenar_multimodal_gpu.ps1
-├── app.py                # aplicación Streamlit con el multimodal v002
-├── pyproject.toml
-├── requirements.txt
-└── CONTRIBUTING.md
+src/cancer_mama/          # datos, entrenador multimodal e informes originales
+tests/                   # pruebas del código activo
+app.py                   # aplicación Streamlit con v002
+scripts/                 # lanzador GPU y comprobación de inferencia
+modelos/versiones/       # versiones congeladas con pesos y código compatible
+resultados/              # evidencia y ejecuciones locales
+experimentos/descartados_20261011/  # código y pruebas de ensayos cerrados
+docs/                    # guías, protocolos y decisiones
 ```
 
-El dataset `breastdcedl/`, los entornos y checkpoints de trabajo son locales.
-Las versiones congeladas de `modelos/` contienen los pesos necesarios para inferir
-y están en Git. El código de datos conserva la base de Marta Navarro Guil,
-commit `69a44eb` (28/09/2026).
+El dataset `breastdcedl/`, entornos virtuales y checkpoints de trabajo son locales.
+Los pesos seleccionados de `modelos/versiones/` están en Git. El código de datos
+conserva la base de Marta Navarro Guil, commit `69a44eb` (28/09/2026).
 
 ## Preparación
 
@@ -40,35 +36,33 @@ python -m venv .venv
 ```
 
 En Windows, sustituir `.venv/bin/python` por `.venv/Scripts/python.exe`.
-Para GPU, instalar primero la compilación de PyTorch adecuada para el sistema
-desde su [selector oficial](https://pytorch.org/get-started/locally/).
-No copiar un entorno virtual de otro ordenador.
+Para GPU, instalar primero la compilación de PyTorch apropiada desde su
+[selector oficial](https://pytorch.org/get-started/locally/).
+No copiar el entorno virtual de otro ordenador. Las dependencias activas están
+en `requirements.txt`; torchvision y los pesos preentrenados no son necesarios.
 
-Para utilizar el modelo con imágenes nuevas no es necesario descargar el dataset.
-Para preparar o entrenar, usar la copia local de `breastdcedl/`; si no existe:
+Para inferir imágenes nuevas no hace falta el dataset. Los módulos
+`cancer_mama.descarga`, `auditoria`, `eda` y `preparacion` conservan las etapas
+de preparación; consultar su `--help` antes de repetirlas sobre los datos existentes.
 
-```bash
-.venv/bin/python -m cancer_mama.descarga
-```
-
-Los módulos `cancer_mama.auditoria`, `cancer_mama.eda` y `cancer_mama.preparacion`
-conservan los pasos de auditoría, exploración y preparación. Consultar `--help`
-de cada módulo antes de repetirlos sobre una copia ya preparada.
-
-## Usar los pesos multimodales existentes
-
-Desde la raíz, verificar los diez pesos de la base activa:
+## Usar el multimodal original
 
 ```bash
 .venv/bin/python -B -m cancer_mama.entrenamiento verificar
+.venv/bin/python -m streamlit run app.py
 ```
 
-El manifiesto por defecto es
+Manifiesto activo:
 `modelos/versiones/v002_multimodal_clinico_20261007/manifiesto.json`.
-Conserva mediana entre cortes, calibración Platt y umbral 0,3543331693.
-La verificación comprueba hashes y compatibilidad de pesos; no entrena ni abre test.
+Agregación: mediana. Calibración: Platt. Umbral guardado: **0,3543331693**.
+La verificación comprueba hashes y compatibilidad de pesos; no entrena ni evalúa test.
 
-Para predecir, pasar las tres fases y los datos clínicos de la misma paciente:
+La aplicación acepta un corte PRE/EARLY/LATE e introduce edad, volumen tumoral,
+HR y HER2. Los ejemplos locales solo aportan imágenes; las variables clínicas
+se introducen expresamente o se dejan como desconocidas. El mapa EARLY−PRE es
+descriptivo; la CNN recibe las tres fases originales. Al cambiar una entrada se
+oculta el resultado anterior. La evaluación de desarrollo usa varios cortes por
+paciente; para agregarlos todos puede utilizarse la CLI:
 
 ```bash
 .venv/bin/python -B -m cancer_mama.entrenamiento predecir \
@@ -78,51 +72,23 @@ Para predecir, pasar las tres fases y los datos clínicos de la misma paciente:
   --edad 49 --volumen-tumoral 12 --hr 1 --her2 0
 ```
 
-Las fases son PNG monocromos de 8 bits y 256 × 256 píxeles. Se admiten varios
-cortes de una única paciente, en el mismo orden en las tres opciones. HR y HER2
-se codifican como 0/1. Una variable omitida se trata como ausente: cada modelo
-usa su imputación guardada. Para declarar todos los datos desconocidos, pasar
-`--edad nan`; no sustituir ausencias por cero.
+Los PNG deben ser monocromos de 8 bits, 256 × 256, de la misma paciente y corte.
+Se admiten varios cortes en el mismo orden para las tres fases. HR y HER2 son
+0/1. Una variable omitida se imputa con las estadísticas guardadas de cada modelo;
+para declarar todas desconocidas, pasar `--edad nan`. El volumen usa `log1p`.
+El ensemble promedia modelos por corte, aplica mediana entre cortes y después
+la calibración y el umbral guardados.
 
-El ensemble promedia las diez probabilidades por corte y aplica la mediana entre
-cortes antes de calibrar. `tum_vol` se transforma mediante `log1p`; los cuatro
-valores se imputan y escalan con estadísticas del train de cada fold, junto con
-cuatro indicadores de ausencia.
+## Entrenamiento activo
 
-## Aplicación educativa
-
-```bash
-.venv/bin/python -m streamlit run app.py
-```
-
-La aplicación carga v002 y permite subir PRE/EARLY/LATE e introducir edad,
-volumen tumoral, HR y HER2, indicando los desconocidos. Los ejemplos locales
-solo aportan imágenes: sus datos clínicos deben introducirse expresamente.
-La vista de realce EARLY−PRE es descriptiva; la CNN recibe las tres fases originales.
-
-La interfaz estima un solo corte; la calibración de desarrollo se ajustó con
-varios cortes por paciente. Para agregar todos los cortes disponibles usar la CLI.
-El resultado guardado se invalida cuando cambian las imágenes o los datos clínicos.
-
-## Único entrenamiento activo
-
-La CNN multimodal tiene 551.921 parámetros, ocho convoluciones, BatchNorm,
-canales 24/48/96/160, pooling intermedio y rama clínica. Se mantienen dropout 0,35,
-weight decay 0,001, AdamW con LR 0,0008, calendario coseno, AMP para aprendizaje
-en CUDA, aumentos geométricos compartidos entre fases y BCE ponderada por corte.
+Un único perfil: `pool_dropout_wd_clinical`, CNN 2D desde cero con 551.921
+parámetros, ocho convoluciones, BatchNorm, canales 24/48/96/160 y rama clínica.
+Mantiene dropout 0,35, weight decay 0,001, AdamW LR 0,0008, calendario coseno,
+lote 64, BCE ponderada por corte y aumentos geométricos compartidos entre fases.
 La imputación, escala e inicialización clínica se ajustan solo con train del fold.
+Se selecciona por AUC de validación, hasta 46 épocas, mínimo 12 y paciencia 10.
 
-Se conserva la selección de checkpoint por máxima AUC de validación por paciente
-(media de cortes en esa selección), máximo 46 épocas, mínimo 12 y paciencia 10.
-OOF e inferencia usan FP32, sin aumentos. La comparación final usa la mediana
-ya adoptada; no vuelve a buscar otra arquitectura, pérdida o agregación.
-
-Los perfiles de imágenes solas, BCE por paciente y realce temporal se retiraron
-del entrenador. Ya no existen `--configuraciones`, `--perdidas` ni `--pooling`.
-Las versiones históricas se ejecutan con su código congelado mediante
-[modelos/versionar.py](modelos/README.md).
-
-Solo si se decide realizar un nuevo entrenamiento:
+Para un nuevo entrenamiento, cuando sea necesario:
 
 ```bash
 .venv/bin/python -B -m cancer_mama.entrenamiento entrenar \
@@ -131,77 +97,43 @@ Solo si se decide realizar un nuevo entrenamiento:
   --salida resultados/04_entrenamiento/multimodal_actual
 ```
 
-Por defecto son diez runs: semillas 42/2026 × cinco folds, todos ponderados.
-La salida nueva mantiene v002 intacto. Checkpoints, historial, revisiones y curvas
-permiten reanudar una ejecución compatible sin repetir lo ya completado.
-La reanudación exige el mismo código, datos y configuración; tras un cambio
-de código se debe usar otra salida, no forzar la reanudación de un ensayo antiguo.
-
-Para comprobar la instalación con un lote y una época, excluidos de comparación:
+Son diez ejecuciones: semillas 42/2026 × cinco folds. Una ejecución nueva no
+reemplaza los pesos activos. Reanudar exige el mismo código, datos y configuración;
+si cambian, usar otra salida. La [guía GPU](docs/GUIA_GPU_MULTIMODAL.md) incluye
+el lanzador Windows. Para comprobar CUDA con un lote y una época, excluidos de
+comparación:
 
 ```bash
 .venv/bin/python -B -m cancer_mama.entrenamiento entrenar --prueba \
   --semillas 42 --folds 0 --epocas 1 --workers 0 --lote 8 --dispositivo cuda
 ```
 
-El [lanzador y guía GPU](docs/GUIA_GPU_MULTIMODAL.md) describen el mismo perfil
-en Windows. No se inicia ningún entrenamiento al abrir la aplicación o verificar pesos.
+Los módulos experimentales y sus pruebas se archivaron fuera de `src/` y `tests/`.
+No se ofrecen como alternativas del entrenador activo. Sus fuentes, commits y
+reglas de reproducción están en el [archivo de investigación](experimentos/descartados_20261011/README.md).
+El PDF exige CNN 2D desde cero y prohíbe transfer learning y redes preentrenadas.
 
-## Ensayo de pérdidas y LR del multimodal
+## Evidencia y comprobaciones
 
-El módulo experimental `cancer_mama.experimento_loss` compara LR 0,0008/0,0002
-con selección independiente por AUC o log-loss por paciente. Registra pérdidas
-comparables desde época 0 y reserva una selección interna separada del fold
-exterior. Conserva los pesos, la calibración y la aplicación de v002.
-
-El [protocolo del ensayo](docs/mejoras_cnn/PROTOCOLO_LOSS_LR_MULTIMODAL.md) fija
-particiones, métricas y criterios antes de entrenar. En el servidor Linux:
-
-```bash
-.venv/bin/python -u -B -m cancer_mama.experimento_loss ejecutar --prueba
-.venv/bin/python -u -B -m cancer_mama.experimento_loss ejecutar
-```
-
-El segundo comando ejecuta veinte trayectorias y genera la comparación al acabar.
-Se puede reanudar con el mismo comando; el progreso queda en
-`resultados/04_entrenamiento/loss_lr_multimodal_20261010/estado.json`.
-
-El ensayo terminó y la variante LR 0,0008 con selección por log-loss se conserva
-como `v003_multimodal_loss_20261010`. **Es candidata; v002 sigue activa.** El
-[informe de resultados](resultados/08_informe_loss_20261010/INFORME_RESULTADOS.md)
-muestra una reducción de pérdida cruda del 5,6 % frente al control equiparado.
-Tras calibrar ambos con selección interna, la reducción es del 0,9 % y el intervalo
-de diferencia incluye cero; no demuestra superioridad sobre v002.
-
-```bash
-.venv/bin/python -B -m cancer_mama.informe_loss
-.venv/bin/python -B -m cancer_mama.informe_loss --solo-presentacion
-```
-
-El primer comando requiere la ejecución local completa; el segundo regenera las
-figuras y el informe con la evidencia conservada. La candidata se puede cargar con
-`modelos/versionar.py predecir v003_multimodal_loss_20261010 -- ...`, pasando las
-mismas imágenes y variables clínicas que a v002.
-
-## Evidencia conservada y pruebas
-
-La base v002 obtuvo AUC OOF 0,724568 y AP 0,531646 sobre 1.097 pacientes de
-desarrollo. Es evaluación interna con selección de checkpoints y calibración
-sobre OOF; no equivale a validación externa. No se vuelve a abrir el test reservado
-para escoger modelos.
-
-- [Historial de versiones](modelos/README.md): v001, v002 y candidata v003 con pesos y código propios.
-- [Registro de ensayos descartados](docs/EXPERIMENTOS_DESCARTADOS.md).
-- [Protocolo multimodal original](docs/mejoras_cnn/PROTOCOLO_MULTIMODAL_CLINICO.md).
-- `resultados/06_informe_multimodal_20261007/`: informe del multimodal.
-- `resultados/04_entrenamiento/realce_temporal_20261009/`: evidencia del ensayo cerrado.
-- Los generadores de informes de ensayos previos se conservan para auditoría;
-  su reproducción exige el código y los hashes del ensayo correspondiente.
+V002 obtuvo ROC-AUC OOF **0,7246**. Con su calibración y umbral guardados:
+log-loss 0,5367, Brier 0,1791, 187 falsos positivos y 128 falsos negativos.
+Son métricas aparentes de desarrollo: las mismas OOF intervienen en selección,
+calibración y umbral. No equivalen a evaluación independiente en pacientes nuevas.
+El test reservado no se usa para escoger entre versiones.
 
 ```bash
 .venv/bin/python -B -m unittest discover -s tests -v
 .venv/bin/python -B modelos/versionar.py verificar
+.venv/bin/python -B scripts/verifica_multimodal.py
 ```
 
-Proyecto de uso educativo. Las estimaciones no son un diagnóstico ni se usan
-para tomar decisiones de tratamiento.
+La última comprobación usa un ejemplo de train y compara aplicación, CPU, CLI y
+paquete archivado en FP32 (TF32 desactivado en el proceso de prueba); sus resultados se guardan en `.codex_tmp/verificacion_multimodal/`.
+No necesita ejecutar nuevos entrenamientos.
+
+- [Historial de versiones](modelos/README.md): v002 activa; v001, v003 y v004 conservadas.
+- [Informe original](resultados/06_informe_multimodal_20261007/INFORME_RESULTADOS.md).
+- [Registro de ensayos cerrados](docs/EXPERIMENTOS_DESCARTADOS.md).
+- [Protocolo multimodal original](docs/mejoras_cnn/PROTOCOLO_MULTIMODAL_CLINICO.md).
+
+Proyecto de uso educativo. Las estimaciones no se usan para tomar decisiones de tratamiento.
