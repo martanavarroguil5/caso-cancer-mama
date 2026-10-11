@@ -171,6 +171,19 @@ def main():
             f"{clinical['mean_fold_auc']:.6f}; la CNN seleccionada obtiene 0,546255 y 0,710686. "
             'Es una comparación descriptiva posterior, que no cambió las decisiones ni el protocolo de repetición. '
             'No constituye por sí sola una demostración del valor adicional de la imagen.']
+    audit_path = OUTPUT/'auditoria_reproducibilidad_y_un_corte.json'
+    if audit_path.exists():
+        audit = json.loads(audit_path.read_text())
+        single = audit['single_cut_metrics']
+        lines += ['', '## Reproducción y formato de un corte', '',
+            f"Se comprobaron las diez particiones y una predicción guardada por checkpoint con inferencia CPU. "
+            f"El error absoluto máximo respecto a la OOF GPU fue {audit['maximum_absolute_error']:.2e}; "
+            'los pesos cargados con la clase original y la del ensayo dan exactamente la misma salida en esas entradas.', '',
+            f"Tomando un corte por paciente con una regla hash fija e independiente de las etiquetas, la pérdida "
+            f"es {single['normal']['log_loss']:.6f} con BCE normal y {single['weighted_control']['log_loss']:.6f} "
+            f"con el control. La AUC media es {single['normal']['mean_fold_auc']:.6f} y "
+            f"{single['weighted_control']['mean_fold_auc']:.6f}, respectivamente. "
+            'Es un diagnóstico posterior sobre desarrollo; no prueba el comportamiento con cualquier corte o paciente nuevo.']
     (OUTPUT/'INFORME_RESULTADOS.md').write_text('\n'.join(lines)+'\n')
     print(json.dumps({'report': str(OUTPUT), 'promising': favorable, 'runs': len(records)}, ensure_ascii=False))
 
