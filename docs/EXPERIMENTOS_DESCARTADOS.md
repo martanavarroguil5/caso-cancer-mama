@@ -8,6 +8,143 @@ El código y los README anteriores se conservan en el historial de `main`;
 los commits citados identifican cada ensayo. Las copias locales de limpiezas
 antiguas no forman parte del código activo ni son necesarias para recuperarlo.
 
+## FiLM: ensayo terminado sin mejora (11/10/2026)
+
+**Decisión: descartar esta configuración de FiLM y mantener activo el multimodal
+original v002 con sus pesos, calibración y umbral intactos.** No se inicia otro
+entrenamiento. FiLM no satisface el criterio fijado antes del ensayo y no resuelve
+el sobreajuste. El código experimental se retira del árbol actual; se recupera
+del commit `9e2aa93` en la historia de `main`, sin ramas adicionales.
+
+Terminado correctamente a las 19:55 del 11/10/2026 (Europe/Madrid): **40/40
+ejecuciones, 549 épocas, 78 min 7 s de tiempo total**. Se probaron CNN control y
+CNN + FiLM, cada una con BCE ponderada y normal, semillas 42/2026 y cinco folds.
+La capa FiLM añadía 1.152 parámetros para modular las características visuales
+según las variables clínicas. No se usaron redes preentrenadas ni test reservado.
+El [protocolo prefijado](mejoras_cnn/PROTOCOLO_FILM.md) conserva todos los detalles.
+
+### Comparación solicitada con los pesos originales v002
+
+1.097 pacientes de desarrollo: 322 con pCR y 775 sin pCR. AUC y AP se calculan
+con probabilidades OOF sin calibrar; pérdida y Brier después de calibrar; errores
+con los umbrales declarados de cada método. **La comparación es descriptiva:**
+v002 utiliza su selección histórica y una calibración/umbral ajustados a las
+mismas OOF. FiLM utiliza selección, calibración y umbrales internos por fold,
+aplicados al exterior. Esta diferencia impide atribuir toda la diferencia a FiLM
+o considerar la tabla una validación externa de v002.
+
+| Métrica | V002 original | FiLM ponderado | Cambio FiLM − v002 |
+|---|---:|---:|---:|
+| ROC-AUC, mayor mejor | 0,724568 | 0,701439 | −0,023130 |
+| Average precision, mayor mejor | 0,531646 | 0,502409 | −0,029237 |
+| Log-loss calibrada, menor mejor | 0,536656 | 0,560865 | +0,024209 |
+| Brier calibrado, menor mejor | 0,179060 | 0,187753 | +0,008693 |
+| Falsos positivos | 187 | 254 | +67 |
+| Falsos negativos | 128 | 130 | +2 |
+| Verdaderos positivos | 194 | 192 | −2 |
+| Verdaderos negativos | 588 | 521 | −67 |
+| Sensibilidad | 60,25 % | 59,63 % | −0,62 puntos |
+| Especificidad | 75,87 % | 67,23 % | −8,65 puntos |
+| Exactitud | 71,29 % | 65,00 % | −6,29 puntos |
+| Precisión positiva | 50,92 % | 43,05 % | −7,87 puntos |
+| F1 | 0,551920 | 0,500000 | −0,051920 |
+
+Aquí «positivo» significa pCR. Un falso positivo predice respuesta completa
+cuando no la hubo; un falso negativo omite una respuesta completa real.
+Son 69 errores adicionales en estas predicciones y con estos umbrales, no una
+estimación de 69 errores adicionales en futuras pacientes.
+
+### Comparación controlada para aislar el efecto de FiLM
+
+El control es la arquitectura de v002 **reentrenada bajo el protocolo de este
+ensayo**, no los pesos originales. En cada par se mantienen particiones,
+semillas, inicialización común, optimizador y selección por AUC interna.
+
+| Métrica | Control ponderado | FiLM ponderado | Control normal | FiLM normal |
+|---|---:|---:|---:|---:|
+| ROC-AUC OOF agrupada sin calibrar | 0,701968 | 0,701439 | 0,681667 | 0,671753 |
+| Media de AUC de los cinco folds | 0,704684 | 0,701576 | 0,694701 | 0,695303 |
+| Average precision sin calibrar | 0,494831 | 0,502409 | 0,476552 | 0,470817 |
+| Log-loss calibrada | 0,561517 | 0,560865 | 0,567060 | 0,571364 |
+| Brier calibrado | 0,187723 | 0,187753 | 0,189359 | 0,190299 |
+| Falsos positivos con Youden interno | 297 | 254 | 311 | 276 |
+| Falsos negativos con Youden interno | 112 | 130 | 104 | 134 |
+
+Hipótesis principal, FiLM ponderado menos control ponderado:
+
+| Diferencia | Estimación | IC pareado del 95 % |
+|---|---:|---:|
+| ROC-AUC sin calibrar | −0,000529 | [−0,011273; +0,010331] |
+| Media de AUC por fold | −0,003108 | [−0,012926; +0,006739] |
+| Log-loss calibrada | −0,000653 | [−0,005991; +0,004524] |
+| Brier calibrado | +0,000030 | [−0,001746; +0,001729] |
+
+Bootstrap de 2.000 remuestreos pareados, estratificados por fold/cohorte/clase.
+Los intervalos incluyen cero: no se demuestra mejora ni equivalencia exacta.
+Son intervalos internos exploratorios; no corrigen toda la búsqueda histórica
+ni constituyen validación externa. No se alcanzan +0,005 de AUC, límite inferior
+positivo, Brier no peor ni ausencia de deterioro por semilla:
+
+| Semilla | Control ponderado AUC | FiLM ponderado AUC |
+|---|---:|---:|
+| 42 | 0,700441 | 0,690795 |
+| 2026 | 0,701274 | 0,695524 |
+
+FiLM reduce 43 falsos positivos frente a ese control a costa de 18 falsos
+negativos más, con umbrales ajustados por separado. La pequeña ganancia de AP
+y pérdida no permite concluir superioridad global. AUC por cohorte:
+Duke 0,7244 → 0,7205; I-SPY1 0,8013 → 0,7692; I-SPY2 0,6833 → 0,6868.
+El brazo BCE normal tampoco rescata la hipótesis: empeoran AUC agrupada, pérdida
+y Brier, aunque mejora ligeramente la media de AUC por fold (+0,000603).
+
+### Qué ocurrió con el sobreajuste
+
+FiLM ponderado conserva una brecha clara al **final** de los entrenamientos:
+mediana de AUC de fit 0,8315 frente a 0,6436 en selección interna; mediana de las
+brechas por ejecución 0,2032. En el control: 0,8359 y 0,6408, con brecha mediana
+0,1970. Son diagnósticos de la última época, **no** resultados del checkpoint
+elegido ni del exterior OOF. La selección temprana evita conservar esos pesos
+finales deteriorados; no demuestra haber eliminado el sobreajuste.
+
+En 6 de las 10 ejecuciones de FiLM ponderado se seleccionó la época 0, igual
+que en el control ponderado. Esa época conserva el inicializador clínico y
+FiLM identidad; solo 4 checkpoints ponderados elegidos tienen FiLM aprendido.
+La pérdida por paciente de selección empeora respecto al inicio en 8/10
+ejecuciones FiLM ponderadas (9/10 controles). Añadir capacidad de interacción
+clínica-imagen no produjo un beneficio consistente con esta receta y estos datos.
+No permite concluir que cualquier arquitectura FiLM vaya a fallar.
+
+### Evidencia y cierre del código
+
+Se verificaron los hashes de resultados y la carga estricta de los 40 checkpoints.
+Una predicción de train por checkpoint en CPU coincide con la OOF FP32 guardada
+con diferencia máxima 2,04 × 10⁻⁷ (tolerancia 2 × 10⁻⁶). Se mantienen sin cambios
+los 299 archivos protegidos por el protocolo, incluidos los paquetes congelados.
+La verificación no reentrena ni evalúa test. Tras retirar el módulo experimental,
+pasaron las 39 pruebas del código activo y la verificación del manifiesto v002.
+También se recalcularon las métricas de las cuatro tablas OOF y se comprobaron
+los enlaces de documentación; véase la [verificación del cierre](../resultados/12_informe_film_20261011/verificacion_cierre.json).
+
+- [Resumen completo y calibraciones](../resultados/12_informe_film_20261011/resumen.json).
+- [Tabla de métricas CSV](../resultados/12_informe_film_20261011/comparacion_metricas.csv).
+- [ROC comparadas](../resultados/12_informe_film_20261011/01_roc.png).
+- [Curvas de pérdida y AUC](../resultados/12_informe_film_20261011/02_curvas.png): mediana e IQR de las diez ejecuciones, épocas 0–12 comunes a todas, evaluación FP32 sin aumentos.
+- [Diagnóstico por ejecución](../resultados/12_informe_film_20261011/diagnostico_final.csv).
+- [Verificación de pesos y predicciones](../resultados/12_informe_film_20261011/verificacion_final.json).
+- [Procedencia y hashes](../resultados/12_informe_film_20261011/procedencia.json), [configuraciones, entornos y resúmenes](../resultados/12_informe_film_20261011/ejecuciones.json), [historias completas](../resultados/12_informe_film_20261011/historias.csv) y [protocolo original y hashes](../resultados/12_informe_film_20261011/protocolo.json).
+
+La carpeta de evidencia contiene también las cuatro tablas OOF y un script que
+regenera las figuras sin entrenar. Los checkpoints y ejecuciones completas
+permanecen locales en `resultados/04_entrenamiento/film_multimodal_20261011/`,
+fuera de Git. No se crea una versión de modelo activa ni una rama para este ensayo.
+Para consultar la implementación retirada:
+
+```bash
+git show 9e2aa93:src/cancer_mama/experimento_film.py
+git show 9e2aa93:tests/test_experimento_film.py
+```
+
+
 ## Cierre de los ensayos posteriores al multimodal original (11/10/2026)
 
 **Decisión: se restaura `v002_multimodal_clinico_20261007` como modelo activo.
@@ -98,6 +235,7 @@ siguen versionados; v003 y v004 no se activan.
 
 | Commit | Estado recuperable |
 |---|---|
+| `9e2aa93` | Implementación, pruebas y protocolo prefijado de FiLM; descartado sin mejora |
 | `d1d61b8` | Informe del entrenamiento multimodal original |
 | `7116b8e` | Multimodal v002 como única base activa antes de los últimos ensayos |
 | `2cde016` | Ensayo de pérdidas/LR y candidata v003 |

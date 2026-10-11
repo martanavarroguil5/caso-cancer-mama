@@ -1,0 +1,43 @@
+{
+  "status": "complete",
+  "stage": "complete",
+  "pid": 41517,
+  "started_at": "2026-10-11T16:37:46.982888+00:00",
+  "completed_runs": 40,
+  "total_runs": 40,
+  "updated_at": "2026-10-11T17:55:53.932738+00:00",
+  "arm": "film_normal",
+  "seed": 2026,
+  "fold": 4,
+  "epoch": 12,
+  "trackers": {
+    "auc": {
+      "criterion": "auc",
+      "best": 0.7741935483870968,
+      "reference": 0.7741935483870968,
+      "best_epoch": 0,
+      "bad_epochs": 12,
+      "stopped": true,
+      "stop_epoch": 12
+    }
+  },
+  "metrics": {
+    "epoch": 12,
+    "lr": 0.0006936802058898591,
+    "train_augmented_loss": 0.4915194809436798,
+    "fit_slice_bce": 0.5267413854598999,
+    "fit_patient_auc": 0.7896660202542555,
+    "fit_patient_logloss": 0.5162190524761994,
+    "fit_patient_brier": 0.16725546843633932,
+    "fit_patient_ap": 0.6526772144425861,
+    "selection_slice_bce": 0.7035098671913147,
+    "selection_patient_auc": 0.6539840088227185,
+    "selection_patient_logloss": 0.7024652184558051,
+    "selection_patient_brier": 0.2103173332471544,
+    "selection_patient_ap": 0.452830601419837,
+    "seconds": 7.632495621000999,
+    "peak_vram_gib": 0.6451559066772461
+  },
+  "finished_at": "2026-10-11T17:55:53.932729+00:00",
+  "protected_unchanged": true
+}
