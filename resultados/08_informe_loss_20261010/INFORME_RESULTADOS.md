@@ -1,3 +1,5 @@
+> **Cierre del 11/10/2026:** ensayo descartado como intento de superar al v002 original. La versión activa vuelve a ser v002; v003/v004 se conservan como experimentos. Los resultados frente al control reentrenado no prueban superioridad sobre el original. Las decisiones de promoción que aparecen más abajo son históricas y quedan revocadas. Véase el [registro de cierre](../../docs/EXPERIMENTOS_DESCARTADOS.md).
+
 # Candidato multimodal: LR actual y selección por pérdida
 
 Se reutilizaron los diez checkpoints ya entrenados con LR 0,0008 y selección interna por log-loss.

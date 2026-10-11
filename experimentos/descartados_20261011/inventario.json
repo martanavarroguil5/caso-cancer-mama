@@ -1,0 +1,117 @@
+{
+  "archived_on": "2026-10-11",
+  "source_commit": "8c0600c9f23388e9de0e4d4945c166c20acddd3c",
+  "decision": "No demonstrated improvement over original v002; experimental drivers removed from active package.",
+  "files": [
+    {
+      "original_path": "src/cancer_mama/confirma_bce_normal.py",
+      "archived_path": "experimentos/descartados_20261011/src/cancer_mama/confirma_bce_normal.py",
+      "sha256": "2db12d4cd4b91443841f32182a9690ee697f875b68840e071b75d166174e82ab"
+    },
+    {
+      "original_path": "src/cancer_mama/experimento_bce_mixup.py",
+      "archived_path": "experimentos/descartados_20261011/src/cancer_mama/experimento_bce_mixup.py",
+      "sha256": "d3b0af9fa78855e264dc31f6696dd1e1e9d12c9564d01afbf29d3f73d86dbf7e"
+    },
+    {
+      "original_path": "src/cancer_mama/experimento_finetune.py",
+      "archived_path": "experimentos/descartados_20261011/src/cancer_mama/experimento_finetune.py",
+      "sha256": "91e1ce6321726bff72b27407046abd641721557e7b8769698e43764d9192b5c6"
+    },
+    {
+      "original_path": "src/cancer_mama/experimento_local.py",
+      "archived_path": "experimentos/descartados_20261011/src/cancer_mama/experimento_local.py",
+      "sha256": "9df63e31a65893f4b4c07b15f85e64f701c3dc2d8a9e2208d75a01444371a347"
+    },
+    {
+      "original_path": "src/cancer_mama/experimento_loss.py",
+      "archived_path": "experimentos/descartados_20261011/src/cancer_mama/experimento_loss.py",
+      "sha256": "0b91cd3f8b8b3734debd5573493a27531072bab03a42289f78d0cfde9f5c78ed"
+    },
+    {
+      "original_path": "src/cancer_mama/experimento_textura.py",
+      "archived_path": "experimentos/descartados_20261011/src/cancer_mama/experimento_textura.py",
+      "sha256": "67b1df951f42d99327023c59012ed0a66885ed8ceb573ec11fcfc55d2ce97294"
+    },
+    {
+      "original_path": "src/cancer_mama/experimento_transfer.py",
+      "archived_path": "experimentos/descartados_20261011/src/cancer_mama/experimento_transfer.py",
+      "sha256": "0272daa4b6956f76029c49a082bfad7c6ed1f1f8f58b87f0650f7eb489cf600a"
+    },
+    {
+      "original_path": "src/cancer_mama/informe_bce_mixup.py",
+      "archived_path": "experimentos/descartados_20261011/src/cancer_mama/informe_bce_mixup.py",
+      "sha256": "8ae76e515d5a2dba30a9dc880abb68e785c3bf37e90e0ecebe12202d0dc2cab3"
+    },
+    {
+      "original_path": "src/cancer_mama/informe_confirmacion_bce.py",
+      "archived_path": "experimentos/descartados_20261011/src/cancer_mama/informe_confirmacion_bce.py",
+      "sha256": "6bd6b7cd7044835e607e78f4584306247f99f90dc6bb571f5fc34a025ee60f07"
+    },
+    {
+      "original_path": "src/cancer_mama/informe_loss.py",
+      "archived_path": "experimentos/descartados_20261011/src/cancer_mama/informe_loss.py",
+      "sha256": "c40345de45e9962a8e111099ec5006f382c81ddeb09f0ab0ecaa58f94c31b785"
+    },
+    {
+      "original_path": "src/cancer_mama/informe_transferencia.py",
+      "archived_path": "experimentos/descartados_20261011/src/cancer_mama/informe_transferencia.py",
+      "sha256": "d2d652ffe98d8bfd99161ccc70f80fd4ceb7086f86396533b0fb599c81fdd66e"
+    },
+    {
+      "original_path": "src/cancer_mama/valida_bce_normal.py",
+      "archived_path": "experimentos/descartados_20261011/src/cancer_mama/valida_bce_normal.py",
+      "sha256": "12ae9207dced06edde69dc82833b3013509cd177cc1490fdaf97e7cd3a966845"
+    },
+    {
+      "original_path": "tests/test_confirma_bce_normal.py",
+      "archived_path": "experimentos/descartados_20261011/tests/test_confirma_bce_normal.py",
+      "sha256": "8c38c1902041525d9dc360b523db09ffc684b4ed6634ab913683bd8ef0d93cd9"
+    },
+    {
+      "original_path": "tests/test_experimento_bce_mixup.py",
+      "archived_path": "experimentos/descartados_20261011/tests/test_experimento_bce_mixup.py",
+      "sha256": "17595ea07a5a9924334347f763f9ddee7ad162390fe841113ca0f789c1dfa66c"
+    },
+    {
+      "original_path": "tests/test_experimento_finetune.py",
+      "archived_path": "experimentos/descartados_20261011/tests/test_experimento_finetune.py",
+      "sha256": "9ada54d656032fe3c89c24ede038e9d8e19fc8a96f0c2bf926ce9bf0093e3e08"
+    },
+    {
+      "original_path": "tests/test_experimento_local.py",
+      "archived_path": "experimentos/descartados_20261011/tests/test_experimento_local.py",
+      "sha256": "e1b603b02c9883a6fc47ff6cff626d4923a113266cc36a326d5495a4a28fb0da"
+    },
+    {
+      "original_path": "tests/test_experimento_loss.py",
+      "archived_path": "experimentos/descartados_20261011/tests/test_experimento_loss.py",
+      "sha256": "2166ca3e082450d9df35e1acaa10b299e76e52077b4b1de77096b9bbab0e8118"
+    },
+    {
+      "original_path": "tests/test_experimento_textura.py",
+      "archived_path": "experimentos/descartados_20261011/tests/test_experimento_textura.py",
+      "sha256": "d6f8a6fc32f9baad1274565a8430d7eecbe67cca47eb070503d7b8188696eb73"
+    },
+    {
+      "original_path": "tests/test_experimento_transfer.py",
+      "archived_path": "experimentos/descartados_20261011/tests/test_experimento_transfer.py",
+      "sha256": "3e56e5e4242584c064b74c47dcdbd56aaf3422b4005b7995a12acfcaf8b34b72"
+    },
+    {
+      "original_path": "tests/test_informe_loss.py",
+      "archived_path": "experimentos/descartados_20261011/tests/test_informe_loss.py",
+      "sha256": "afe962714a69fae7c440a096b50ba0daf0208edabdb37c1af8aa9bcc5f8553a5"
+    },
+    {
+      "original_path": "scripts/verifica_v004_app.py",
+      "archived_path": "experimentos/descartados_20261011/scripts/verifica_v004_app.py",
+      "sha256": "c5d0256716624fa681633dd4b3cfc54a90887e6c2f82a4342b3d722fcd184972"
+    },
+    {
+      "original_path": "requirements-transfer.txt",
+      "archived_path": "experimentos/descartados_20261011/requirements-transfer.txt",
+      "sha256": "ff65c7962cd798b537b145ac2806dd04f60761eb1f11a198f7aba7d455f1edbb"
+    }
+  ]
+}

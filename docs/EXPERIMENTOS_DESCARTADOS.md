@@ -1,13 +1,92 @@
 # Experimentos cerrados y retirados del entrenador
 
-Actualizado el 10/10/2026. Estos ensayos no forman parte del código activo de
+Actualizado el 11/10/2026. Estos ensayos no forman parte del código activo de
 `src/cancer_mama/entrenamiento.py` y sus comandos de comparación se han eliminado. No se
 vuelven a ejecutar automáticamente. Se conservan sus informes, predicciones,
 curvas, configuraciones y evidencia histórica en `resultados/04_entrenamiento/`.
 El código y README anteriores a esta limpieza quedan en
 `limpieza_20261005/codigo_anterior/`; los commits citados identifican cada ensayo.
 
-## Decisiones
+## Cierre de los ensayos posteriores al multimodal original (11/10/2026)
+
+**Decisión: se restaura `v002_multimodal_clinico_20261007` como modelo activo.
+Los ensayos posteriores quedan registrados como fracasos del objetivo de superar
+al multimodal original. V003 y v004 se conservan como experimentos descartados.**
+
+| Ensayo | Resultado y motivo del cierre |
+|---|---|
+| LR 0,0008/0,0002 y selección por log-loss; candidata v003 | Reducción de pérdida frente al control equiparado no concluyente después de calibrar. No demuestra superioridad sobre v002. |
+| ResNet50 congelada, PCA y fusión clínica; AlexNet local y SVM/logística; ResNet18 parcialmente ajustada con L2-SP | No cumplieron el criterio de mejora; además usan redes preentrenadas prohibidas por el enunciado. Fuera de la entrega. |
+| Textura y diferencias entre fases PNG | No cumplieron el criterio de mejora. Comparador auxiliar archivado. |
+| BCE normal con inicialización clínica sin ponderar y selección por pérdida; candidata v004 | Mejoró un control reentrenado con separación interna, pero no demostró superar al v002 original. Su promoción se revoca. |
+| BCE normal con mixup | No mejoró la variante BCE normal y no cumplió el criterio fijado frente al control. Descartado. |
+| Repetición BCE normal, semillas 73/1701 | Repitió la reducción de pérdida frente al control reentrenado, sobre las mismas pacientes. No fue una prueba independiente frente al v002 original ni validación externa. |
+
+### Comparación directa de las versiones guardadas
+
+Sobre 1.097 pacientes de desarrollo (322 pCR y 775 no pCR), usando las predicciones
+OOF históricas, la calibración y el umbral guardados de cada versión:
+
+| Métrica | Original v002 | Candidata v004 |
+|---|---:|---:|
+| ROC-AUC | 0,724568 | 0,710888 |
+| Average precision | 0,531646 | 0,508693 |
+| Log-loss | 0,536656 | 0,546255 |
+| Brier | 0,179060 | 0,182626 |
+| Falsos positivos | 187 | 210 |
+| Falsos negativos | 128 | 126 |
+| Sensibilidad | 60,25 % | 60,87 % |
+| Especificidad | 75,87 % | 72,90 % |
+| Exactitud | 71,29 % | 69,37 % |
+| F1 | 0,551920 | 0,538462 |
+| Umbral | 0,3543331693 | 0,3489952150 |
+
+V004 evita dos falsos negativos a costa de 23 falsos positivos adicionales.
+El v002 original conserva mejores AUC, AP, pérdida calibrada, Brier, exactitud y F1
+en estas predicciones. Las diferencias de entrenamiento/selección impiden tratar
+esta tabla como un ensayo controlado de superioridad; son métricas aparentes de
+desarrollo, con calibración y umbrales ajustados sobre OOF, no métricas de test.
+El original tampoco queda validado externamente por esta comparación.
+
+**Corrección de la interpretación anterior:** la reducción de log-loss
+0,5615 → 0,5463 y su repetición 0,5678 → 0,5467 pertenecen a controles reentrenados
+con otro protocolo. No deben presentarse como mejora sobre los pesos originales
+de v002. Comparar la pérdida cruda 0,6098 de v002 con v004 ignoraba que v002
+ya disponía de calibración Platt; su pérdida calibrada guardada es 0,5367.
+La selección temporal de v004 por defecto fue prematura y queda revocada.
+
+### Código, evidencia y restauración
+
+- V002 recupera sus diez pesos, Platt, mediana y umbral originales, sin reentrenar.
+- El entrenador activo conserva únicamente el perfil multimodal original con
+  BCE ponderada por corte. La aplicación y CLI usan su manifiesto.
+- Doce módulos, ocho archivos de pruebas, la comprobación v004 y las dependencias
+  de transferencia se archivan, sin cambiar sus bytes, en
+  [experimentos/descartados_20261011](../experimentos/descartados_20261011/README.md).
+- Las versiones congeladas v001–v004, los datasets y checkpoints de trabajo se conservan.
+  Los informes 08–11 mantienen sus resultados originales con una nota de cierre.
+- El test reservado no se abrió para esta decisión ni para la limpieza.
+
+Evidencia: [métricas directas CSV](mejoras_cnn/v002_vs_v004_20261011.csv),
+[métricas y hashes JSON](mejoras_cnn/v002_vs_v004_20261011.json),
+[ensayo de pérdidas](../resultados/08_informe_loss_20261010/INFORME_RESULTADOS.md),
+[investigación visual](../resultados/09_informe_transferencia_20261010/INFORME_RESULTADOS.md),
+[BCE/mixup](../resultados/10_informe_bce_mixup_20261011/INFORME_RESULTADOS.md) y
+[repetición](../resultados/11_confirmacion_bce_normal_20261011/INFORME_RESULTADOS.md).
+El commit `8c0600c` identifica el estado anterior a esta limpieza; `41428a2`
+conserva las fuentes originales de la comparación antes de cambiar interfaz y versión.
+
+La [verificación de la restauración](mejoras_cnn/verificacion_restauracion_v002_20261011.json)
+registra 39 pruebas del código activo, una prueba de un lote/época en GPU,
+inferencia aplicación/CLI/paquete en FP32 y 302 archivos protegidos sin cambios.
+Los 22 archivos archivados conservan exactamente sus bytes originales.
+
+«Fallido» describe el objetivo de mejorar el original en estas condiciones.
+No significa que los entrenamientos fallaran técnicamente ni que las técnicas
+sean inservibles para otros datos o configuraciones.
+
+
+## Decisiones históricas anteriores
 
 | Ensayo | Resultado observado | Decisión en el código actual |
 |---|---|---|
@@ -24,7 +103,7 @@ El código y README anteriores a esta limpieza quedan en
 
 Las decisiones son específicas de este proyecto y las condiciones ensayadas.
 No prueban que esos métodos sean inferiores con cualquier dato o hiperparámetro.
-La base activa desde el 10/10/2026 es el multimodal clínico v002 ya entrenado.
+La base activa vuelve a ser el multimodal clínico v002 ya entrenado (11/10/2026).
 La limpieza retira código; conserva los pesos, calibración y umbral de esa versión.
 
 ## Realce temporal: fracaso del objetivo de mejora (10/10/2026)
@@ -264,7 +343,7 @@ entrenamiento o de la selección adaptativa. Los folds comparten aprendizaje;
 no equivalen a cinco experimentos independientes ni a pacientes nuevos externos.
 No se volvió a abrir el test reservado de 176 pacientes ya evaluado el 30/09/2026.
 
-## Alcance de la limpieza actual (10/10/2026)
+## Alcance de la limpieza anterior (10/10/2026)
 
 Se eliminan los drivers y ramas experimentales del entrenador y sus pruebas
 exclusivas. Se mantienen las pruebas de arquitectura, fases, pacientes, OOF,
