@@ -1,0 +1,93 @@
+{
+  "verified_at": "2026-10-11T18:39:42.830445+00:00",
+  "tests_passed": 53,
+  "tests_include": [
+    "analytical_SAM_gradient",
+    "rho_zero_AdamW_identity",
+    "same_dropout_rng",
+    "BatchNorm_one_update",
+    "weights_restored_before_step_and_on_exception",
+    "GPU_AMP_first_and_second_overflow_skip",
+    "exact_CPU_resume",
+    "outer_patient_separation",
+    "OOF_comparison_integrity"
+  ],
+  "gpu_smoke": [
+    {
+      "arm": "control_weighted",
+      "epochs": 1,
+      "parameters": 551921,
+      "optimizer_steps": 1,
+      "skipped_steps": 0,
+      "checkpoint_load_strict": true,
+      "eligible_for_comparison": false,
+      "test_images_loaded": 0
+    },
+    {
+      "arm": "sam_weighted",
+      "epochs": 1,
+      "parameters": 551921,
+      "optimizer_steps": 1,
+      "skipped_steps": 0,
+      "checkpoint_load_strict": true,
+      "eligible_for_comparison": false,
+      "test_images_loaded": 0
+    },
+    {
+      "arm": "control_normal",
+      "epochs": 1,
+      "parameters": 551921,
+      "optimizer_steps": 1,
+      "skipped_steps": 0,
+      "checkpoint_load_strict": true,
+      "eligible_for_comparison": false,
+      "test_images_loaded": 0
+    },
+    {
+      "arm": "sam_normal",
+      "epochs": 1,
+      "parameters": 551921,
+      "optimizer_steps": 1,
+      "skipped_steps": 0,
+      "checkpoint_load_strict": true,
+      "eligible_for_comparison": false,
+      "test_images_loaded": 0
+    }
+  ],
+  "protected_files_unchanged": 299,
+  "active_v002": {
+    "models": 10,
+    "parameters_per_model": 551921,
+    "checksums_verified": true,
+    "test_evaluated_once": false,
+    "test_repeated": false,
+    "aggregation": "median",
+    "threshold": 0.35433316934837994,
+    "clinical_required": true
+  },
+  "source_hashes": {
+    "experiment": "71baa7d2197e9cd45f69807184a54e0b17318731875549eba1a17719ab1a1585",
+    "original_trainer": "4d011c1bccf43ddc0d361c821c383b5c5935c0f64a06591f5a165ee260fc5b0e",
+    "protocol": "2fa795eda4cb47935900ba090da11992a71764f9e1e11a33a523034a0f592bf0"
+  },
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "torch": "2.14.0+cu130",
+    "numpy": "2.5.3",
+    "pandas": "3.0.6",
+    "sklearn": "1.9.1",
+    "pillow": "12.3.0",
+    "cuda_runtime": "13.0",
+    "device": "cuda",
+    "code_sha256": {
+      "04_entrenamiento.py": "4d011c1bccf43ddc0d361c821c383b5c5935c0f64a06591f5a165ee260fc5b0e",
+      "pipeline_datos.py": "b61e550788d321536dccb96c87b09a3b04c1ef87f885c6945056b935215eb8eb"
+    },
+    "determinism_scope": "Mismo código, datos, entorno y hardware; reanudación por época.",
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "gpu_total_gib": 23.552978515625
+  },
+  "test_evaluated": false,
+  "note": "Pruebas técnicas previas al entrenamiento completo; no son resultados de eficacia."
+}

@@ -78,3 +78,6 @@ Thumbs.db
 
 # Ensayo FiLM: ejecuciones locales y pesos candidatos
 /resultados/04_entrenamiento/film_multimodal_20261011/
+
+# Ensayo SAM: ejecuciones locales y pesos candidatos
+/resultados/04_entrenamiento/sam_multimodal_20261011/
