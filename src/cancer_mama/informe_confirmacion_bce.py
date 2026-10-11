@@ -113,7 +113,7 @@ def main():
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4), constrained_layout=True)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4), constrained_layout=True)
     comparisons = [('Búsqueda · semillas 42/2026', first['comparisons']['bce_normal']),
                    ('Repetición · semillas 73/1701', report)]
     for ax, key, title in zip(axes, ('log_loss', 'mean_fold_auc'), ('Cambio de pérdida · menor es mejor', 'Cambio de AUC media · mayor es mejor')):
@@ -121,12 +121,12 @@ def main():
             ci = comparison['intervals_99_58'][key]
             ax.plot([ci['lower'], ci['upper']], [y, y], color='#267b89', linewidth=2)
             ax.scatter([comparison['delta_vs_control'][key]], [y], color='#267b89', s=45, zorder=3)
-        ax.set_yticks(range(2), [name for name, _ in comparisons])
+        ax.set_yticks(range(2), [name for name, _ in comparisons], fontsize=10)
         ax.set_ylim(-.5, 1.5)
         ax.axvline(0, color='#555', linestyle='--')
-        ax.set_title(title)
+        ax.set_title(title, fontsize=12)
         ax.grid(axis='x', alpha=.2)
-    fig.suptitle('Repetición del cambio a BCE normal · misma arquitectura y mismas pacientes · IC 99,58%')
+    fig.suptitle('Repetición del cambio a BCE normal · misma arquitectura y mismas pacientes · IC 99,58%', fontsize=13)
     fig.savefig(OUTPUT/'comparacion_repeticion.png', dpi=150)
     plt.close(fig)
 
