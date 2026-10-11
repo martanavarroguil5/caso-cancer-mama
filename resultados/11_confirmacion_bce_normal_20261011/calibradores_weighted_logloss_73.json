@@ -1,0 +1,82 @@
+[
+  {
+    "fold": 0,
+    "calibration": {
+      "method": "regularized_platt",
+      "input": "logit_patient_aggregated_probability",
+      "slope": 0.3437292956251603,
+      "intercept": -0.605270351525144,
+      "C": 1.0,
+      "clip_epsilon": 1e-07,
+      "scope": "patient",
+      "fit_data": "inner_selection_only_after_checkpoint_selection",
+      "nonnegative_slope_constraint": true,
+      "boundary_solution": false
+    },
+    "threshold": 0.3139436501259623
+  },
+  {
+    "fold": 1,
+    "calibration": {
+      "method": "regularized_platt",
+      "input": "logit_patient_aggregated_probability",
+      "slope": 0.30408044040745347,
+      "intercept": -0.6866336141865097,
+      "C": 1.0,
+      "clip_epsilon": 1e-07,
+      "scope": "patient",
+      "fit_data": "inner_selection_only_after_checkpoint_selection",
+      "nonnegative_slope_constraint": true,
+      "boundary_solution": false
+    },
+    "threshold": 0.3481562994014197
+  },
+  {
+    "fold": 2,
+    "calibration": {
+      "method": "regularized_platt",
+      "input": "logit_patient_aggregated_probability",
+      "slope": 0.6959893669596605,
+      "intercept": -0.5329027438744837,
+      "C": 1.0,
+      "clip_epsilon": 1e-07,
+      "scope": "patient",
+      "fit_data": "inner_selection_only_after_checkpoint_selection",
+      "nonnegative_slope_constraint": true,
+      "boundary_solution": false
+    },
+    "threshold": 0.23025733925284989
+  },
+  {
+    "fold": 3,
+    "calibration": {
+      "method": "regularized_platt",
+      "input": "logit_patient_aggregated_probability",
+      "slope": 0.4310116004972753,
+      "intercept": -0.47717927503029556,
+      "C": 1.0,
+      "clip_epsilon": 1e-07,
+      "scope": "patient",
+      "fit_data": "inner_selection_only_after_checkpoint_selection",
+      "nonnegative_slope_constraint": true,
+      "boundary_solution": false
+    },
+    "threshold": 0.2534686879432039
+  },
+  {
+    "fold": 4,
+    "calibration": {
+      "method": "regularized_platt",
+      "input": "logit_patient_aggregated_probability",
+      "slope": 1.0504142970367305,
+      "intercept": -0.4341644778352927,
+      "C": 1.0,
+      "clip_epsilon": 1e-07,
+      "scope": "patient",
+      "fit_data": "inner_selection_only_after_checkpoint_selection",
+      "nonnegative_slope_constraint": true,
+      "boundary_solution": false
+    },
+    "threshold": 0.3315181144524127
+  }
+]

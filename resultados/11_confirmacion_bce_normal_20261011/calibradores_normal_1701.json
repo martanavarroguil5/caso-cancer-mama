@@ -1,0 +1,37 @@
+[
+  {
+    "fold": 0,
+    "calibration": {
+      "method": "none"
+    },
+    "threshold": 0.37602934
+  },
+  {
+    "fold": 1,
+    "calibration": {
+      "method": "none"
+    },
+    "threshold": 0.41704896
+  },
+  {
+    "fold": 2,
+    "calibration": {
+      "method": "none"
+    },
+    "threshold": 0.18599024
+  },
+  {
+    "fold": 3,
+    "calibration": {
+      "method": "none"
+    },
+    "threshold": 0.2146424
+  },
+  {
+    "fold": 4,
+    "calibration": {
+      "method": "none"
+    },
+    "threshold": 0.36550325
+  }
+]

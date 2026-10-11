@@ -1,0 +1,19 @@
+{
+  "python": "3.12.3",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "torch": "2.14.0+cu130",
+  "numpy": "2.5.3",
+  "pandas": "3.0.6",
+  "sklearn": "1.9.1",
+  "pillow": "12.3.0",
+  "cuda_runtime": "13.0",
+  "device": "cuda",
+  "code_sha256": {
+    "04_entrenamiento.py": "532141a28947f657bb0d920e6ce798cebb8b0da698572d91d682c8dadedf66b0",
+    "pipeline_datos.py": "b61e550788d321536dccb96c87b09a3b04c1ef87f885c6945056b935215eb8eb"
+  },
+  "determinism_scope": "Mismo código, datos, entorno y hardware; reanudación por época.",
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "gpu_total_gib": 23.552978515625,
+  "git_commit": "2d5b81326fbdf56351a3455cd476408497022793"
+}

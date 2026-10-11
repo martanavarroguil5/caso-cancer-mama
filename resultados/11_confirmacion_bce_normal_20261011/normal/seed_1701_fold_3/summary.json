@@ -1,0 +1,25 @@
+{
+  "config_hash": "89909e9968e91f2da4ef8ec101fbf7eab0995084cb053c829481e04bef48d737",
+  "smoke": false,
+  "tracker": {
+    "criterion": "logloss",
+    "best": 0.5169600577395526,
+    "reference": 0.5169600577395526,
+    "best_epoch": 0,
+    "bad_epochs": 12,
+    "stopped": true,
+    "stop_epoch": 12
+  },
+  "n_parameters": 551921,
+  "seconds_epochs": 37.16720777300179,
+  "peak_allocated_bytes": 2845401088,
+  "files": {
+    "best.pt": "9276bea5d922a30ef26496d9b2f4d03d0d2a6d6990e8d8eeaaf902e19beff5f6",
+    "history.csv": "5ac6a45bf6fa00e7a71306a0039e908b701566dcf8b818b19c272f329e36a5aa",
+    "particiones.csv": "eb87e684e08e432c16055b7c1c3a7bfda80fc66b8f9fd10b8972434d973f28a5",
+    "config.json": "f81a0118fe0e9f3b9e2921a9297d60c9ae1cd01edc99a46017d26e55076d4c7d",
+    "environment.json": "b9ebdd4e1c03952acf951b0c3d9a5a66c65b369a338a7d6aaf3ec2acb878730a",
+    "inner.csv": "0248eda32f2f55109d4f1ee12e89d3c0b329bdb7e013e06bb93711dd876dbb97",
+    "oof.csv": "1089a97887fd6c63494d9e267ad122cf3a3e200b01ada4faedd0ddc126c3f23b"
+  }
+}
