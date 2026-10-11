@@ -1,0 +1,130 @@
+[
+  {
+    "family": "resnet_svm",
+    "k": 32,
+    "C": 0.01,
+    "gamma": 0.1,
+    "selection_loss": 0.5711289526670864,
+    "selection_auc": 0.7203413940256046
+  },
+  {
+    "family": "resnet_svm",
+    "k": 32,
+    "C": 0.01,
+    "gamma": 1.0,
+    "selection_loss": 0.587499346157891,
+    "selection_auc": 0.6958748221906117
+  },
+  {
+    "family": "resnet_svm",
+    "k": 32,
+    "C": 0.1,
+    "gamma": 0.1,
+    "selection_loss": 0.6435603887466906,
+    "selection_auc": 0.7089615931721195
+  },
+  {
+    "family": "resnet_svm",
+    "k": 32,
+    "C": 0.1,
+    "gamma": 1.0,
+    "selection_loss": 0.6872194214183261,
+    "selection_auc": 0.6927453769559032
+  },
+  {
+    "family": "resnet_svm",
+    "k": 32,
+    "C": 1.0,
+    "gamma": 0.1,
+    "selection_loss": 0.6011559944279039,
+    "selection_auc": 0.7288762446657183
+  },
+  {
+    "family": "resnet_svm",
+    "k": 32,
+    "C": 1.0,
+    "gamma": 1.0,
+    "selection_loss": 0.625856045793125,
+    "selection_auc": 0.6182076813655761
+  },
+  {
+    "family": "resnet_svm",
+    "k": 32,
+    "C": 10.0,
+    "gamma": 0.1,
+    "selection_loss": 0.6155999415385973,
+    "selection_auc": 0.6842105263157894
+  },
+  {
+    "family": "resnet_svm",
+    "k": 32,
+    "C": 10.0,
+    "gamma": 1.0,
+    "selection_loss": 0.6543934260271608,
+    "selection_auc": 0.4955903271692746
+  },
+  {
+    "family": "resnet_svm",
+    "k": 128,
+    "C": 0.01,
+    "gamma": 0.1,
+    "selection_loss": 0.5712828249746726,
+    "selection_auc": 0.7192034139402561
+  },
+  {
+    "family": "resnet_svm",
+    "k": 128,
+    "C": 0.01,
+    "gamma": 1.0,
+    "selection_loss": 0.5884365552322772,
+    "selection_auc": 0.70099573257468
+  },
+  {
+    "family": "resnet_svm",
+    "k": 128,
+    "C": 0.1,
+    "gamma": 0.1,
+    "selection_loss": 0.6450413092147054,
+    "selection_auc": 0.7035561877667141
+  },
+  {
+    "family": "resnet_svm",
+    "k": 128,
+    "C": 0.1,
+    "gamma": 1.0,
+    "selection_loss": 0.696702267012188,
+    "selection_auc": 0.698719772403983
+  },
+  {
+    "family": "resnet_svm",
+    "k": 128,
+    "C": 1.0,
+    "gamma": 0.1,
+    "selection_loss": 0.6024076883359895,
+    "selection_auc": 0.7226173541963017
+  },
+  {
+    "family": "resnet_svm",
+    "k": 128,
+    "C": 1.0,
+    "gamma": 1.0,
+    "selection_loss": 0.6080684577474145,
+    "selection_auc": 0.6571834992887625
+  },
+  {
+    "family": "resnet_svm",
+    "k": 128,
+    "C": 10.0,
+    "gamma": 0.1,
+    "selection_loss": 0.6117215159455237,
+    "selection_auc": 0.6438122332859175
+  },
+  {
+    "family": "resnet_svm",
+    "k": 128,
+    "C": 10.0,
+    "gamma": 1.0,
+    "selection_loss": 0.6098976871029614,
+    "selection_auc": 0.6005689900426743
+  }
+]

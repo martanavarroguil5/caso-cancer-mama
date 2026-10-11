@@ -1,0 +1,118 @@
+{
+  "fold": 4,
+  "smoke": false,
+  "partitions": {
+    "fit": "703b46f7f4993f338cdda566f2176aca50fbe861c247cc030f40abecc8f9802d",
+    "selection": "78ee67eaeb66daf0bd6e68dc1c2a0e24f480f3d82cc91ce6efb5bb1941f93504",
+    "outer": "db8b4029b7417f59840e6f715f68b29d1f95053c1dae060aebfa3076b0903413"
+  },
+  "models": {
+    "textura_lineal": {
+      "config": {
+        "family": "textura_lineal",
+        "k": 8,
+        "C": 1.0,
+        "gamma": null
+      },
+      "outer_raw": {
+        "n_patients": 219,
+        "roc_auc": 0.6896445448941854,
+        "average_precision": 0.5253735695042234,
+        "log_loss": 0.5481156621570187,
+        "brier": 0.1816013277155911,
+        "mean_fold_auc": 0.6896445448941854,
+        "fold_auc": [
+          0.6896445448941854
+        ]
+      },
+      "outer_calibrated": {
+        "n_patients": 219,
+        "roc_auc": 0.6896445448941854,
+        "average_precision": 0.5253735695042234,
+        "log_loss": 0.5491392984865792,
+        "brier": 0.1824300233242463,
+        "mean_fold_auc": 0.6896445448941854,
+        "fold_auc": [
+          0.6896445448941854
+        ]
+      }
+    },
+    "textura_svm": {
+      "config": {
+        "family": "textura_svm",
+        "k": 32,
+        "C": 0.01,
+        "gamma": 0.1
+      },
+      "outer_raw": {
+        "n_patients": 219,
+        "roc_auc": 0.6880008218615163,
+        "average_precision": 0.5468829840175788,
+        "log_loss": 0.5792981286556539,
+        "brier": 0.1953198530734685,
+        "mean_fold_auc": 0.6880008218615163,
+        "fold_auc": [
+          0.6880008218615163
+        ]
+      },
+      "outer_calibrated": {
+        "n_patients": 219,
+        "roc_auc": 0.6880008218615163,
+        "average_precision": 0.5468829840175788,
+        "log_loss": 0.5508766029014172,
+        "brier": 0.18354066036566188,
+        "mean_fold_auc": 0.6880008218615163,
+        "fold_auc": [
+          0.6880008218615163
+        ]
+      }
+    },
+    "textura_arboles": {
+      "config": {
+        "family": "textura_arboles",
+        "k": 32,
+        "lr": 0.03,
+        "iterations": 250
+      },
+      "outer_raw": {
+        "n_patients": 219,
+        "roc_auc": 0.7117320731456749,
+        "average_precision": 0.5234413478401231,
+        "log_loss": 0.5343582681324975,
+        "brier": 0.1776679153625403,
+        "mean_fold_auc": 0.7117320731456749,
+        "fold_auc": [
+          0.7117320731456749
+        ]
+      },
+      "outer_calibrated": {
+        "n_patients": 219,
+        "roc_auc": 0.7117320731456749,
+        "average_precision": 0.5234413478401231,
+        "log_loss": 0.5343033753764336,
+        "brier": 0.17766924201894668,
+        "mean_fold_auc": 0.7117320731456749,
+        "fold_auc": [
+          0.7117320731456749
+        ]
+      }
+    }
+  },
+  "files": {
+    "oof_calibrated_textura_arboles.csv": "3835d8844f10a32cf7f6d2772e37fa45f5323a68af45bc3067e2e6a071121430",
+    "oof_raw_textura_lineal.csv": "c3f0fd546e75c2634d10f5601be7108f46333652c293573b7cd875c6a4113151",
+    "oof_raw_textura_svm.csv": "765b03b1f262fa7ce3ee5e41d2253b5d14c9f20d29762d9d7af156d53ef3a8b6",
+    "inner_textura_arboles.csv": "4e616df9eb641beb8e7057a7be49d01c19252fc9ecce59fa32e03d10fb822ad0",
+    "inner_textura_lineal.csv": "b03caad4a8fb562748125bbea7a693012750d9686ed8fae9fed6c1b5ba4b6992",
+    "seleccion_textura_svm.json": "58db2bcf03da949744362ac5fd0bd56e7920845ee893722fb0f454f8a6b9c863",
+    "model_textura_svm.joblib": "cbd3c57057fc7553756d9950f4240f56b42591fafd61c14379ba07435c852e19",
+    "model_textura_lineal.joblib": "6abb81da335eb3df0cb2427ce14e88c1deeca676fd8204c7760b40cc81633c69",
+    "oof_raw_textura_arboles.csv": "16a179cc855e61d588c1f301b3c9de73a732f5669a9c854c69640784c17445e1",
+    "inner_textura_svm.csv": "490144bc41d4e336a6d3375ec54601cb9eb5cc0499f38716250ed2f1cba91899",
+    "model_textura_arboles.joblib": "5932e3ba3d1af5c7dda07ed21b18fdcb21aa3d02589de9817e89e52ddf48a539",
+    "oof_calibrated_textura_svm.csv": "9ec5f3552246eb1d2f0de46c10966ab9549462d20398a9a752519c3cf286dbae",
+    "oof_calibrated_textura_lineal.csv": "e9b49885f3f77e0fd4dd71172eac891fb97b0df2f1f716eef0c98f8d903670dc",
+    "seleccion_textura_lineal.json": "5363259d6d46af569c6e182ec157f3c5b97ed156e1da4d36213b0e4821edad79",
+    "seleccion_textura_arboles.json": "7689cf9e2fc8fa6fc5a2338cd6b6621fc9bacfcd6bf89e075c6dbfb7a21947e7"
+  }
+}

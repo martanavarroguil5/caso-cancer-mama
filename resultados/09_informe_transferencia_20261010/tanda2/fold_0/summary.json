@@ -1,0 +1,304 @@
+{
+  "fold": 0,
+  "smoke": false,
+  "partitions": {
+    "fit": "56cb9c00847de0ba6baa66358e6e60691a23eb75878bee90b8a2ddf9b1ac6271",
+    "selection": "ce699e7e723023d2d81588a4fefaf70b2d99f3c10b048020823c3e878ac5b9ac",
+    "outer": "7d55e17d2db0a2940b50c9373befd9f55da56ff8e89de878c7aefe49e9f82d21"
+  },
+  "models": {
+    "alexnet_svm": {
+      "config": {
+        "family": "alexnet_svm",
+        "k": 32,
+        "C": 10.0,
+        "gamma": 0.1
+      },
+      "fit": {
+        "n_patients": 746,
+        "n_positive": 219,
+        "prevalence": 0.2935656836461126,
+        "roc_auc": 0.9362723436701237,
+        "average_precision": 0.8620418713468904,
+        "brier": 0.11977106074598104,
+        "log_loss": 0.40442144376633,
+        "accuracy": 0.8672922252010724,
+        "f1": 0.7933194154488518,
+        "precision": 0.7307692307692307,
+        "recall": 0.867579908675799,
+        "balanced_accuracy": 0.8673762920988104,
+        "sensitivity": 0.867579908675799,
+        "specificity": 0.8671726755218216,
+        "threshold": 0.5,
+        "tn": 457,
+        "fp": 70,
+        "fn": 29,
+        "tp": 190,
+        "confusion_matrix": [
+          [
+            457,
+            70
+          ],
+          [
+            29,
+            190
+          ]
+        ]
+      },
+      "selection": {
+        "n_patients": 132,
+        "n_positive": 39,
+        "prevalence": 0.29545454545454547,
+        "roc_auc": 0.641852770885029,
+        "average_precision": 0.4576876816407389,
+        "brier": 0.2362713998960566,
+        "log_loss": 0.6704783659901814,
+        "accuracy": 0.6287878787878788,
+        "f1": 0.46153846153846156,
+        "precision": 0.40384615384615385,
+        "recall": 0.5384615384615384,
+        "balanced_accuracy": 0.6025641025641025,
+        "sensitivity": 0.5384615384615384,
+        "specificity": 0.6666666666666666,
+        "threshold": 0.5,
+        "tn": 62,
+        "fp": 31,
+        "fn": 18,
+        "tp": 21,
+        "confusion_matrix": [
+          [
+            62,
+            31
+          ],
+          [
+            18,
+            21
+          ]
+        ]
+      },
+      "outer_raw": {
+        "n_patients": 219,
+        "roc_auc": 0.692641129032258,
+        "average_precision": 0.4705162323475801,
+        "log_loss": 0.6247234607776884,
+        "brier": 0.21656634686227583,
+        "mean_fold_auc": 0.692641129032258,
+        "fold_auc": [
+          0.692641129032258
+        ]
+      },
+      "outer_calibrated": {
+        "n_patients": 219,
+        "roc_auc": 0.692641129032258,
+        "average_precision": 0.4705162323475801,
+        "log_loss": 0.560891716606689,
+        "brier": 0.18946400300391109,
+        "mean_fold_auc": 0.692641129032258,
+        "fold_auc": [
+          0.692641129032258
+        ]
+      }
+    },
+    "resnet_svm": {
+      "config": {
+        "family": "resnet_svm",
+        "k": 32,
+        "C": 0.01,
+        "gamma": 0.1
+      },
+      "fit": {
+        "n_patients": 746,
+        "n_positive": 219,
+        "prevalence": 0.2935656836461126,
+        "roc_auc": 0.7413809536187431,
+        "average_precision": 0.5508211784789423,
+        "brier": 0.19556405825300816,
+        "log_loss": 0.5791718053589147,
+        "accuracy": 0.7064343163538874,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "balanced_accuracy": 0.5,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "threshold": 0.5,
+        "tn": 527,
+        "fp": 0,
+        "fn": 219,
+        "tp": 0,
+        "confusion_matrix": [
+          [
+            527,
+            0
+          ],
+          [
+            219,
+            0
+          ]
+        ]
+      },
+      "selection": {
+        "n_patients": 132,
+        "n_positive": 39,
+        "prevalence": 0.29545454545454547,
+        "roc_auc": 0.6095947063688999,
+        "average_precision": 0.4241944186081048,
+        "brier": 0.20580672385014034,
+        "log_loss": 0.6015240823243874,
+        "accuracy": 0.7045454545454546,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "balanced_accuracy": 0.5,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "threshold": 0.5,
+        "tn": 93,
+        "fp": 0,
+        "fn": 39,
+        "tp": 0,
+        "confusion_matrix": [
+          [
+            93,
+            0
+          ],
+          [
+            39,
+            0
+          ]
+        ]
+      },
+      "outer_raw": {
+        "n_patients": 219,
+        "roc_auc": 0.7646169354838709,
+        "average_precision": 0.539499066106496,
+        "log_loss": 0.5775703524408152,
+        "brier": 0.19491709610366928,
+        "mean_fold_auc": 0.7646169354838709,
+        "fold_auc": [
+          0.7646169354838709
+        ]
+      },
+      "outer_calibrated": {
+        "n_patients": 219,
+        "roc_auc": 0.7646169354838709,
+        "average_precision": 0.539499066106496,
+        "log_loss": 0.5673407497861972,
+        "brier": 0.19180483681981092,
+        "mean_fold_auc": 0.7646169354838709,
+        "fold_auc": [
+          0.7646169354838709
+        ]
+      }
+    },
+    "alexnet_lineal": {
+      "config": {
+        "family": "alexnet_lineal",
+        "k": 32,
+        "C": 0.01,
+        "gamma": null
+      },
+      "fit": {
+        "n_patients": 746,
+        "n_positive": 219,
+        "prevalence": 0.2935656836461126,
+        "roc_auc": 0.7640733712839974,
+        "average_precision": 0.615070853287783,
+        "brier": 0.17742620983150376,
+        "log_loss": 0.5345038093777382,
+        "accuracy": 0.7412868632707775,
+        "f1": 0.21862348178137653,
+        "precision": 0.9642857142857143,
+        "recall": 0.1232876712328767,
+        "balanced_accuracy": 0.5606950690130228,
+        "sensitivity": 0.1232876712328767,
+        "specificity": 0.9981024667931688,
+        "threshold": 0.5,
+        "tn": 526,
+        "fp": 1,
+        "fn": 192,
+        "tp": 27,
+        "confusion_matrix": [
+          [
+            526,
+            1
+          ],
+          [
+            192,
+            27
+          ]
+        ]
+      },
+      "selection": {
+        "n_patients": 132,
+        "n_positive": 39,
+        "prevalence": 0.29545454545454547,
+        "roc_auc": 0.6115246760408051,
+        "average_precision": 0.4124605389119689,
+        "brier": 0.2020604582038523,
+        "log_loss": 0.5940434561230186,
+        "accuracy": 0.7045454545454546,
+        "f1": 0.13333333333333333,
+        "precision": 0.5,
+        "recall": 0.07692307692307693,
+        "balanced_accuracy": 0.5223325062034739,
+        "sensitivity": 0.07692307692307693,
+        "specificity": 0.967741935483871,
+        "threshold": 0.5,
+        "tn": 90,
+        "fp": 3,
+        "fn": 36,
+        "tp": 3,
+        "confusion_matrix": [
+          [
+            90,
+            3
+          ],
+          [
+            36,
+            3
+          ]
+        ]
+      },
+      "outer_raw": {
+        "n_patients": 219,
+        "roc_auc": 0.766633064516129,
+        "average_precision": 0.5573251544649832,
+        "log_loss": 0.5390729116988517,
+        "brier": 0.18033026047320144,
+        "mean_fold_auc": 0.766633064516129,
+        "fold_auc": [
+          0.766633064516129
+        ]
+      },
+      "outer_calibrated": {
+        "n_patients": 219,
+        "roc_auc": 0.766633064516129,
+        "average_precision": 0.5573251544649832,
+        "log_loss": 0.5560333058219642,
+        "brier": 0.187167723018962,
+        "mean_fold_auc": 0.766633064516129,
+        "fold_auc": [
+          0.766633064516129
+        ]
+      }
+    }
+  },
+  "files": {
+    "inner_alexnet_lineal.csv": "ae1bcd5f1ccac3199a3a4b6e62bbfef3101e42f6bc46a4180e4af06b2dc08012",
+    "inner_resnet_svm.csv": "0dc77141ce75eeab5a0bc1d2f72fc2b76e9281a8a319d1188d646ae8216665b4",
+    "oof_calibrated_alexnet_lineal.csv": "e2a07c426600cefd6cf55958f73de37314b0a3e55fe89604f0d63d3f38976a88",
+    "inner_alexnet_svm.csv": "18bfd093c284773b3b8e9fcee887ef7f5c34a7b4c1871f6c6bcab3d0bd998614",
+    "oof_calibrated_alexnet_svm.csv": "79755321427bc6f3776fbcea50d8e48b6dfe6379d1fdec32c3b18b350d4c1b71",
+    "oof_calibrated_resnet_svm.csv": "2ea4caeb326006d1c2df733554f843abe29e28f37ad4d74f8adbdec445038130",
+    "seleccion_resnet_svm.json": "30e495eca185449d7ee6e2275738f135a22572a480552ec2c6941346a8990228",
+    "model_alexnet_svm.joblib": "bdcb02bcf72a201032fa4345e2a3e6f8d1fda7df964b5cc2c3b73d5de4be98e0",
+    "oof_raw_alexnet_lineal.csv": "36d3211a740f0f3d58f929c5e5f256dac05fe84550f13fdef62cc01e4b7bd621",
+    "oof_raw_alexnet_svm.csv": "b8534b3467a7576efb14e3360154deee89204af3d70d0142d451fb25b13a1a51",
+    "seleccion_alexnet_svm.json": "da71aa4d0cfcfacd45e653ae39e57eb23c86fd25dfacbf0a742ad940f2d04074",
+    "seleccion_alexnet_lineal.json": "f3267f3b59b5d8b0a1c0c27e50c2e3716e7a9f931f62abf5672a4ae69ef83f9a",
+    "model_resnet_svm.joblib": "faade53915557cb1d661420b6e9a25bda8ea83851a8fb8e9245f8295592b3069",
+    "model_alexnet_lineal.joblib": "6c343323fa1a6fb1911a746efe3219abd8311c0cf876e03a5f6f9f4d25d52c92",
+    "oof_raw_resnet_svm.csv": "35252c7846c608009a568941d8b96fcd0eab70b60b79b3b2faa879cdb1f64909"
+  }
+}

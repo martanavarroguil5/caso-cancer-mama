@@ -1,0 +1,61 @@
+{
+  "epochs": 24,
+  "min_epochs": 8,
+  "patience": 6,
+  "min_delta": 0.001,
+  "patients_per_batch": 16,
+  "slices_per_patient": 4,
+  "tail_lr": 1e-05,
+  "head_lr": 0.001,
+  "head_weight_decay": 0.01,
+  "l2sp": 0.005,
+  "image_logit_limit": 0.5,
+  "dropout": 0.5,
+  "seed_list": [
+    42,
+    2026
+  ],
+  "smoke": false,
+  "seed": 2026,
+  "fold": 2,
+  "clinical": {
+    "preprocessing": {
+      "fit_scope": "unique_patients_in_training_partition",
+      "medians": [
+        48.57,
+        2.6582454170350887,
+        1.0,
+        0.0
+      ],
+      "means": [
+        48.66452348993288,
+        2.7045677091974754,
+        0.5704697986577181,
+        0.25771812080536916
+      ],
+      "stds": [
+        10.605190109383226,
+        1.082448577634858,
+        0.49500909837814155,
+        0.43737797271229906
+      ],
+      "n_patients": 745
+    },
+    "coef": [
+      -0.25186773801293866,
+      -0.2536987479103994,
+      -0.680689929544082,
+      0.4407014727979118,
+      0.4024138650042748,
+      0.26361991546308194,
+      -0.2030601206198344,
+      0.3651709236214683
+    ],
+    "intercept": -0.9720964040364267
+  },
+  "partitions": {
+    "fit": "08ba9884cf13d4c7ad9fa34b72bb173f5d9654130fad194702205d14170f4b11",
+    "selection": "193529207fe2b157b6e4ef490c10214ed6cdcb66b90f6ac8a0455bed936b3c8d",
+    "outer": "5b884fffbc22c3ca03828781150eeaa01a73b7f16345cfc94d15afa196610ac3"
+  }
+}

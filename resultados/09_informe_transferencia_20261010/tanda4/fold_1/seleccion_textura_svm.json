@@ -1,0 +1,130 @@
+[
+  {
+    "family": "textura_svm",
+    "k": 8,
+    "C": 0.01,
+    "gamma": 0.1,
+    "selection_logloss": 0.5961345832016309,
+    "selection_auc": 0.6344086021505376
+  },
+  {
+    "family": "textura_svm",
+    "k": 8,
+    "C": 0.01,
+    "gamma": 1.0,
+    "selection_logloss": 0.6040036949219525,
+    "selection_auc": 0.5988420181968569
+  },
+  {
+    "family": "textura_svm",
+    "k": 8,
+    "C": 0.1,
+    "gamma": 0.1,
+    "selection_logloss": 0.6828573265503937,
+    "selection_auc": 0.616763165150262
+  },
+  {
+    "family": "textura_svm",
+    "k": 8,
+    "C": 0.1,
+    "gamma": 1.0,
+    "selection_logloss": 0.7042004200223748,
+    "selection_auc": 0.6018748276812793
+  },
+  {
+    "family": "textura_svm",
+    "k": 8,
+    "C": 1.0,
+    "gamma": 0.1,
+    "selection_logloss": 0.6795330938691803,
+    "selection_auc": 0.6018748276812793
+  },
+  {
+    "family": "textura_svm",
+    "k": 8,
+    "C": 1.0,
+    "gamma": 1.0,
+    "selection_logloss": 0.6609609010496074,
+    "selection_auc": 0.6098704163220292
+  },
+  {
+    "family": "textura_svm",
+    "k": 8,
+    "C": 10.0,
+    "gamma": 0.1,
+    "selection_logloss": 0.6553619400223889,
+    "selection_auc": 0.6294458229942101
+  },
+  {
+    "family": "textura_svm",
+    "k": 8,
+    "C": 10.0,
+    "gamma": 1.0,
+    "selection_logloss": 0.6863976081991492,
+    "selection_auc": 0.5431486076647367
+  },
+  {
+    "family": "textura_svm",
+    "k": 32,
+    "C": 0.01,
+    "gamma": 0.1,
+    "selection_logloss": 0.5951527944589708,
+    "selection_auc": 0.6379928315412187
+  },
+  {
+    "family": "textura_svm",
+    "k": 32,
+    "C": 0.01,
+    "gamma": 1.0,
+    "selection_logloss": 0.6040082477810884,
+    "selection_auc": 0.6093189964157706
+  },
+  {
+    "family": "textura_svm",
+    "k": 32,
+    "C": 0.1,
+    "gamma": 0.1,
+    "selection_logloss": 0.680614402844344,
+    "selection_auc": 0.6228287841191067
+  },
+  {
+    "family": "textura_svm",
+    "k": 32,
+    "C": 0.1,
+    "gamma": 1.0,
+    "selection_logloss": 0.6907219028084122,
+    "selection_auc": 0.6093189964157707
+  },
+  {
+    "family": "textura_svm",
+    "k": 32,
+    "C": 1.0,
+    "gamma": 0.1,
+    "selection_logloss": 0.6734170308800197,
+    "selection_auc": 0.6076647366969948
+  },
+  {
+    "family": "textura_svm",
+    "k": 32,
+    "C": 1.0,
+    "gamma": 1.0,
+    "selection_logloss": 0.6369862727724115,
+    "selection_auc": 0.6305486628067274
+  },
+  {
+    "family": "textura_svm",
+    "k": 32,
+    "C": 10.0,
+    "gamma": 0.1,
+    "selection_logloss": 0.6547294253535738,
+    "selection_auc": 0.619520264681555
+  },
+  {
+    "family": "textura_svm",
+    "k": 32,
+    "C": 10.0,
+    "gamma": 1.0,
+    "selection_logloss": 0.635431136041998,
+    "selection_auc": 0.5936035290874
+  }
+]

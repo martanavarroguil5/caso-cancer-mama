@@ -1,0 +1,13 @@
+{
+  "status": "complete",
+  "started_at": "2026-10-10T20:34:29.615150+00:00",
+  "pid": 104533,
+  "smoke": false,
+  "stage": "complete",
+  "updated_at": "2026-10-10T20:35:49.546360+00:00",
+  "batch": 172,
+  "batches": 172,
+  "fold": 4,
+  "finished_at": "2026-10-10T20:35:49.546347+00:00",
+  "protected_unchanged": true
+}

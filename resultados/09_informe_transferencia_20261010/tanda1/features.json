@@ -1,0 +1,9 @@
+{
+  "sample_signature": "5e309e6c65b73f5626b25762d4566d30f628322546dc659d814f26457695ec5b",
+  "smoke": false,
+  "representation": "ResNet50_ImageNet1K_V2_full_and_center128_mean_patient",
+  "sha256": "9f57fa57d890b84f470268a406dae6b53e3c3995a734e40b137ea8964481dfe4",
+  "patients": 1097,
+  "backbone_sha256": "64acff2ad56c7dc8d06e3ce3fab9b74eaad3bc1164183134e61cea582a6b4e15",
+  "elapsed_seconds": 19.7297992399981
+}

@@ -1,0 +1,66 @@
+[
+  {
+    "family": "textura_lineal",
+    "k": 8,
+    "C": 0.01,
+    "gamma": null,
+    "selection_logloss": 0.5362024694316532,
+    "selection_auc": 0.7283072546230442
+  },
+  {
+    "family": "textura_lineal",
+    "k": 8,
+    "C": 0.1,
+    "gamma": null,
+    "selection_logloss": 0.515322259243483,
+    "selection_auc": 0.732574679943101
+  },
+  {
+    "family": "textura_lineal",
+    "k": 8,
+    "C": 1.0,
+    "gamma": null,
+    "selection_logloss": 0.5117545367424566,
+    "selection_auc": 0.7388335704125177
+  },
+  {
+    "family": "textura_lineal",
+    "k": 8,
+    "C": 10.0,
+    "gamma": null,
+    "selection_logloss": 0.508674351065512,
+    "selection_auc": 0.7439544807965861
+  },
+  {
+    "family": "textura_lineal",
+    "k": 32,
+    "C": 0.01,
+    "gamma": null,
+    "selection_logloss": 0.5356360800911073,
+    "selection_auc": 0.7305832147937411
+  },
+  {
+    "family": "textura_lineal",
+    "k": 32,
+    "C": 0.1,
+    "gamma": null,
+    "selection_logloss": 0.5109751274072977,
+    "selection_auc": 0.7399715504978663
+  },
+  {
+    "family": "textura_lineal",
+    "k": 32,
+    "C": 1.0,
+    "gamma": null,
+    "selection_logloss": 0.5005018145145804,
+    "selection_auc": 0.7476529160739688
+  },
+  {
+    "family": "textura_lineal",
+    "k": 32,
+    "C": 10.0,
+    "gamma": null,
+    "selection_logloss": 0.5020232815999368,
+    "selection_auc": 0.7453769559032717
+  }
+]

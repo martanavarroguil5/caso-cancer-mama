@@ -1,0 +1,9 @@
+{
+  "sha256": "a4ae5535d0d5ba84bd9f9a28fb7bd0f243a7a8f233a15c5a6089bf45486f38bf",
+  "data_signature": "5e309e6c65b73f5626b25762d4566d30f628322546dc659d814f26457695ec5b",
+  "smoke": false,
+  "shape": [
+    1097,
+    576
+  ]
+}

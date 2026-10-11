@@ -1,0 +1,20 @@
+{
+  "config_hash": "382ccb25877d2c6f5b2a4fb7b5fcec52952bc6878bad6e556db5318180468130",
+  "smoke": false,
+  "tracker": {
+    "criterion": "logloss",
+    "best": 0.5169423381208965,
+    "reference": 0.5169600555417366,
+    "best_epoch": 1,
+    "bad_epochs": 8,
+    "stopped": true,
+    "stop_epoch": 8
+  },
+  "files": {
+    "best.pt": "b0b651a78f031f65592df75236b2e856b4c143ede31d082b26c7e9646a427ce8",
+    "history.csv": "c2b876c0160ffb4c7fcfb1157e43ea6fa1006207ddf27f69d522a7d236c14663",
+    "inner.csv": "e92a8e84281108ce46a7aa1172b6f58d73ac9be61020bddaa29744843a2f7e00",
+    "oof.csv": "4b7b0eb09874c8a17acb03fa135057fb08b68b052808d135578fbe7a836b853b",
+    "config.json": "2a6c285f10088e9ade4b42f7063c7e0eef47bb91df9cf890d45b8dd46c0de563"
+  }
+}

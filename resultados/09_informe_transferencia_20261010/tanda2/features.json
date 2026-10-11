@@ -1,0 +1,11 @@
+{
+  "sample_signature": "5e309e6c65b73f5626b25762d4566d30f628322546dc659d814f26457695ec5b",
+  "smoke": false,
+  "sha256": "3c1842ebcfef3960de51bb10fc0cf27ec1ce108c49932ad8429980ea22986d25",
+  "weights_sha256": "f3bc5e3075f8ac9ba493e7f04cf192d715e53bc1a329d55f2ea1760d6bd7890e",
+  "shape": [
+    1097,
+    32448
+  ],
+  "representation": "AlexNet_ImageNet_pool2_spatial_mean_patient"
+}

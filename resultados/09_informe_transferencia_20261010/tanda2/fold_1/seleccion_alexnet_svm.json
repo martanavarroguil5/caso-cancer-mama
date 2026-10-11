@@ -1,0 +1,130 @@
+[
+  {
+    "family": "alexnet_svm",
+    "k": 32,
+    "C": 0.01,
+    "gamma": 0.1,
+    "selection_loss": 0.5994327731523322,
+    "selection_auc": 0.6272401433691757
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 32,
+    "C": 0.01,
+    "gamma": 1.0,
+    "selection_loss": 0.6053728761854158,
+    "selection_auc": 0.5820237110559692
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 32,
+    "C": 0.1,
+    "gamma": 0.1,
+    "selection_loss": 0.701894541819397,
+    "selection_auc": 0.6239316239316239
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 32,
+    "C": 0.1,
+    "gamma": 1.0,
+    "selection_loss": 0.7485327004210182,
+    "selection_auc": 0.5930521091811414
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 32,
+    "C": 1.0,
+    "gamma": 0.1,
+    "selection_loss": 0.6725405173503134,
+    "selection_auc": 0.6134546457127102
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 32,
+    "C": 1.0,
+    "gamma": 1.0,
+    "selection_loss": 0.6348435712560625,
+    "selection_auc": 0.5993934381031155
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 32,
+    "C": 10.0,
+    "gamma": 0.1,
+    "selection_loss": 0.6377880623132004,
+    "selection_auc": 0.6189688447752965
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 32,
+    "C": 10.0,
+    "gamma": 1.0,
+    "selection_loss": 0.6162923096304759,
+    "selection_auc": 0.6002205679625034
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 128,
+    "C": 0.01,
+    "gamma": 0.1,
+    "selection_loss": 0.5986768484050172,
+    "selection_auc": 0.626688723462917
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 128,
+    "C": 0.01,
+    "gamma": 1.0,
+    "selection_loss": 0.6047472634572358,
+    "selection_auc": 0.5867107802591673
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 128,
+    "C": 0.1,
+    "gamma": 0.1,
+    "selection_loss": 0.6975712590724162,
+    "selection_auc": 0.6206231044940722
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 128,
+    "C": 0.1,
+    "gamma": 1.0,
+    "selection_loss": 0.744986971834696,
+    "selection_auc": 0.5902950096498483
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 128,
+    "C": 1.0,
+    "gamma": 0.1,
+    "selection_loss": 0.673377008128771,
+    "selection_auc": 0.610697546181417
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 128,
+    "C": 1.0,
+    "gamma": 1.0,
+    "selection_loss": 0.6307310458820796,
+    "selection_auc": 0.6002205679625034
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 128,
+    "C": 10.0,
+    "gamma": 0.1,
+    "selection_loss": 0.6342137333737522,
+    "selection_auc": 0.6049076371657016
+  },
+  {
+    "family": "alexnet_svm",
+    "k": 128,
+    "C": 10.0,
+    "gamma": 1.0,
+    "selection_loss": 0.6179602101596928,
+    "selection_auc": 0.604356217259443
+  }
+]

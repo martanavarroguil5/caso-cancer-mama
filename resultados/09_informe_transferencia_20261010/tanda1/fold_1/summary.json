@@ -1,0 +1,400 @@
+{
+  "fold": 1,
+  "smoke": false,
+  "partition_signatures": {
+    "fit": "9cc4ec9c21979f7266b07043387c6de0e585c6c2bb2db223869b8894b923cc81",
+    "selection": "583ea03268852ccdf60b258bad29e9701ed3600ac641e5e3bcc8577d7d4a0c3f",
+    "outer": "c2344b42100f0444c7b3079c1296e7146956f20d6cd40e7aef36642ed880a395"
+  },
+  "models": {
+    "lineal": {
+      "config": {
+        "family": "lineal",
+        "k": 16,
+        "C": 0.001,
+        "clinical_scale": 4.0
+      },
+      "threshold": 0.3463651872894395,
+      "fit": {
+        "n_patients": 746,
+        "n_positive": 221,
+        "prevalence": 0.29624664879356566,
+        "roc_auc": 0.7371170006464124,
+        "average_precision": 0.5506874093784402,
+        "brier": 0.18007451664559176,
+        "log_loss": 0.5387734555447546,
+        "accuracy": 0.7332439678284183,
+        "f1": 0.26022304832713755,
+        "precision": 0.7291666666666666,
+        "recall": 0.1583710407239819,
+        "balanced_accuracy": 0.5668045679810385,
+        "sensitivity": 0.1583710407239819,
+        "specificity": 0.9752380952380952,
+        "threshold": 0.5,
+        "tn": 512,
+        "fp": 13,
+        "fn": 186,
+        "tp": 35,
+        "confusion_matrix": [
+          [
+            512,
+            13
+          ],
+          [
+            186,
+            35
+          ]
+        ]
+      },
+      "selection": {
+        "n_patients": 132,
+        "n_positive": 39,
+        "prevalence": 0.29545454545454547,
+        "roc_auc": 0.6024262475875379,
+        "average_precision": 0.4645388205212816,
+        "brier": 0.2011893693443582,
+        "log_loss": 0.5955922375553914,
+        "accuracy": 0.7272727272727273,
+        "f1": 0.25,
+        "precision": 0.6666666666666666,
+        "recall": 0.15384615384615385,
+        "balanced_accuracy": 0.5607940446650124,
+        "sensitivity": 0.15384615384615385,
+        "specificity": 0.967741935483871,
+        "threshold": 0.5,
+        "tn": 90,
+        "fp": 3,
+        "fn": 33,
+        "tp": 6,
+        "confusion_matrix": [
+          [
+            90,
+            3
+          ],
+          [
+            33,
+            6
+          ]
+        ]
+      },
+      "outer_raw": {
+        "n_patients": 219,
+        "roc_auc": 0.7084446270803371,
+        "average_precision": 0.4503216424385902,
+        "log_loss": 0.5498094601556516,
+        "brier": 0.18438434224139208,
+        "mean_fold_auc": 0.7084446270803371,
+        "fold_auc": [
+          0.7084446270803371
+        ]
+      },
+      "outer_calibrated": {
+        "n_patients": 219,
+        "roc_auc": 0.7084446270803371,
+        "average_precision": 0.4503216424385902,
+        "log_loss": 0.5609897918789856,
+        "brier": 0.18853419386301778,
+        "mean_fold_auc": 0.7084446270803371,
+        "fold_auc": [
+          0.7084446270803371
+        ]
+      }
+    },
+    "no_lineal": {
+      "config": {
+        "family": "no_lineal",
+        "k": 16,
+        "lr": 0.03,
+        "iterations": 100
+      },
+      "threshold": 0.32754553596648595,
+      "fit": {
+        "n_patients": 746,
+        "n_positive": 221,
+        "prevalence": 0.29624664879356566,
+        "roc_auc": 0.8112346477052359,
+        "average_precision": 0.6748581286050968,
+        "brier": 0.16378869539267846,
+        "log_loss": 0.5001957970632567,
+        "accuracy": 0.7613941018766756,
+        "f1": 0.3819444444444444,
+        "precision": 0.8208955223880597,
+        "recall": 0.248868778280543,
+        "balanced_accuracy": 0.6130058177117,
+        "sensitivity": 0.248868778280543,
+        "specificity": 0.9771428571428571,
+        "threshold": 0.5,
+        "tn": 513,
+        "fp": 12,
+        "fn": 166,
+        "tp": 55,
+        "confusion_matrix": [
+          [
+            513,
+            12
+          ],
+          [
+            166,
+            55
+          ]
+        ]
+      },
+      "selection": {
+        "n_patients": 132,
+        "n_positive": 39,
+        "prevalence": 0.29545454545454547,
+        "roc_auc": 0.5697546181417149,
+        "average_precision": 0.3827457258445388,
+        "brier": 0.2079786665751605,
+        "log_loss": 0.6112347981313864,
+        "accuracy": 0.7121212121212122,
+        "f1": 0.17391304347826086,
+        "precision": 0.5714285714285714,
+        "recall": 0.10256410256410256,
+        "balanced_accuracy": 0.5351530190239868,
+        "sensitivity": 0.10256410256410256,
+        "specificity": 0.967741935483871,
+        "threshold": 0.5,
+        "tn": 90,
+        "fp": 3,
+        "fn": 35,
+        "tp": 4,
+        "confusion_matrix": [
+          [
+            90,
+            3
+          ],
+          [
+            35,
+            4
+          ]
+        ]
+      },
+      "outer_raw": {
+        "n_patients": 219,
+        "roc_auc": 0.6699712348469282,
+        "average_precision": 0.42222671213013385,
+        "log_loss": 0.5595414313006954,
+        "brier": 0.1892390109741632,
+        "mean_fold_auc": 0.6699712348469282,
+        "fold_auc": [
+          0.6699712348469282
+        ]
+      },
+      "outer_calibrated": {
+        "n_patients": 219,
+        "roc_auc": 0.6699712348469282,
+        "average_precision": 0.42222671213013385,
+        "log_loss": 0.572234071991217,
+        "brier": 0.19325743875070903,
+        "mean_fold_auc": 0.6699712348469282,
+        "fold_auc": [
+          0.6699712348469282
+        ]
+      }
+    },
+    "fusion_tardia": {
+      "config": {
+        "family": "fusion_tardia",
+        "k": 64,
+        "C": 0.001,
+        "image_weight": 0.5
+      },
+      "threshold": 0.3591020427143877,
+      "fit": {
+        "n_patients": 746,
+        "n_positive": 221,
+        "prevalence": 0.29624664879356566,
+        "roc_auc": 0.7513984055160525,
+        "average_precision": 0.5661325236829101,
+        "brier": 0.18324737568993424,
+        "log_loss": 0.5473117686231016,
+        "accuracy": 0.7198391420911529,
+        "f1": 0.11814345991561181,
+        "precision": 0.875,
+        "recall": 0.06334841628959276,
+        "balanced_accuracy": 0.5297694462400344,
+        "sensitivity": 0.06334841628959276,
+        "specificity": 0.9961904761904762,
+        "threshold": 0.5,
+        "tn": 523,
+        "fp": 2,
+        "fn": 207,
+        "tp": 14,
+        "confusion_matrix": [
+          [
+            523,
+            2
+          ],
+          [
+            207,
+            14
+          ]
+        ]
+      },
+      "selection": {
+        "n_patients": 132,
+        "n_positive": 39,
+        "prevalence": 0.29545454545454547,
+        "roc_auc": 0.6040805073063138,
+        "average_precision": 0.464210554301306,
+        "brier": 0.20039291950208615,
+        "log_loss": 0.5909450082657581,
+        "accuracy": 0.7045454545454546,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "balanced_accuracy": 0.5,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "threshold": 0.5,
+        "tn": 93,
+        "fp": 0,
+        "fn": 39,
+        "tp": 0,
+        "confusion_matrix": [
+          [
+            93,
+            0
+          ],
+          [
+            39,
+            0
+          ]
+        ]
+      },
+      "outer_raw": {
+        "n_patients": 219,
+        "roc_auc": 0.7108074789397987,
+        "average_precision": 0.46000112502754337,
+        "log_loss": 0.5546272426789457,
+        "brier": 0.18596856983031493,
+        "mean_fold_auc": 0.7108074789397987,
+        "fold_auc": [
+          0.7108074789397987
+        ]
+      },
+      "outer_calibrated": {
+        "n_patients": 219,
+        "roc_auc": 0.7108074789397987,
+        "average_precision": 0.46000112502754337,
+        "log_loss": 0.5602551820989992,
+        "brier": 0.18809957364617758,
+        "mean_fold_auc": 0.7108074789397987,
+        "fold_auc": [
+          0.7108074789397987
+        ]
+      }
+    },
+    "clinica": {
+      "config": {
+        "family": "clinica"
+      },
+      "threshold": 0.3613112183797632,
+      "fit": {
+        "n_patients": 746,
+        "n_positive": 221,
+        "prevalence": 0.29624664879356566,
+        "roc_auc": 0.7252661064425772,
+        "average_precision": 0.529369170760996,
+        "brier": 0.1787201667463507,
+        "log_loss": 0.5346855852984946,
+        "accuracy": 0.7319034852546917,
+        "f1": 0.35064935064935066,
+        "precision": 0.6206896551724138,
+        "recall": 0.24434389140271492,
+        "balanced_accuracy": 0.590743374272786,
+        "sensitivity": 0.24434389140271492,
+        "specificity": 0.9371428571428572,
+        "threshold": 0.5,
+        "tn": 492,
+        "fp": 33,
+        "fn": 167,
+        "tp": 54,
+        "confusion_matrix": [
+          [
+            492,
+            33
+          ],
+          [
+            167,
+            54
+          ]
+        ]
+      },
+      "selection": {
+        "n_patients": 132,
+        "n_positive": 39,
+        "prevalence": 0.29545454545454547,
+        "roc_auc": 0.5969120485249518,
+        "average_precision": 0.4553062925983219,
+        "brier": 0.20549595571512197,
+        "log_loss": 0.6192177043261019,
+        "accuracy": 0.7348484848484849,
+        "f1": 0.3137254901960784,
+        "precision": 0.6666666666666666,
+        "recall": 0.20512820512820512,
+        "balanced_accuracy": 0.5810587262200165,
+        "sensitivity": 0.20512820512820512,
+        "specificity": 0.956989247311828,
+        "threshold": 0.5,
+        "tn": 89,
+        "fp": 4,
+        "fn": 31,
+        "tp": 8,
+        "confusion_matrix": [
+          [
+            89,
+            4
+          ],
+          [
+            31,
+            8
+          ]
+        ]
+      },
+      "outer_raw": {
+        "n_patients": 219,
+        "roc_auc": 0.705670844462708,
+        "average_precision": 0.45541840409501444,
+        "log_loss": 0.5473557254445786,
+        "brier": 0.18312401587128713,
+        "mean_fold_auc": 0.705670844462708,
+        "fold_auc": [
+          0.705670844462708
+        ]
+      },
+      "outer_calibrated": {
+        "n_patients": 219,
+        "roc_auc": 0.705670844462708,
+        "average_precision": 0.45541840409501444,
+        "log_loss": 0.56059086308423,
+        "brier": 0.18826645018815757,
+        "mean_fold_auc": 0.705670844462708,
+        "fold_auc": [
+          0.705670844462708
+        ]
+      }
+    }
+  },
+  "files": {
+    "oof_calibrated_fusion_tardia.csv": "04234ae661582082cf260b4a5048b4eba1a9bde8e1e8f344eebc54d79e9abb3a",
+    "oof_calibrated_lineal.csv": "a8b2cfb3b48f581e708cd52005d220fef056c6efafb2360641b82ca59a7604db",
+    "model_lineal.joblib": "003d7f7a68f6906a7d3383f564a1ff2305acc71e1c15dae2aaab5c776282df3a",
+    "inner_lineal.csv": "c83c03823a8f64bdcc2246c04c4dcd4d2cb4578d4d0e1e00b2835274e0e59160",
+    "inner_fusion_tardia.csv": "5a887fcb3de77333cba0cda87488cee07b24e85652a671b69dc9366fea9beedc",
+    "inner_clinica.csv": "ad852c5ca6a3de1f531cf1aff3290003cffa6aeb9a56cd2ac8e26244d2036b80",
+    "model_no_lineal.joblib": "ecaae4431066af72750a5ae71a13ce5994e345cbd416c022081101c78e4e1c33",
+    "oof_raw_fusion_tardia.csv": "9c79569fc2c608193aca2263dd80e4f3b2e5893f2e7f3c8f9cbd7b980bc33367",
+    "inner_no_lineal.csv": "f1574a8a05da5ce13f38c736af23c274a1995ae4e363ac72369d51e0eec0e7bd",
+    "oof_raw_lineal.csv": "930d5a8e2279969d448efcac93f57848f23803ca02b7468400c3a599a0af7a1d",
+    "model_fusion_tardia.joblib": "ea20a315efb3bdba2e0d91cc596b2ccf00fde6aa4dffeeeaf82fcdb2e75880bb",
+    "oof_raw_clinica.csv": "382db716d03a919f042e1b03f861acb2fc8cbc1ca71201f7ea3a36139a9000c5",
+    "oof_calibrated_no_lineal.csv": "c4ed4b4a5c534bc34f9e036618caea9b2a73c87b0e7793d51191428e2660fd0e",
+    "model_clinica.joblib": "01eb934ec52d1cae5f5d0ec45dd4629a0a0821a6d73acd305aa80d8a8152af68",
+    "particiones.csv": "97240c4cdda257b3e4aaf5de44e4317e399092c5cf529faa0bef4e490bebc09c",
+    "seleccion.json": "4fa1ae94fe5ea1ab732bd8148bbc536eb4989dc46bb4fa1be6d0eaaf7be72509",
+    "oof_calibrated_clinica.csv": "8f1b2d825cdf859817a882c710910caf80622d782658a549a441c35b87185084",
+    "oof_raw_no_lineal.csv": "5743e9bdeaedb194d722f7981c19f9335bfaeb5972e3e0ccca5ca6303c2fe982"
+  }
+}

@@ -1,0 +1,66 @@
+[
+  {
+    "family": "alexnet_lineal",
+    "k": 32,
+    "C": 0.01,
+    "gamma": null,
+    "selection_loss": 0.5940434561230186,
+    "selection_auc": 0.6115246760408051
+  },
+  {
+    "family": "alexnet_lineal",
+    "k": 32,
+    "C": 0.1,
+    "gamma": null,
+    "selection_loss": 0.6176982899631087,
+    "selection_auc": 0.6239316239316239
+  },
+  {
+    "family": "alexnet_lineal",
+    "k": 32,
+    "C": 1.0,
+    "gamma": null,
+    "selection_loss": 0.6521794965497345,
+    "selection_auc": 0.6277915632754342
+  },
+  {
+    "family": "alexnet_lineal",
+    "k": 32,
+    "C": 10.0,
+    "gamma": null,
+    "selection_loss": 0.6733421546189137,
+    "selection_auc": 0.6233802040253653
+  },
+  {
+    "family": "alexnet_lineal",
+    "k": 128,
+    "C": 0.01,
+    "gamma": null,
+    "selection_loss": 0.5983716259677759,
+    "selection_auc": 0.5988420181968569
+  },
+  {
+    "family": "alexnet_lineal",
+    "k": 128,
+    "C": 0.1,
+    "gamma": null,
+    "selection_loss": 0.6361559375521623,
+    "selection_auc": 0.6027019575406671
+  },
+  {
+    "family": "alexnet_lineal",
+    "k": 128,
+    "C": 1.0,
+    "gamma": null,
+    "selection_loss": 0.682375739558607,
+    "selection_auc": 0.6043562172594431
+  },
+  {
+    "family": "alexnet_lineal",
+    "k": 128,
+    "C": 10.0,
+    "gamma": null,
+    "selection_loss": 0.8269934971879072,
+    "selection_auc": 0.5839536807278742
+  }
+]

@@ -1,0 +1,66 @@
+[
+  {
+    "family": "textura_arboles",
+    "k": 8,
+    "lr": 0.03,
+    "iterations": 100,
+    "selection_logloss": 0.6249034040893744,
+    "selection_auc": 0.5612076095947064
+  },
+  {
+    "family": "textura_arboles",
+    "k": 8,
+    "lr": 0.03,
+    "iterations": 250,
+    "selection_logloss": 0.6491186900731136,
+    "selection_auc": 0.558588365039978
+  },
+  {
+    "family": "textura_arboles",
+    "k": 8,
+    "lr": 0.1,
+    "iterations": 100,
+    "selection_logloss": 0.6560975667517739,
+    "selection_auc": 0.5599669148056244
+  },
+  {
+    "family": "textura_arboles",
+    "k": 8,
+    "lr": 0.1,
+    "iterations": 250,
+    "selection_logloss": 0.6853860153514821,
+    "selection_auc": 0.5751309622277364
+  },
+  {
+    "family": "textura_arboles",
+    "k": 32,
+    "lr": 0.03,
+    "iterations": 100,
+    "selection_logloss": 0.624360759117461,
+    "selection_auc": 0.5492142266335814
+  },
+  {
+    "family": "textura_arboles",
+    "k": 32,
+    "lr": 0.03,
+    "iterations": 250,
+    "selection_logloss": 0.6622405809851201,
+    "selection_auc": 0.5340501792114696
+  },
+  {
+    "family": "textura_arboles",
+    "k": 32,
+    "lr": 0.1,
+    "iterations": 100,
+    "selection_logloss": 0.6729911797005941,
+    "selection_auc": 0.5318444995864351
+  },
+  {
+    "family": "textura_arboles",
+    "k": 32,
+    "lr": 0.1,
+    "iterations": 250,
+    "selection_logloss": 0.7155117946685929,
+    "selection_auc": 0.5351530190239868
+  }
+]
