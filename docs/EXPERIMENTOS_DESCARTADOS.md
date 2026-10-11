@@ -4,8 +4,9 @@ Actualizado el 11/10/2026. Estos ensayos no forman parte del código activo de
 `src/cancer_mama/entrenamiento.py` y sus comandos de comparación se han eliminado. No se
 vuelven a ejecutar automáticamente. Se conservan sus informes, predicciones,
 curvas, configuraciones y evidencia histórica en `resultados/04_entrenamiento/`.
-El código y README anteriores a esta limpieza quedan en
-`limpieza_20261005/codigo_anterior/`; los commits citados identifican cada ensayo.
+El código y los README anteriores se conservan en el historial de `main`;
+los commits citados identifican cada ensayo. Las copias locales de limpiezas
+antiguas no forman parte del código activo ni son necesarias para recuperarlo.
 
 ## Cierre de los ensayos posteriores al multimodal original (11/10/2026)
 
@@ -61,8 +62,8 @@ La selección temporal de v004 por defecto fue prematura y queda revocada.
 - El entrenador activo conserva únicamente el perfil multimodal original con
   BCE ponderada por corte. La aplicación y CLI usan su manifiesto.
 - Doce módulos, ocho archivos de pruebas, la comprobación v004 y las dependencias
-  de transferencia se archivan, sin cambiar sus bytes, en
-  [experimentos/descartados_20261011](../experimentos/descartados_20261011/README.md).
+  de transferencia se retiran del árbol actual. Sus fuentes siguen disponibles
+  en los commits anteriores de `main`, sin ramas de experimentos ni copias duplicadas.
 - Las versiones congeladas v001–v004, los datasets y checkpoints de trabajo se conservan.
   Los informes 08–11 mantienen sus resultados originales con una nota de cierre.
 - El test reservado no se abrió para esta decisión ni para la limpieza.
@@ -79,12 +80,43 @@ conserva las fuentes originales de la comparación antes de cambiar interfaz y v
 La [verificación de la restauración](mejoras_cnn/verificacion_restauracion_v002_20261011.json)
 registra 39 pruebas del código activo, una prueba de un lote/época en GPU,
 inferencia aplicación/CLI/paquete en FP32 y 302 archivos protegidos sin cambios.
-Los 22 archivos archivados conservan exactamente sus bytes originales.
+En esa verificación previa se comprobó que los 22 archivos archivados conservaban
+exactamente sus bytes originales. Esa copia temporal se conserva en el commit
+`bbd769f`; posteriormente se retiró del árbol actual al consolidar todo en `main`.
 
 «Fallido» describe el objetivo de mejorar el original en estas condiciones.
 No significa que los entrenamientos fallaran técnicamente ni que las técnicas
 sean inservibles para otros datos o configuraciones.
 
+## Historial único en main
+
+Por decisión del usuario, todo el desarrollo queda en `main`. Las cuatro ramas
+auxiliares se integraron por avance directo, sin reescribir ni compactar commits,
+y se eliminan una vez comprobado que sus puntas pertenecen a esta historia.
+El código actual mantiene v002. Los pesos y paquetes congelados v001–v004
+siguen versionados; v003 y v004 no se activan.
+
+| Commit | Estado recuperable |
+|---|---|
+| `d1d61b8` | Informe del entrenamiento multimodal original |
+| `7116b8e` | Multimodal v002 como única base activa antes de los últimos ensayos |
+| `2cde016` | Ensayo de pérdidas/LR y candidata v003 |
+| `497abd6` | Investigación visual descartada y restricciones del enunciado |
+| `847466e` | Resultados de BCE normal y mixup |
+| `41428a2` | Repetición de BCE normal con semillas nuevas |
+| `8c0600c` | Fuentes experimentales completas y selección posteriormente revocada de v004 |
+| `bbd769f` | Restauración de v002 y copia temporal de las fuentes descartadas |
+
+Para leer un archivo histórico sin cambiar el modelo activo ni crear una rama:
+
+```bash
+git show 8c0600c:src/cancer_mama/experimento_bce_mixup.py
+git show 41428a2:src/cancer_mama/confirma_bce_normal.py
+```
+
+Reproducir un ensayo requiere también su configuración, entorno y datos registrados;
+no se deben ejecutar sus comandos históricos contra el entrenador actual.
+Este Markdown concentra la decisión y enlaza las evidencias conservadas.
 
 ## Decisiones históricas anteriores
 

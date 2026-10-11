@@ -20,7 +20,6 @@ app.py                   # aplicación Streamlit con v002
 scripts/                 # lanzador GPU y comprobación de inferencia
 modelos/versiones/       # versiones congeladas con pesos y código compatible
 resultados/              # evidencia y ejecuciones locales
-experimentos/descartados_20261011/  # código y pruebas de ensayos cerrados
 docs/                    # guías, protocolos y decisiones
 ```
 
@@ -108,9 +107,11 @@ comparación:
   --semillas 42 --folds 0 --epocas 1 --workers 0 --lote 8 --dispositivo cuda
 ```
 
-Los módulos experimentales y sus pruebas se archivaron fuera de `src/` y `tests/`.
-No se ofrecen como alternativas del entrenador activo. Sus fuentes, commits y
-reglas de reproducción están en el [archivo de investigación](experimentos/descartados_20261011/README.md).
+El proyecto mantiene una única rama, `main`, con el entrenador original v002.
+El código de los ensayos descartados se conserva en commits anteriores, sin
+ramas adicionales ni copias de archivo en el árbol actual. El
+[registro de experimentos](docs/EXPERIMENTOS_DESCARTADOS.md) reúne resultados,
+motivos del descarte y commits para recuperar las fuentes.
 El PDF exige CNN 2D desde cero y prohíbe transfer learning y redes preentrenadas.
 
 ## Evidencia y comprobaciones
