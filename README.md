@@ -2,13 +2,17 @@
 
 Predicción educativa de respuesta patológica completa (pCR) a partir de resonancia
 DCE anterior al tratamiento y variables clínicas. La base activa es el **multimodal
-clínico v002**, ya entrenado: `pool_dropout_wd_clinical`, BCE ponderada por corte
-y ensemble de diez modelos. Sus pesos se cargan directamente; no hace falta
+clínico v004**, ya entrenado: CNN 2D propia, BCE normal, selección interna por
+log-loss y ensemble de diez modelos. Sus pesos se cargan directamente; no hace falta
 volver a entrenarlos.
 
 El ensayo de realce temporal, con y sin mayor regularización, queda cerrado como
-**fracaso del objetivo de mejora**. Se conserva el multimodal anterior. Métricas,
-decisión y límites están en [EXPERIMENTOS_DESCARTADOS.md](docs/EXPERIMENTOS_DESCARTADOS.md).
+**fracaso del objetivo de mejora**. Después, la comparación de BCE normal
+redujo la pérdida frente al control equiparado y superó la repetición con otras
+semillas. Las curvas todavía muestran sobreajuste; no se afirma una mejora
+concluyente de ROC-AUC ni de generalización externa. Véanse el
+[informe de confirmación](resultados/11_confirmacion_bce_normal_20261011/INFORME_RESULTADOS.md)
+y el [registro de ensayos descartados](docs/EXPERIMENTOS_DESCARTADOS.md).
 Los modelos y resultados anteriores permanecen como histórico.
 
 ## Estructura
@@ -21,7 +25,7 @@ caso-cancer-mama/
 ├── resultados/           # evidencia y ejecuciones locales por etapa
 ├── modelos/versiones/    # pesos, manifiestos y código compatible congelado
 ├── scripts/entrenar_multimodal_gpu.ps1
-├── app.py                # aplicación Streamlit con el multimodal v002
+├── app.py                # aplicación Streamlit con el multimodal v004
 ├── pyproject.toml
 ├── requirements.txt
 └── CONTRIBUTING.md
@@ -64,8 +68,10 @@ Desde la raíz, verificar los diez pesos de la base activa:
 ```
 
 El manifiesto por defecto es
-`modelos/versiones/v002_multimodal_clinico_20261007/manifiesto.json`.
-Conserva mediana entre cortes, calibración Platt y umbral 0,3543331693.
+`modelos/versiones/v004_multimodal_bce_normal_20261011/manifiesto.json`.
+Conserva mediana entre cortes y probabilidades directas de BCE normal, sin Platt
+posterior. El umbral operativo Youden queda guardado en el manifiesto; se ajustó
+en OOF y no constituye una evaluación independiente de sensibilidad/especificidad.
 La verificación comprueba hashes y compatibilidad de pesos; no entrena ni abre test.
 
 Para predecir, pasar las tres fases y los datos clínicos de la misma paciente:
@@ -85,7 +91,8 @@ usa su imputación guardada. Para declarar todos los datos desconocidos, pasar
 `--edad nan`; no sustituir ausencias por cero.
 
 El ensemble promedia las diez probabilidades por corte y aplica la mediana entre
-cortes antes de calibrar. `tum_vol` se transforma mediante `log1p`; los cuatro
+cortes. En v004 la transformación posterior es identidad. `tum_vol` se transforma
+mediante `log1p`; los cuatro
 valores se imputan y escalan con estadísticas del train de cada fold, junto con
 cuatro indicadores de ausencia.
 
@@ -95,16 +102,21 @@ cuatro indicadores de ausencia.
 .venv/bin/python -m streamlit run app.py
 ```
 
-La aplicación carga v002 y permite subir PRE/EARLY/LATE e introducir edad,
+La aplicación carga v004 y permite subir PRE/EARLY/LATE e introducir edad,
 volumen tumoral, HR y HER2, indicando los desconocidos. Los ejemplos locales
 solo aportan imágenes: sus datos clínicos deben introducirse expresamente.
 La vista de realce EARLY−PRE es descriptiva; la CNN recibe las tres fases originales.
 
-La interfaz estima un solo corte; la calibración de desarrollo se ajustó con
+La interfaz estima un solo corte; la evaluación principal de desarrollo usa
 varios cortes por paciente. Para agregar todos los cortes disponibles usar la CLI.
 El resultado guardado se invalida cuando cambian las imágenes o los datos clínicos.
 
-## Único entrenamiento activo
+## Entrenamiento histórico ponderado
+
+El módulo `cancer_mama.entrenamiento` conserva el procedimiento histórico
+ponderado como control. No reproduce el nuevo candidato v004: para este se usa
+el protocolo BCE normal de más abajo. Su CLI de inferencia sí carga v004 por
+defecto.
 
 La CNN multimodal tiene 551.921 parámetros, ocho convoluciones, BatchNorm,
 canales 24/48/96/160, pooling intermedio y rama clínica. Se mantienen dropout 0,35,
@@ -167,7 +179,7 @@ Se puede reanudar con el mismo comando; el progreso queda en
 `resultados/04_entrenamiento/loss_lr_multimodal_20261010/estado.json`.
 
 El ensayo terminó y la variante LR 0,0008 con selección por log-loss se conserva
-como `v003_multimodal_loss_20261010`. **Es candidata; v002 sigue activa.** El
+como `v003_multimodal_loss_20261010`. **Es una candidata anterior que no demostró mejora concluyente.** El
 [informe de resultados](resultados/08_informe_loss_20261010/INFORME_RESULTADOS.md)
 muestra una reducción de pérdida cruda del 5,6 % frente al control equiparado.
 Tras calibrar ambos con selección interna, la reducción es del 0,9 % y el intervalo
@@ -183,7 +195,10 @@ figuras y el informe con la evidencia conservada. La candidata se puede cargar c
 `modelos/versionar.py predecir v003_multimodal_loss_20261010 -- ...`, pasando las
 mismas imágenes y variables clínicas que a v002.
 
-## Transferencia visual y fusión regularizada
+## Ensayos históricos descartados: transferencia y fusión
+
+Estos ensayos usan arquitecturas prohibidas por el enunciado y no forman parte
+de la solución docente. Sus comandos se conservan exclusivamente para auditoría.
 
 El [protocolo de transferencia](docs/mejoras_cnn/PROTOCOLO_TRANSFER_MULTIMODAL.md)
 recoge estudios comparables, diferencias entre sus datos y los nuestros, y una
@@ -197,8 +212,9 @@ con imputación, PCA y elección de hiperparámetros dentro de fit/selección in
 .venv/bin/python -u -B -m cancer_mama.experimento_transfer ejecutar
 ```
 
-El servidor ya tiene torch 2.14.0; solo se añadió torchvision 0.29.0. La aplicación
-sigue usando v002. Se conservan probabilidades por paciente, selección de modelos,
+El servidor ya tiene torch 2.14.0; solo se añadió torchvision 0.29.0. Estos
+ensayos no modificaron la aplicación. Se conservan probabilidades por paciente,
+selección de modelos,
 controles AUC/log-loss del ensayo anterior y diferencias pareadas con incertidumbre.
 Este módulo requiere la evidencia local del ensayo anterior para verificar su
 control. `estado.json` informa progreso y errores; el mismo comando reanuda fases
@@ -231,7 +247,7 @@ clínicas. No interpreta esos descriptores como medidas físicas de perfusión:
 .venv/bin/python -u -B -m cancer_mama.experimento_textura
 ```
 
-## Restricción docente y siguiente ensayo compatible
+## Restricción docente y mejora compatible
 
 El enunciado PDF (página 6, sección 7) obliga a usar una CNN 2D desde cero y
 prohíbe modelos preentrenados y transfer learning. Las tandas ResNet/AlexNet
@@ -263,14 +279,27 @@ particiones. No es validación externa:
 .venv/bin/python -u -B -m cancer_mama.confirma_bce_normal
 ```
 
+La repetición terminó y cumplió el criterio fijado antes de entrenar. El
+[informe de confirmación](resultados/11_confirmacion_bce_normal_20261011/INFORME_RESULTADOS.md)
+guarda métricas por semilla, intervalos y limitaciones. v004 conserva los diez
+pesos originales 42/2026; las semillas 73/1701 se usaron solo para comprobar
+estabilidad. Siete de los diez pesos originales seleccionan época 0: no se ha
+demostrado una contribución visual independiente.
+
+Para regenerar ensayos antiguos tras cambios de código hay que usar el commit
+registrado en su evidencia y un entorno compatible (para la repetición BCE,
+commit `41428a2`, anterior a la adaptación de la interfaz); los protocolos rechazan
+reanudar con fuentes o datos modificados. La inferencia portable de cada versión
+usa su código congelado.
+
 ## Evidencia conservada y pruebas
 
-La base v002 obtuvo AUC OOF 0,724568 y AP 0,531646 sobre 1.097 pacientes de
+La base histórica v002 obtuvo AUC OOF 0,724568 y AP 0,531646 sobre 1.097 pacientes de
 desarrollo. Es evaluación interna con selección de checkpoints y calibración
 sobre OOF; no equivale a validación externa. No se vuelve a abrir el test reservado
 para escoger modelos.
 
-- [Historial de versiones](modelos/README.md): v001, v002 y candidata v003 con pesos y código propios.
+- [Historial de versiones](modelos/README.md): v001–v004 con pesos y código propios.
 - [Registro de ensayos descartados](docs/EXPERIMENTOS_DESCARTADOS.md).
 - [Protocolo multimodal original](docs/mejoras_cnn/PROTOCOLO_MULTIMODAL_CLINICO.md).
 - `resultados/06_informe_multimodal_20261007/`: informe del multimodal.

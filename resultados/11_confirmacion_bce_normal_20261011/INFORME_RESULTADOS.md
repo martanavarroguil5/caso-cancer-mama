@@ -36,3 +36,22 @@ Se conservan los diez pesos originales de las semillas 42/2026, como se fijó an
 
 El umbral operativo Youden es 0.3489952150, ajustado sobre las OOF originales. Es una decisión para inferencia; no se usa para afirmar una mejora independiente de sensibilidad/especificidad. La evaluación interna agrega varios cortes; usar un solo corte, como en la aplicación docente, puede cambiar el rendimiento.
 
+
+## Integración verificada
+
+La versión `v004_multimodal_bce_normal_20261011` queda archivada y seleccionada
+por defecto en la aplicación y en la CLI. Conserva los diez pesos originales
+42/2026, la arquitectura CNN 2D propia y las tres fases PNG exigidas por el PDF.
+El umbral operativo es 0,348995215. Las versiones v001, v002 y v003 siguen intactas.
+
+Pasaron 66 pruebas unitarias y la verificación de hashes y carga de pesos de las
+cuatro versiones. Una prueba de integración con un ejemplo de train comprobó
+la aplicación, la CLI y el paquete archivado: coincidencia CPU/CLI exacta y
+diferencia CPU/GUI menor de 0,000001. También comprobó que cambiar una entrada
+oculta la predicción anterior. No se evaluó el test reservado.
+
+La comprobación se puede repetir desde la raíz con
+`.venv/bin/python -B scripts/verifica_v004_app.py`. El JSON de integración y la
+verificación de versiones acompañan este informe. Para regenerar el informe de
+la repetición con sus fuentes originales debe usarse el commit `41428a2`;
+los cambios posteriores de interfaz y versión activa son deliberados.

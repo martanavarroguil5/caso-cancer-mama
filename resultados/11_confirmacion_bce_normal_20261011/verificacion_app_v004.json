@@ -1,0 +1,10 @@
+{
+  "version": "v004_multimodal_bce_normal_20261011",
+  "dataset_scope": "one development/train example, missing clinical inputs",
+  "cpu_vs_cli_abs_difference": 0.0,
+  "cpu_vs_frozen_abs_difference": 0.0,
+  "cpu_vs_gui_abs_difference": 4.9471855162464e-07,
+  "identity_probability_verified": true,
+  "stale_prediction_hidden_after_input_change": true,
+  "test_opened": false
+}

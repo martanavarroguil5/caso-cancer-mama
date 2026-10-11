@@ -1,0 +1,66 @@
+[
+  {
+    "id": "v001_cnn_historica_20260930",
+    "files_verified": 36,
+    "models": 10,
+    "checksums_verified": true,
+    "runtime": {
+      "models": 10,
+      "parameters_per_model": 551913,
+      "checksums_verified": true,
+      "test_evaluated_once": true,
+      "test_repeated": false,
+      "aggregation": "mean",
+      "threshold": 0.2982406880601241,
+      "clinical_required": false
+    }
+  },
+  {
+    "id": "v002_multimodal_clinico_20261007",
+    "files_verified": 64,
+    "models": 10,
+    "checksums_verified": true,
+    "runtime": {
+      "models": 10,
+      "parameters_per_model": 551921,
+      "checksums_verified": true,
+      "test_evaluated_once": false,
+      "test_repeated": false,
+      "aggregation": "median",
+      "threshold": 0.35433316934837994,
+      "clinical_required": true
+    }
+  },
+  {
+    "id": "v003_multimodal_loss_20261010",
+    "files_verified": 91,
+    "models": 10,
+    "checksums_verified": true,
+    "runtime": {
+      "models": 10,
+      "parameters_per_model": 551921,
+      "checksums_verified": true,
+      "test_evaluated_once": false,
+      "test_repeated": false,
+      "aggregation": "median",
+      "threshold": 0.3063397710271307,
+      "clinical_required": true
+    }
+  },
+  {
+    "id": "v004_multimodal_bce_normal_20261011",
+    "files_verified": 95,
+    "models": 10,
+    "checksums_verified": true,
+    "runtime": {
+      "models": 10,
+      "parameters_per_model": 551921,
+      "checksums_verified": true,
+      "test_evaluated_once": false,
+      "test_repeated": false,
+      "aggregation": "median",
+      "threshold": 0.3489952149999999,
+      "clinical_required": true
+    }
+  }
+]

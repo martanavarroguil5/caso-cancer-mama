@@ -1,9 +1,10 @@
 # Historial de versiones de los modelos
 
-La base activa es **v002_multimodal_clinico_20261007**, ya entrenada. El módulo
-actual de entrenamiento y la aplicación la usan por defecto. No hace falta
-reentrenar para cargar sus diez pesos. El experimento de realce temporal queda
-descartado en [EXPERIMENTOS_DESCARTADOS.md](../docs/EXPERIMENTOS_DESCARTADOS.md).
+La base activa es **v004_multimodal_bce_normal_20261011**, ya entrenada.
+La aplicación y la CLI de inferencia la usan por defecto. Sus diez pesos mantienen
+la CNN propia y las mismas entradas; usan BCE normal, selección interna por
+log-loss y probabilidades sin Platt posterior. El entrenador histórico ponderado
+permanece como control. v001, v002 y v003 se conservan sin modificar.
 
 Cada versión guarda un ensemble completo, listo para predecir desde otro
 ordenador después de clonar el repositorio e instalar sus dependencias. Los
@@ -16,8 +17,9 @@ sobrescribir una carpeta o reutilizar su número de versión.
 | Versión | Entrada | Estado | AUC OOF cruda | Pesos |
 | --- | --- | --- | --- | --- |
 | `v001_cnn_historica_20260930` | PRE, EARLY y LATE | Histórico; test original conservado | 0,5945 | 10 archivos; 21,25 MiB |
-| `v002_multimodal_clinico_20261007` | Imágenes, edad, volumen tumoral, HR y HER2 | Activa; desarrollo sin evaluación nueva de test | 0,7246 | 10 archivos; 21,27 MiB |
-| `v003_multimodal_loss_20261010` | Imágenes y las mismas variables clínicas | Candidata; selección interna por log-loss; sin test | 0,7061 | 10 archivos; 21,27 MiB |
+| `v002_multimodal_clinico_20261007` | Imágenes, edad, volumen tumoral, HR y HER2 | Histórica; desarrollo sin evaluación nueva de test | 0,7246 | 10 archivos; 21,27 MiB |
+| `v003_multimodal_loss_20261010` | Imágenes y las mismas variables clínicas | Candidata anterior; sin mejora concluyente; sin test | 0,7061 | 10 archivos; 21,27 MiB |
+| `v004_multimodal_bce_normal_20261011` | Imágenes y las mismas variables clínicas | Activa; mejora interna de pérdida repetida; sin test | 0,7109 | 10 archivos; 21,27 MiB |
 
 La segunda versión usa BCE ponderada y mediana de cortes por paciente. La
 disponibilidad de las variables clínicas en la prueba privada es un supuesto
@@ -28,9 +30,17 @@ La candidata v003 conserva LR 0,0008 y elige épocas por log-loss de una selecci
 interna. Su AUC no es comparable directamente con la histórica de v002: reserva
 pacientes adicionales para elegir checkpoints y calibrar. Frente al control AUC
 equiparado, la pérdida cruda baja de 0,6177 a 0,5831; tras calibración interna baja
-de 0,5615 a 0,5563, pero el intervalo de la diferencia incluye cero. Por eso v002
-continúa activa. El [informe del candidato](../resultados/08_informe_loss_20261010/INFORME_RESULTADOS.md)
+de 0,5615 a 0,5563, pero el intervalo de la diferencia incluye cero. Por eso v003 no sustituyó v002.
+El [informe del candidato](../resultados/08_informe_loss_20261010/INFORME_RESULTADOS.md)
 guarda métricas, curvas, incertidumbre y limitaciones. No se abrió el test reservado.
+
+La v004 reduce log-loss de 0,5615 a 0,5463 frente al control ponderado evaluado
+con las mismas particiones internas. La repetición con semillas 73/1701 confirmó
+el criterio prefijado. No demuestra un aumento concluyente de AUC ni corrige
+por completo el sobreajuste: siete de diez checkpoints son inicializadores
+clínicos. No debe compararse su AUC directamente con 0,7246 de v002, obtenido
+con otro procedimiento de selección. El [informe de confirmación](../resultados/11_confirmacion_bce_normal_20261011/INFORME_RESULTADOS.md)
+conserva resultados e incertidumbre. El test reservado no se abrió.
 
 `catalogo.json` resume las versiones. Cada carpeta contiene:
 
@@ -89,7 +99,7 @@ Para el histórico:
 Para el multimodal, con valores clínicos de ejemplo:
 
 ```bash
-.venv/bin/python -B modelos/versionar.py predecir v002_multimodal_clinico_20261007 -- \
+.venv/bin/python -B modelos/versionar.py predecir v004_multimodal_bce_normal_20261011 -- \
   --pre paciente_z000_PRE.png \
   --early paciente_z000_EARLY.png \
   --late paciente_z000_LATE.png \
@@ -114,7 +124,7 @@ el manifiesto elegido con el siguiente número disponible:
 
 ```bash
 .venv/bin/python -B modelos/versionar.py guardar \
-  --id v004_multimodal_clinico_AAAAMMDD \
+  --id v005_multimodal_clinico_AAAAMMDD \
   --manifest resultados/04_entrenamiento/nueva_ejecucion/comparacion/modelo_desarrollo.json \
   --descripcion "Nueva actualización del modelo multimodal"
 
