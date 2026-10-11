@@ -1133,7 +1133,7 @@ def predecir_cortes(path, triples, clinical=None):
         "probability_calibrated": calibrated, "threshold": manifest["threshold"],
         "pCR": int(calibrated >= manifest["threshold"]), "models": len(predictions),
         "clinical_used": True,
-        "notice": "Uso educativo. La calibración se ajustó con varios cortes por paciente."}
+        "notice": "Uso educativo. La evaluación de desarrollo usó varios cortes por paciente."}
 
 
 class CacheTrain:

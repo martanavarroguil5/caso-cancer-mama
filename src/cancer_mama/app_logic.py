@@ -53,6 +53,8 @@ class ModelCard:
     weights_ready: bool
     missing_weights: tuple[str, ...]
     internal_metrics: dict[str, float]
+    loss_name: str = "ponderada"
+    has_posthoc_calibration: bool = True
 
 
 @dataclass(frozen=True)
@@ -220,6 +222,8 @@ def read_model_card(manifest_path: Path) -> ModelCard:
         model_count=len(manifest["models"]),
         weights_ready=not missing,
         missing_weights=missing,
+        loss_name=str(manifest.get("training", {}).get("loss", selection.get("loss", "ponderada"))),
+        has_posthoc_calibration=manifest.get("calibration", {}).get("method") != "identity",
         internal_metrics={
             key: float(metrics[key])
             for key in ("roc_auc", "average_precision", "brier", "sensitivity", "specificity")
