@@ -249,6 +249,20 @@ entrenada con la misma separación interna por paciente:
 .venv/bin/python -u -B -m cancer_mama.experimento_bce_mixup
 ```
 
+La tanda compatible completó veinte entrenamientos: BCE normal mostró una
+reducción de pérdida interna; mixup no mejoró esa alternativa. Las curvas todavía
+muestran sobreajuste y siete de diez checkpoints de cada brazo seleccionan época
+0. Véase el [informe completo](resultados/10_informe_bce_mixup_20261011/INFORME_RESULTADOS.md).
+
+La [comprobación de estabilidad](docs/mejoras_cnn/PROTOCOLO_CONFIRMACION_BCE.md)
+repite candidata y control con semillas 73 y 1701, manteniendo configuración y
+particiones. No es validación externa:
+
+```bash
+.venv/bin/python -B -m cancer_mama.confirma_bce_normal --prueba
+.venv/bin/python -u -B -m cancer_mama.confirma_bce_normal
+```
+
 ## Evidencia conservada y pruebas
 
 La base v002 obtuvo AUC OOF 0,724568 y AP 0,531646 sobre 1.097 pacientes de

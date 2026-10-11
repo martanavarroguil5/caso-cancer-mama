@@ -74,3 +74,4 @@ Thumbs.db
 
 # CNN docente: BCE normal y mixup, ejecuciones locales
 /resultados/04_entrenamiento/bce_mixup_multimodal_20261011/
+/resultados/04_entrenamiento/confirmacion_bce_normal_20261011/
