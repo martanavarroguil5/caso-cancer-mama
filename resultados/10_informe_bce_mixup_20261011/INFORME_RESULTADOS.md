@@ -44,3 +44,9 @@ Con 10.000 réplicas y el mismo alpha=0,05/12, el intervalo de delta log-loss es
 ## Diagnóstico de la contribución visual
 
 El inicializador clínico solo obtiene log-loss 0.548954 y AUC media 0.706179; la CNN seleccionada obtiene 0,546255 y 0,710686. Es una comparación descriptiva posterior, que no cambió las decisiones ni el protocolo de repetición. No constituye por sí sola una demostración del valor adicional de la imagen.
+
+## Reproducción y formato de un corte
+
+Se comprobaron las diez particiones y una predicción guardada por checkpoint con inferencia CPU. El error absoluto máximo respecto a la OOF GPU fue 8.14e-08; los pesos cargados con la clase original y la del ensayo dan exactamente la misma salida en esas entradas.
+
+Tomando un corte por paciente con una regla hash fija e independiente de las etiquetas, la pérdida es 0.546177 con BCE normal y 0.561313 con el control. La AUC media es 0.710497 y 0.703847, respectivamente. Es un diagnóstico posterior sobre desarrollo; no prueba el comportamiento con cualquier corte o paciente nuevo.

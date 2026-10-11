@@ -1,0 +1,122 @@
+{
+  "purpose": "Posthoc technical audit; no model or hyperparameter selection",
+  "audit_source_sha256": "12ae9207dced06edde69dc82833b3013509cd177cc1490fdaf97e7cd3a966845",
+  "test_images_loaded": 0,
+  "partition_checks": 10,
+  "checkpoint_checks": 10,
+  "CPU_saved_OOF_checks": [
+    {
+      "seed": 42,
+      "fold": 0,
+      "sample_id": "ACRIN-6698-218503_z007",
+      "absolute_error": 1.4127922054463227e-08
+    },
+    {
+      "seed": 42,
+      "fold": 1,
+      "sample_id": "ACRIN-6698-219545_z027",
+      "absolute_error": 2.607154847567017e-08
+    },
+    {
+      "seed": 42,
+      "fold": 2,
+      "sample_id": "ACRIN-6698-220471_z017",
+      "absolute_error": 8.13804625909853e-08
+    },
+    {
+      "seed": 42,
+      "fold": 3,
+      "sample_id": "ACRIN-6698-213913_z015",
+      "absolute_error": 1.6662597634997667e-08
+    },
+    {
+      "seed": 42,
+      "fold": 4,
+      "sample_id": "ACRIN-6698-220925_z030",
+      "absolute_error": 4.119872998309404e-09
+    },
+    {
+      "seed": 2026,
+      "fold": 0,
+      "sample_id": "ISPY2-845663_z015",
+      "absolute_error": 4.370296477484992e-08
+    },
+    {
+      "seed": 2026,
+      "fold": 1,
+      "sample_id": "ISPY2-836114_z018",
+      "absolute_error": 2.309436794578623e-09
+    },
+    {
+      "seed": 2026,
+      "fold": 2,
+      "sample_id": "ISPY2-836983_z030",
+      "absolute_error": 9.51004053284521e-10
+    },
+    {
+      "seed": 2026,
+      "fold": 3,
+      "sample_id": "ISPY2-845147_z025",
+      "absolute_error": 1.5515975948510174e-08
+    },
+    {
+      "seed": 2026,
+      "fold": 4,
+      "sample_id": "ISPY2-847272_z023",
+      "absolute_error": 4.552078158859274e-10
+    }
+  ],
+  "maximum_absolute_error": 8.13804625909853e-08,
+  "weights_sha256": {
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/04_entrenamiento/bce_mixup_multimodal_20261011/bce_normal/seed_42/fold_0/best.pt": "f221cfcb1568c7e67f37ce88df4085860d556b381ba08d9cf7b6b92735114e64",
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/04_entrenamiento/bce_mixup_multimodal_20261011/bce_normal/seed_42/fold_1/best.pt": "02be87d21d352319d8e7e2a1f472402f4a7f0a5b4801eb6c11284d1a46bb2f58",
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/04_entrenamiento/bce_mixup_multimodal_20261011/bce_normal/seed_42/fold_2/best.pt": "08cc8a3ebf8b61e2b1e27fc746a77a28192d59d55832631c3a53ff442f7892c9",
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/04_entrenamiento/bce_mixup_multimodal_20261011/bce_normal/seed_42/fold_3/best.pt": "8bc936e32f3c85f327e80c6c895f79f530b89d8bfaaf815f0ba2ab1ff06a388e",
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/04_entrenamiento/bce_mixup_multimodal_20261011/bce_normal/seed_42/fold_4/best.pt": "bf962d427f58b82cdeced1d69a0f226fde5edd0609e34a82eece3e274f66016c",
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/04_entrenamiento/bce_mixup_multimodal_20261011/bce_normal/seed_2026/fold_0/best.pt": "4048c8d6829b0bd30602d4be65f6ba0596ccf67ee1a92c421c1b986b2e51ffed",
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/04_entrenamiento/bce_mixup_multimodal_20261011/bce_normal/seed_2026/fold_1/best.pt": "a52c77f7afe0b838a36df8ba544c139f0d164a29fa67aebaf4be537767b44f8e",
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/04_entrenamiento/bce_mixup_multimodal_20261011/bce_normal/seed_2026/fold_2/best.pt": "b8a1c5e46dd64b829f8dad869aaaf817de1d9ca56abc17c3b91a460a3ee443d6",
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/04_entrenamiento/bce_mixup_multimodal_20261011/bce_normal/seed_2026/fold_3/best.pt": "5d14bfbdb5f87c1562099fde0f8a7161ff3061d8191a370ee48e2bce5180f138",
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/04_entrenamiento/bce_mixup_multimodal_20261011/bce_normal/seed_2026/fold_4/best.pt": "ff4075a5ff711eae87a4c71967f5d49a9f8a9e3a7d81b55b566c8ff3fd16475e"
+  },
+  "single_cut_rule": "SHA256(single-cut-audit-20261011:patient_id) modulo available sorted slices",
+  "single_cut_metrics": {
+    "normal": {
+      "n_patients": 1097,
+      "roc_auc": 0.7109797635744339,
+      "average_precision": 0.5086884590307492,
+      "log_loss": 0.5461774438339051,
+      "brier": 0.1826117093497949,
+      "mean_fold_auc": 0.7104973464068646,
+      "fold_auc": [
+        0.7660282258064517,
+        0.7033079926032463,
+        0.6743867775555321,
+        0.7213793103448276,
+        0.6873844257242654
+      ]
+    },
+    "weighted_control": {
+      "n_patients": 1097,
+      "roc_auc": 0.6937046684031256,
+      "average_precision": 0.4866360722118859,
+      "log_loss": 0.5613125450633777,
+      "brier": 0.18769384900629016,
+      "mean_fold_auc": 0.7038471451999768,
+      "fold_auc": [
+        0.7658266129032257,
+        0.7058763098417917,
+        0.6721760185282661,
+        0.7005057471264368,
+        0.6748510376001642
+      ]
+    }
+  },
+  "single_cut_delta": {
+    "log_loss": -0.015135101229472592,
+    "brier": -0.00508213965649526,
+    "roc_auc": 0.01727509517130832,
+    "mean_fold_auc": 0.006650201206887751
+  },
+  "warning": "One deterministic slice per patient, same development patients; not external validation or proof for arbitrary slices."
+}
