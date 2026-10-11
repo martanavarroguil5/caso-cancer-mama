@@ -50,6 +50,14 @@ def main():
     if agreed != report['replicated_internal_result']:
         raise ValueError('Decisión inconsistente con las métricas')
     agreed = agreed and first['comparisons']['bce_normal']['promising_internal_result']
+    precision_path = RESULTS_DIR/'10_informe_bce_mixup_20261011/sensibilidad_bootstrap_10000.json'
+    precision = json.loads(precision_path.read_text())
+    for relative, digest in precision['sources'].items():
+        if base.sha256(PROJECT_ROOT/relative) != digest:
+            raise ValueError('Entradas del bootstrap de precisión modificadas')
+    if precision['repetitions'] != 10000 or precision['alpha'] != confirmation.ALPHA:
+        raise ValueError('Comprobación de precisión incompatible')
+    agreed = agreed and precision['intervals']['log_loss']['upper'] < 0
     for row in report['metrics']:
         tag = str(row['seeds'][0]) if len(row['seeds']) == 1 else 'ensemble'
         verify_metrics(pd.read_csv(source/f"comparacion/oof_{row['candidate']}_{tag}.csv"), row)
@@ -57,6 +65,7 @@ def main():
     original_oof = pd.read_csv(experiment.DEFAULT_OUTPUT/'comparacion/oof_raw_bce_normal.csv')
     verify_metrics(original_oof, initial)
     OUTPUT.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(precision_path, OUTPUT/precision_path.name)
     for pattern in ('*.csv', '*.json'):
         for path in (source/'comparacion').glob(pattern):
             shutil.copy2(path, OUTPUT/path.name)
@@ -139,6 +148,9 @@ def main():
         'La búsqueda original obtuvo log-loss 0,5463 frente a 0,5615 y AUC media 0,7107 frente a 0,7047. '
         'La mejora principal es probabilística; no se afirma un aumento concluyente de AUC. '
         'La AUC histórica 0,7246 de v002 procede de otro protocolo y no debe compararse directamente con estas cifras.', '',
+        f"La comprobación adicional con 10.000 remuestreos mantiene el intervalo de delta log-loss "
+        f"[{precision['intervals']['log_loss']['lower']:.6f}; {precision['intervals']['log_loss']['upper']:.6f}] "
+        'en la búsqueda original. No cambia el modelo ni aporta datos independientes.', '',
         'Siete de los diez checkpoints originales seleccionan época 0, equivalente al inicializador clínico. '
         'Por tanto, las curvas aún muestran sobreajuste y no se ha probado que la rama visual aporte una mejora independiente. '
         'Se conserva el mejor checkpoint, no el último.', '',
@@ -154,7 +166,7 @@ def main():
         provenance = []
         for path in (source/'protocolo.json', source/'comparacion/resumen.json',
                      experiment.DEFAULT_OUTPUT/'protocolo.json', experiment.DEFAULT_OUTPUT/'comparacion/resumen.json',
-                     experiment.DEFAULT_OUTPUT/'comparacion/oof_raw_bce_normal.csv'):
+                     experiment.DEFAULT_OUTPUT/'comparacion/oof_raw_bce_normal.csv', precision_path):
             provenance.append({'path': os.path.relpath(path, OUTPUT), 'sha256': base.sha256(path)})
         manifest = {'schema_version': 1, 'status': 'mejora_interna_replicada_sin_test',
             'models': models, 'aggregation': 'median', 'calibration': calibration, 'threshold': threshold,

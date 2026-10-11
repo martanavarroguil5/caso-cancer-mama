@@ -154,6 +154,23 @@ def main():
         '[Mixup, ICLR 2018](https://arxiv.org/abs/1710.09412) · '
         '[Calibración, ICML 2022](https://proceedings.mlr.press/v162/zhang22f.html) · '
         '[Límites con calibración posterior, CVPR 2023](https://openaccess.thecvf.com/content/CVPR2023/html/Wang_On_the_Pitfall_of_Mixup_for_Uncertainty_Calibration_CVPR_2023_paper.html)']
+    precision_path = OUTPUT/'sensibilidad_bootstrap_10000.json'
+    if precision_path.exists():
+        precision = json.loads(precision_path.read_text())
+        ci = precision['intervals']['log_loss']
+        lines += ['', '## Comprobación de precisión del bootstrap', '',
+            f"Con 10.000 réplicas y el mismo alpha=0,05/12, el intervalo de delta log-loss es "
+            f"[{ci['lower']:.6f}; {ci['upper']:.6f}]. Se mantiene por debajo de cero. "
+            'Es una comprobación numérica adicional; no añade pacientes ni corrige toda la búsqueda adaptativa.']
+    visual_path = OUTPUT/'diagnostico_contribucion_visual.json'
+    if visual_path.exists():
+        visual = json.loads(visual_path.read_text())
+        clinical = visual['clinical_initialization_metrics']
+        lines += ['', '## Diagnóstico de la contribución visual', '',
+            f"El inicializador clínico solo obtiene log-loss {clinical['log_loss']:.6f} y AUC media "
+            f"{clinical['mean_fold_auc']:.6f}; la CNN seleccionada obtiene 0,546255 y 0,710686. "
+            'Es una comparación descriptiva posterior, que no cambió las decisiones ni el protocolo de repetición. '
+            'No constituye por sí sola una demostración del valor adicional de la imagen.']
     (OUTPUT/'INFORME_RESULTADOS.md').write_text('\n'.join(lines)+'\n')
     print(json.dumps({'report': str(OUTPUT), 'promising': favorable, 'runs': len(records)}, ensure_ascii=False))
 
