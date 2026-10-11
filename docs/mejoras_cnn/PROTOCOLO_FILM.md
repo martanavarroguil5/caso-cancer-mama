@@ -1,5 +1,13 @@
 # Ensayo FiLM sobre el multimodal v002
 
+> **Cerrado el 11/10/2026, sin mejora.** Completadas 40/40 ejecuciones.
+> Se conserva v002 activo. Véase el [resultado y decisión](../EXPERIMENTOS_DESCARTADOS.md).
+> El texto prefijado se conserva a continuación. Sus comandos son históricos:
+> el código experimental se retiró del árbol actual y está en el commit `9e2aa93`
+> de `main`. Los hashes del protocolo de ejecución corresponden a aquel estado,
+> anterior a esta nota de cierre.
+
+
 Fijado el 11/10/2026 antes del entrenamiento. Petición: probar la fusión
 condicionada, sin SAM ni un ensayo nuevo de modelo exclusivamente clínico.
 Todo el código se mantiene en `main`. V002 continúa activo y sus archivos
