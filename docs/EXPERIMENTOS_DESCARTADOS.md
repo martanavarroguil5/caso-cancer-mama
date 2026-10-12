@@ -1,12 +1,143 @@
 # Experimentos cerrados y retirados del entrenador
 
-Actualizado el 11/10/2026. Estos ensayos no forman parte del código activo de
+Actualizado el 12/10/2026. Estos ensayos no forman parte del código activo de
 `src/cancer_mama/entrenamiento.py` y sus comandos de comparación se han eliminado. No se
 vuelven a ejecutar automáticamente. Se conservan sus informes, predicciones,
 curvas, configuraciones y evidencia histórica en `resultados/04_entrenamiento/`.
 El código y los README anteriores se conservan en el historial de `main`;
 los commits citados identifican cada ensayo. Las copias locales de limpiezas
 antiguas no forman parte del código activo ni son necesarias para recuperarlo.
+
+## SAM: señal interna insuficiente y aporte visual prácticamente nulo (12/10/2026)
+
+**Decisión: mantener activo el multimodal original v002 y descartar esta
+configuración SAM como sustituta.** El entrenamiento no falló técnicamente:
+se completaron 40/40 ejecuciones, 542 épocas y 63.414 pasos de AdamW, sin pasos
+omitidos por AMP. Duración: 82 min 57 s, del 11/10/2026 a las 20:40 a las 22:03
+(Europe/Madrid). Cierre y análisis el 12/10/2026.
+
+Se conserva el [protocolo prefijado](mejoras_cnn/PROTOCOLO_SAM.md): arquitectura
+v002, SAM L2 rho=0,05 sobre todos los parámetros con AdamW, BCE normal/ponderada,
+dos semillas y cinco folds. Se usaron solo pacientes de train. No se modificaron
+los pesos, calibración ni umbral de v002 y no se inició otro entrenamiento.
+El código experimental y sus pruebas quedan en el commit `4a2c959` de `main`;
+se retiran del árbol actual sin nuevas ramas ni copias de archivo.
+
+### Comparación descriptiva con el original y comparación equiparada
+
+1.097 pacientes, 322 pCR y 775 no pCR. AUC con probabilidades OOF sin calibrar;
+pérdida/Brier después de calibrar; FP/FN con el umbral guardado de v002 o Youden
+interno por fold en el ensayo. **El original usa selección histórica distinta
+y calibración/umbral ajustados sobre las mismas OOF.** Por ello, original frente
+a SAM es una comparación descriptiva, no un ensayo controlado ni validación externa.
+El control reentrenado es quien permite aislar el efecto de SAM bajo este protocolo.
+
+| Métrica | V002 original | Control ponderado | SAM ponderado |
+|---|---:|---:|---:|
+| ROC-AUC sin calibrar | 0,724568 | 0,701968 | 0,707053 |
+| Average precision sin calibrar | 0,531646 | 0,494831 | 0,495531 |
+| Log-loss calibrada | 0,536656 | 0,561517 | 0,558266 |
+| Brier calibrado | 0,179060 | 0,187723 | 0,187611 |
+| Falsos positivos | 187 | 297 | 319 |
+| Falsos negativos | 128 | 112 | 103 |
+| Sensibilidad | 60,25 % | 65,22 % | 68,01 % |
+| Especificidad | 75,87 % | 61,68 % | 58,84 % |
+| Exactitud | 71,29 % | 62,72 % | 61,53 % |
+| F1 | 0,551920 | 0,506634 | 0,509302 |
+
+SAM ponderado evita 25 falsos negativos respecto al original a costa de 132
+falsos positivos adicionales: 107 errores más con estos umbrales en estas OOF.
+«Positivo» significa respuesta patológica completa (pCR), no presencia de cáncer.
+No se extrapolan estos recuentos a pacientes nuevas.
+
+### Hipótesis principal y brazo secundario
+
+SAM ponderado gana +0,005085 de AUC frente a su control, supera por poco el
+margen prefijado +0,005 y mejora ambas semillas: 42, 0,700441 → 0,706940;
+2026, 0,701274 → 0,707117. También reduce ligeramente pérdida y Brier.
+Sin embargo, **no cumple el requisito de intervalo de AUC completamente positivo**.
+
+| Diferencia SAM ponderado − control | Estimación | IC pareado del 95 % |
+|---|---:|---:|
+| AUC OOF agrupada sin calibrar | +0,005085 | [−0,006067; +0,015778] |
+| Media de AUC por fold | +0,001094 | [−0,008714; +0,010623] |
+| Log-loss calibrada | −0,003251 | [−0,010017; +0,003228] |
+| Brier calibrado | −0,000112 | [−0,002367; +0,002082] |
+
+Los 2.000 remuestreos pareados y estratificados por fold/cohorte/clase incluyen
+cero en todos los intervalos. Hay una señal pequeña favorable, insuficiente
+para afirmar superioridad. Los intervalos no corrigen toda la búsqueda histórica.
+Los controles reproducen las métricas de los controles del ensayo FiLM.
+
+| Métrica secundaria | Control BCE normal | SAM BCE normal |
+|---|---:|---:|
+| AUC OOF agrupada sin calibrar | 0,681667 | 0,694879 |
+| Media de AUC por fold | 0,694701 | 0,707139 |
+| Log-loss calibrada | 0,567060 | 0,560038 |
+| Brier calibrado | 0,189359 | 0,187211 |
+| Falsos positivos | 311 | 299 |
+| Falsos negativos | 104 | 102 |
+
+SAM normal también mejora sus estimaciones puntuales frente a su control,
+pero no supera las métricas descriptivas del v002 original. Esta comparación
+es secundaria y no activa una selección automática de pérdida.
+
+### Sobreajuste: menor brecha, sin nuevo beneficio visual
+
+En la última época, la mediana de AUC de fit/selección interna pasa de
+0,8359/0,6407 en el control ponderado a 0,7207/0,7113 con SAM ponderado.
+La mediana de las brechas por ejecución cae de 0,1970 a 0,0125. Estos valores
+describen la última época; no son las métricas exteriores de los checkpoints
+seleccionados. SAM ponderado elige época 0 en 2/10 ejecuciones (control: 6/10).
+Una brecha menor por sí sola no demuestra un mejor multimodal.
+
+Se hizo una **ablación posterior sin reentrenar**: quitar el término visual del
+logit de cada checkpoint elegido, manteniendo sus pesos clínicos finales y sesgo.
+Se promedian las dos semillas por corte y se agrega por mediana igual que en el
+modelo completo. No se introducen imágenes negras, no se ajustan umbrales ni se
+calibra de nuevo. Es un diagnóstico interno exploratorio, no una nueva selección.
+
+| Brazo | AUC completo | AUC sin término visual | Cambio absoluto medio de probabilidad |
+|---|---:|---:|---:|
+| Control ponderado | 0,701968 | 0,707946 | 0,027935 |
+| SAM ponderado | 0,707053 | 0,707053 | 0,000000421 |
+| Control normal | 0,681667 | 0,706540 | 0,082211 |
+| SAM normal | 0,694879 | 0,701106 | 0,039169 |
+
+En SAM ponderado, la media de AUC por fold también es idéntica con y sin imagen
+(0,705778). Las predicciones seleccionadas dependen prácticamente de la rama
+clínica. La menor brecha no equivale a haber aprendido mejores características
+visuales: este ensayo no alcanza el objetivo de aprovechar mejor las imágenes.
+En SAM normal, quitar imagen mejora el AUC agrupado pero baja la media por fold
+de 0,707139 a 0,705023; no deben confundirse ambas agregaciones.
+
+No se concluye que SAM sea inútil en general ni que todas las configuraciones de
+radio/optimización deban fallar. No se prueba otro radio tras ver estos resultados.
+
+### Evidencia verificable
+
+Los hashes de los artefactos de las 40 ejecuciones coinciden; los 40 checkpoints
+cargan estrictamente. Una muestra real de train por checkpoint reproduce en CPU
+su predicción FP32 guardada con diferencia máxima 9,24 × 10⁻⁸ (tolerancia 2 × 10⁻⁶).
+Los 299 archivos protegidos siguen intactos. Test no se evaluó. Tras retirar
+el módulo SAM y sus pruebas, pasan las 39 pruebas del código activo y la
+verificación de v002. Se recalcularon las métricas de las cuatro tablas OOF y
+se comprobaron los enlaces: [verificación del cierre](../resultados/13_informe_sam_20261012/verificacion_cierre.json).
+
+- [Resumen y calibraciones](../resultados/13_informe_sam_20261012/resumen.json) y [métricas CSV](../resultados/13_informe_sam_20261012/comparacion_metricas.csv).
+- [ROC comparadas](../resultados/13_informe_sam_20261012/01_roc.png) y [curvas de pérdida/AUC](../resultados/13_informe_sam_20261012/02_curvas.png).
+- [Ablación visual](../resultados/13_informe_sam_20261012/ablacion_visual.json) y [diagnóstico por ejecución](../resultados/13_informe_sam_20261012/diagnostico_final.csv).
+- [Verificación de pesos](../resultados/13_informe_sam_20261012/verificacion_final.json), [procedencia y hashes](../resultados/13_informe_sam_20261012/procedencia.json), [configuraciones y resúmenes](../resultados/13_informe_sam_20261012/ejecuciones.json) e [historias](../resultados/13_informe_sam_20261012/historias.csv).
+
+Las tablas OOF y las de ablación están en la misma carpeta de evidencia. Los
+checkpoints completos permanecen localmente en
+`resultados/04_entrenamiento/sam_multimodal_20261011/`, fuera de Git. Fuentes:
+
+```bash
+git show 4a2c959:src/cancer_mama/experimento_sam.py
+git show 4a2c959:tests/test_pasos_sam.py
+```
+
 
 ## FiLM: ensayo terminado sin mejora (11/10/2026)
 
@@ -235,6 +366,7 @@ siguen versionados; v003 y v004 no se activan.
 
 | Commit | Estado recuperable |
 |---|---|
+| `4a2c959` | Ensayo SAM con controles; descartado por señal insuficiente y aporte visual prácticamente nulo |
 | `9e2aa93` | Implementación, pruebas y protocolo prefijado de FiLM; descartado sin mejora |
 | `d1d61b8` | Informe del entrenamiento multimodal original |
 | `7116b8e` | Multimodal v002 como única base activa antes de los últimos ensayos |

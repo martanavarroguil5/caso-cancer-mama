@@ -1,0 +1,43 @@
+{
+  "description": "Diagnóstico posterior: anular el término visual en el logit de los checkpoints elegidos, conservando sus pesos clínicos finales y sesgo. No es entrenar un modelo clínico nuevo ni introducir imágenes negras. Sin recalibrar, sin seleccionar umbrales; evaluación interna exploratoria sobre OOF de train.",
+  "arms": {
+    "control_weighted": {
+      "full_raw_auc": 0.7019675415748348,
+      "no_visual_raw_auc": 0.7079463033460228,
+      "auc_delta_full_minus_ablated": -0.005978761771188057,
+      "full_mean_fold_auc": 0.7046842697828468,
+      "no_visual_mean_fold_auc": 0.7058474047476225,
+      "mean_abs_probability_change": 0.027934964606303903,
+      "median_abs_probability_change": 2.863910675277026e-08
+    },
+    "sam_weighted": {
+      "full_raw_auc": 0.7070526948507313,
+      "no_visual_raw_auc": 0.7070526948507313,
+      "auc_delta_full_minus_ablated": 0.0,
+      "full_mean_fold_auc": 0.7057778453463464,
+      "no_visual_mean_fold_auc": 0.7057778453463464,
+      "mean_abs_probability_change": 4.213901497132362e-07,
+      "median_abs_probability_change": 1.367927549011938e-08
+    },
+    "control_normal": {
+      "full_raw_auc": 0.681667000601082,
+      "no_visual_raw_auc": 0.7065397715888598,
+      "auc_delta_full_minus_ablated": -0.024872770987777848,
+      "full_mean_fold_auc": 0.6947006799163674,
+      "no_visual_mean_fold_auc": 0.705071790335305,
+      "mean_abs_probability_change": 0.08221111274122873,
+      "median_abs_probability_change": 0.052545846355590786
+    },
+    "sam_normal": {
+      "full_raw_auc": 0.6948787818072529,
+      "no_visual_raw_auc": 0.7011059907834101,
+      "auc_delta_full_minus_ablated": -0.006227208976157139,
+      "full_mean_fold_auc": 0.7071391360650335,
+      "no_visual_mean_fold_auc": 0.7050225890170041,
+      "mean_abs_probability_change": 0.039168638477499504,
+      "median_abs_probability_change": 0.021279238838920606
+    }
+  },
+  "training_performed": false,
+  "test_evaluated": false
+}

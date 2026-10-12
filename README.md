@@ -127,24 +127,18 @@ El [protocolo prefijado](docs/mejoras_cnn/PROTOCOLO_FILM.md) queda como document
 histórico. El módulo FiLM y sus pruebas se conservan en el commit `9e2aa93` de
 `main` y se retiran del árbol actual. Los pesos de trabajo se conservan localmente.
 
-## Ensayo SAM en curso
+## Ensayo SAM cerrado
 
-Se prueba SAM (Sharpness-Aware Minimization) con AdamW sobre la misma CNN v002,
-sin cambiar la arquitectura. Radio fijo 0,05, cuatro brazos control/SAM × BCE
-normal/ponderada, dos semillas y cinco folds: 40 ejecuciones. La selección,
-calibración y umbral se ajustan internamente; test permanece reservado.
+Las 40 ejecuciones terminaron el 11/10/2026. SAM ponderado sube el AUC de su
+control de 0,7020 a 0,7071, pero el intervalo de confianza incluye cero y no cumple
+el criterio prefijado. Su aporte visual es prácticamente nulo: al retirar el
+término de imagen se mantiene el AUC. **V002 original sigue activo.**
 
-El [protocolo SAM](docs/mejoras_cnn/PROTOCOLO_SAM.md) fija las condiciones y el
-criterio de mejora. V002 original sigue activo. El informe distinguirá los pesos
-históricos de v002 de los controles reentrenados; no hay promoción automática.
-
-```bash
-.venv/bin/python -u -B -m cancer_mama.experimento_sam ejecutar
-```
-
-El comando reanuda solo ejecuciones compatibles y compara al completar los
-40 entrenamientos. Estado y log quedan en
-`resultados/04_entrenamiento/sam_multimodal_20261011/`, fuera de Git.
+El [registro de descartes](docs/EXPERIMENTOS_DESCARTADOS.md) contiene resultados,
+curvas, ablación y comparación descriptiva con los pesos originales de v002.
+El [protocolo SAM](docs/mejoras_cnn/PROTOCOLO_SAM.md) se conserva como documento
+histórico; el módulo y sus pruebas están en el commit `4a2c959` de `main` y se
+retiran del árbol actual. Los checkpoints de trabajo se conservan localmente.
 
 ## Evidencia y comprobaciones
 

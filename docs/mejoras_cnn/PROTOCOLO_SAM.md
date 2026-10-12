@@ -1,5 +1,13 @@
 # Ensayo SAM sobre el multimodal original v002
 
+> **Cerrado el 12/10/2026, sin cumplir el criterio de mejora.** Terminadas 40/40
+> ejecuciones. SAM ponderado mostró una señal pequeña frente al control, con IC
+> que incluye cero y contribución visual prácticamente nula. V002 sigue activo.
+> [Resultados y decisión](../EXPERIMENTOS_DESCARTADOS.md). El texto prefijado
+> se conserva debajo; sus comandos son históricos. Código en `4a2c959` de `main`.
+> Los hashes de ejecución corresponden al protocolo anterior a esta nota.
+
+
 Fijado el 11/10/2026 antes del entrenamiento completo. Petición del usuario:
 probar SAM tras descartar FiLM. Se trabaja exclusivamente en `main`; v002 sigue
 activo con sus pesos, calibración y umbral originales. No hay promoción automática.

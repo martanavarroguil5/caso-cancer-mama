@@ -1,0 +1,21 @@
+{
+  "tests_passed": 39,
+  "branch": "main",
+  "protected_files_unchanged": 299,
+  "oof_patients": 1097,
+  "arms_metrics_recomputed": 4,
+  "broken_documentation_links": [],
+  "removed_experimental_source_preserved_in_commit": "4a2c959",
+  "active_model_verification": {
+    "models": 10,
+    "parameters_per_model": 551921,
+    "checksums_verified": true,
+    "test_evaluated_once": false,
+    "test_repeated": false,
+    "aggregation": "median",
+    "threshold": 0.35433316934837994,
+    "clinical_required": true
+  },
+  "training_performed": false,
+  "test_evaluated": false
+}
