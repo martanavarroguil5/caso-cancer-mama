@@ -1,0 +1,8 @@
+{
+  "n_checkpoints": 40,
+  "max_abs_cpu_vs_saved_oof": 9.23399353092158e-08,
+  "tolerance": 2e-06,
+  "protected_files_unchanged": 299,
+  "training_performed": false,
+  "test_evaluated": false
+}
