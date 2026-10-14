@@ -16,6 +16,7 @@ cancer-mama-auditar = "cancer_mama.auditoria:main"
 cancer-mama-eda = "cancer_mama.eda:main"
 cancer-mama-preparar = "cancer_mama.preparacion:main"
 cancer-mama-entrenar = "cancer_mama.entrenamiento:main"
+cancer-mama-entrenar-imagen = "cancer_mama.entrenamiento_imagen:main"
 cancer-mama-informe-mejora = "cancer_mama.informe_mejora:main"
 cancer-mama-informe-multimodal = "cancer_mama.informe_multimodal:main"
 
