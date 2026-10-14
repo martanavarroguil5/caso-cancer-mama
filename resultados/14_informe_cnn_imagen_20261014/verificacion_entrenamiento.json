@@ -1,0 +1,299 @@
+{
+  "runs_verified": 20,
+  "all_steps_applied": true,
+  "all_weights_finite": true,
+  "all_hashes_valid": true,
+  "total_epochs": 326,
+  "test_images_loaded": 0,
+  "final_development_calibration": {
+    "slope": 0.0,
+    "intercept": -0.8783114838089386,
+    "probability_min": 0.2935278030993619,
+    "probability_max": 0.2935278030993619,
+    "threshold": 1.0,
+    "predicted_positive_patients": 0,
+    "policy_applied_to": "development OOF diagnostics; no independent test used"
+  },
+  "runs": [
+    {
+      "loss": "normal",
+      "seed": 2026,
+      "fold": 0,
+      "epochs": 20,
+      "expected_steps": 4660,
+      "actual_steps": [
+        4660
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "normal",
+      "seed": 2026,
+      "fold": 1,
+      "epochs": 11,
+      "expected_steps": 2563,
+      "actual_steps": [
+        2563
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "normal",
+      "seed": 2026,
+      "fold": 2,
+      "epochs": 9,
+      "expected_steps": 2097,
+      "actual_steps": [
+        2097
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "normal",
+      "seed": 2026,
+      "fold": 3,
+      "epochs": 18,
+      "expected_steps": 4194,
+      "actual_steps": [
+        4194
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "normal",
+      "seed": 2026,
+      "fold": 4,
+      "epochs": 23,
+      "expected_steps": 5359,
+      "actual_steps": [
+        5359
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "normal",
+      "seed": 42,
+      "fold": 0,
+      "epochs": 17,
+      "expected_steps": 3961,
+      "actual_steps": [
+        3961
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "normal",
+      "seed": 42,
+      "fold": 1,
+      "epochs": 10,
+      "expected_steps": 2330,
+      "actual_steps": [
+        2330
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "normal",
+      "seed": 42,
+      "fold": 2,
+      "epochs": 9,
+      "expected_steps": 2097,
+      "actual_steps": [
+        2097
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "normal",
+      "seed": 42,
+      "fold": 3,
+      "epochs": 12,
+      "expected_steps": 2796,
+      "actual_steps": [
+        2796
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "normal",
+      "seed": 42,
+      "fold": 4,
+      "epochs": 17,
+      "expected_steps": 3961,
+      "actual_steps": [
+        3961
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "weighted",
+      "seed": 2026,
+      "fold": 0,
+      "epochs": 38,
+      "expected_steps": 8854,
+      "actual_steps": [
+        8854
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "weighted",
+      "seed": 2026,
+      "fold": 1,
+      "epochs": 15,
+      "expected_steps": 3495,
+      "actual_steps": [
+        3495
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "weighted",
+      "seed": 2026,
+      "fold": 2,
+      "epochs": 19,
+      "expected_steps": 4427,
+      "actual_steps": [
+        4427
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "weighted",
+      "seed": 2026,
+      "fold": 3,
+      "epochs": 22,
+      "expected_steps": 5126,
+      "actual_steps": [
+        5126
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "weighted",
+      "seed": 2026,
+      "fold": 4,
+      "epochs": 9,
+      "expected_steps": 2097,
+      "actual_steps": [
+        2097
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "weighted",
+      "seed": 42,
+      "fold": 0,
+      "epochs": 16,
+      "expected_steps": 3728,
+      "actual_steps": [
+        3728
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "weighted",
+      "seed": 42,
+      "fold": 1,
+      "epochs": 21,
+      "expected_steps": 4893,
+      "actual_steps": [
+        4893
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "weighted",
+      "seed": 42,
+      "fold": 2,
+      "epochs": 10,
+      "expected_steps": 2330,
+      "actual_steps": [
+        2330
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "weighted",
+      "seed": 42,
+      "fold": 3,
+      "epochs": 19,
+      "expected_steps": 4427,
+      "actual_steps": [
+        4427
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    },
+    {
+      "loss": "weighted",
+      "seed": 42,
+      "fold": 4,
+      "epochs": 11,
+      "expected_steps": 2563,
+      "actual_steps": [
+        2563
+      ],
+      "no_skipped_steps": true,
+      "finite_weights": true,
+      "artifact_hashes_valid": true,
+      "test_images_loaded": 0
+    }
+  ]
+}
