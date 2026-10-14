@@ -1,0 +1,61 @@
+{
+  "status": "complete",
+  "phase": "comparison",
+  "pid": 8430,
+  "started_at": "2026-10-14T17:38:09.361195+02:00",
+  "planned_runs": 20,
+  "commands": [
+    [
+      "/home/jorgesrab/Escritorio/caso-cancer-mama/.venv/bin/python",
+      "-B",
+      "-u",
+      "-m",
+      "cancer_mama.entrenamiento_imagen",
+      "entrenar",
+      "--perdidas",
+      "normal",
+      "weighted",
+      "--semillas",
+      "42",
+      "2026",
+      "--folds",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "--epocas",
+      "40",
+      "--lote",
+      "32",
+      "--workers",
+      "4",
+      "--dispositivo",
+      "cuda",
+      "--salida",
+      "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/04_entrenamiento/cnn_imagen_fases_20261014"
+    ],
+    [
+      "/home/jorgesrab/Escritorio/caso-cancer-mama/.venv/bin/python",
+      "-B",
+      "-u",
+      "-m",
+      "cancer_mama.entrenamiento_imagen",
+      "comparar",
+      "--salida",
+      "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/04_entrenamiento/cnn_imagen_fases_20261014"
+    ]
+  ],
+  "source_commit": "3eec1f0dd1a3ceefd83070e8213db32d6acef2c7",
+  "source_sha256": "1237174a1eee471e2468d2f2e286c24070226d3f3009d5ff9f6e0eedd0afe6db",
+  "tests_passed": 43,
+  "gpu_smoke_losses": [
+    "normal",
+    "weighted"
+  ],
+  "phase_started_at": "2026-10-14T19:35:49.954805+02:00",
+  "child_pid": 60788,
+  "finished_at": "2026-10-14T19:36:07.138776+02:00",
+  "protected_versions_unchanged": true,
+  "changed_protected_files": []
+}
