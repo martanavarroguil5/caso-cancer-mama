@@ -1,0 +1,113 @@
+{
+  "unit_tests_passed": 47,
+  "versions": [
+    {
+      "id": "v001_cnn_historica_20260930",
+      "files_verified": 36,
+      "models": 10,
+      "checksums_verified": true,
+      "runtime": null
+    },
+    {
+      "id": "v002_multimodal_clinico_20261007",
+      "files_verified": 64,
+      "models": 10,
+      "checksums_verified": true,
+      "runtime": null
+    },
+    {
+      "id": "v003_multimodal_loss_20261010",
+      "files_verified": 91,
+      "models": 10,
+      "checksums_verified": true,
+      "runtime": null
+    },
+    {
+      "id": "v004_multimodal_bce_normal_20261011",
+      "files_verified": 95,
+      "models": 10,
+      "checksums_verified": true,
+      "runtime": null
+    },
+    {
+      "id": "v005_cnn_imagen_fases_normal_20261014",
+      "files_verified": 80,
+      "models": 10,
+      "checksums_verified": true,
+      "runtime": null
+    },
+    {
+      "id": "v006_cnn_imagen_fases_ponderada_20261014",
+      "files_verified": 80,
+      "models": 10,
+      "checksums_verified": true,
+      "runtime": null
+    }
+  ],
+  "isolated_inference": [
+    {
+      "version": "v005_cnn_imagen_fases_normal_20261014",
+      "source_result": {
+        "patient_id": "probe",
+        "n_slices": 2,
+        "models": 10,
+        "probability_raw": 0.35718655586242676,
+        "probability_calibrated": 0.35718655586242676,
+        "threshold": 0.5,
+        "pCR": 0,
+        "clinical_used": false,
+        "status": "ensayo_insuficiente_conservado",
+        "calibration_is_constant": false
+      },
+      "copied_result": {
+        "patient_id": "probe",
+        "n_slices": 2,
+        "models": 10,
+        "probability_raw": 0.35718655586242676,
+        "probability_calibrated": 0.35718655586242676,
+        "threshold": 0.5,
+        "pCR": 0,
+        "clinical_used": false,
+        "status": "ensayo_insuficiente_conservado",
+        "calibration_is_constant": false
+      },
+      "max_raw_difference": 0.0,
+      "dataset_absent": true
+    },
+    {
+      "version": "v006_cnn_imagen_fases_ponderada_20261014",
+      "source_result": {
+        "patient_id": "probe",
+        "n_slices": 2,
+        "models": 10,
+        "probability_raw": 0.4440614581108093,
+        "probability_calibrated": 0.2935278030993619,
+        "threshold": 1.0,
+        "pCR": 0,
+        "clinical_used": false,
+        "status": "ensayo_insuficiente_conservado",
+        "calibration_is_constant": true
+      },
+      "copied_result": {
+        "patient_id": "probe",
+        "n_slices": 2,
+        "models": 10,
+        "probability_raw": 0.4440614581108093,
+        "probability_calibrated": 0.2935278030993619,
+        "threshold": 1.0,
+        "pCR": 0,
+        "clinical_used": false,
+        "status": "ensayo_insuficiente_conservado",
+        "calibration_is_constant": true
+      },
+      "max_raw_difference": 0.0,
+      "dataset_absent": true
+    }
+  ],
+  "protected_versions_unchanged": true,
+  "active_manifest": "modelos/versiones/v002_multimodal_clinico_20261007/manifiesto.json",
+  "active_manifest_sha256": "59a540c8949827becca7e5e9bf70698cc2faed94dd63b2c1872f47a2854e9292",
+  "broken_links": [],
+  "new_weights_files": 20,
+  "new_weights_bytes": 35870500
+}

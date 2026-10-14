@@ -1,6 +1,14 @@
 # Protocolo: CNN principal solo imagen y consciente de las fases
 
-Fecha de fijación: 14/10/2026. Estado: **preparado, no entrenado**.
+Fecha de fijación: 14/10/2026. Estado: **entrenado y archivado; resultado insuficiente**.
+
+Se completaron las 20 ejecuciones el 14/10/2026 a las 19:36 (Europe/Madrid),
+con 326 épocas en 1 h 58 min. AUC medio por fold: 0,5330 ± 0,0253 (normal)
+y 0,5486 ± 0,0504 (ponderada). La política final ponderada resulta constante.
+Se conservan todos los pesos en v005/v006 sin activar estos modelos.
+El [informe de resultados](../../resultados/14_informe_cnn_imagen_20261014/INFORME_RESULTADOS.md)
+distingue validación exterior, sobreajuste y calibración final.
+El texto siguiente conserva las decisiones fijadas antes de entrenar.
 
 ## Objetivo docente
 

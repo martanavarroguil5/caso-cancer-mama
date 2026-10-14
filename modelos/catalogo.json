@@ -133,6 +133,114 @@
           0.6883090199301417
         ]
       }
+    },
+    {
+      "id": "v005_cnn_imagen_fases_normal_20261014",
+      "description": "CNN solo imagen por fases, BCE normal: resultado insuficiente de desarrollo; conservada sin activar",
+      "archived_at": "2026-10-14T20:03:37.305695+02:00",
+      "status": "ensayo_insuficiente_conservado",
+      "clinical_required": false,
+      "n_models": 10,
+      "weights_bytes": 17935250,
+      "metrics_raw_oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.5086595872570627,
+        "average_precision": 0.31009658268293105,
+        "brier": 0.21097738026376492,
+        "log_loss": 0.614870906889353,
+        "accuracy": 0.707383773928897,
+        "balanced_accuracy": 0.5015527950310559,
+        "precision_no_pcr": 0.7071167883211679,
+        "recall_no_pcr": 1.0,
+        "f1_no_pcr": 0.8284339925173704,
+        "precision_pcr": 1.0,
+        "recall_pcr": 0.003105590062111801,
+        "f1_pcr": 0.006191950464396285,
+        "macro_f1": 0.4173129714908833,
+        "weighted_f1": 0.5870830922976278,
+        "threshold": 0.5,
+        "tn": 775,
+        "fp": 0,
+        "fn": 321,
+        "tp": 1,
+        "support_no_pcr": 775,
+        "support_pcr": 322,
+        "confusion_matrix": [
+          [
+            775,
+            0
+          ],
+          [
+            321,
+            1
+          ]
+        ],
+        "mean_fold_auc": 0.5330017848888228,
+        "std_fold_auc": 0.02533943435595305,
+        "fold_auc": [
+          0.5067540322580646,
+          0.5680090404766797,
+          0.547426044846826,
+          0.512,
+          0.5308198068625437
+        ]
+      }
+    },
+    {
+      "id": "v006_cnn_imagen_fases_ponderada_20261014",
+      "description": "CNN solo imagen por fases, BCE weighted: resultado insuficiente de desarrollo; conservada sin activar",
+      "archived_at": "2026-10-14T20:03:40.930526+02:00",
+      "status": "ensayo_insuficiente_conservado",
+      "clinical_required": false,
+      "n_models": 10,
+      "weights_bytes": 17935250,
+      "metrics_raw_oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.5245722300140253,
+        "average_precision": 0.317947619299155,
+        "brier": 0.2531819169318953,
+        "log_loss": 0.7011859583619713,
+        "accuracy": 0.406563354603464,
+        "balanced_accuracy": 0.4974053295932679,
+        "precision_no_pcr": 0.7026143790849673,
+        "recall_no_pcr": 0.27741935483870966,
+        "f1_no_pcr": 0.39777983348751156,
+        "precision_pcr": 0.2920353982300885,
+        "recall_pcr": 0.717391304347826,
+        "f1_pcr": 0.41509433962264153,
+        "macro_f1": 0.40643708655507654,
+        "weighted_f1": 0.40286212243510666,
+        "threshold": 0.5,
+        "tn": 215,
+        "fp": 560,
+        "fn": 91,
+        "tp": 231,
+        "support_no_pcr": 775,
+        "support_pcr": 322,
+        "confusion_matrix": [
+          [
+            215,
+            560
+          ],
+          [
+            91,
+            231
+          ]
+        ],
+        "mean_fold_auc": 0.5485714044547185,
+        "std_fold_auc": 0.050435443579945415,
+        "fold_auc": [
+          0.516633064516129,
+          0.5337990548592562,
+          0.6219602063375093,
+          0.495264367816092,
+          0.5752003287446066
+        ]
+      }
     }
   ]
 }

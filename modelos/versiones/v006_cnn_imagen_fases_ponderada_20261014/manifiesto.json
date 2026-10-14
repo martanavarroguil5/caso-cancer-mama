@@ -1,0 +1,517 @@
+{
+  "schema_version": 1,
+  "status": "ensayo_insuficiente_conservado",
+  "model_class": "CNNImagenFases",
+  "models": [
+    {
+      "path": "pesos/semilla_42_fold_0.pt",
+      "sha256": "66827ecb0a41a108127bc81bd4e0096cab3d270ec0ae34621e3e962e750a3fe9",
+      "seed": 42,
+      "fold": 0,
+      "outer_fold": 0,
+      "model_config": {
+        "architecture": "shared_phase_encoder_ordered_temporal_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "phase_encoder_shared": true,
+        "stem_channels": [
+          16,
+          32
+        ],
+        "fusion_views": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "LATE-EARLY"
+        ],
+        "fusion_channels": 64,
+        "trunk_channels": [
+          96,
+          128
+        ],
+        "hidden": 64,
+        "dropout": 0.4,
+        "normalization": "batch",
+        "clinical": null
+      }
+    },
+    {
+      "path": "pesos/semilla_42_fold_1.pt",
+      "sha256": "815accd9db3aa4b76e87ac5c34b7183ac30d5359b85045239c42d67c3be17783",
+      "seed": 42,
+      "fold": 1,
+      "outer_fold": 1,
+      "model_config": {
+        "architecture": "shared_phase_encoder_ordered_temporal_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "phase_encoder_shared": true,
+        "stem_channels": [
+          16,
+          32
+        ],
+        "fusion_views": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "LATE-EARLY"
+        ],
+        "fusion_channels": 64,
+        "trunk_channels": [
+          96,
+          128
+        ],
+        "hidden": 64,
+        "dropout": 0.4,
+        "normalization": "batch",
+        "clinical": null
+      }
+    },
+    {
+      "path": "pesos/semilla_42_fold_2.pt",
+      "sha256": "3d5fbd3e336a9ced3736a619964fa41ea7b31782ea8e3f7db1e10cca7b6a3deb",
+      "seed": 42,
+      "fold": 2,
+      "outer_fold": 2,
+      "model_config": {
+        "architecture": "shared_phase_encoder_ordered_temporal_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "phase_encoder_shared": true,
+        "stem_channels": [
+          16,
+          32
+        ],
+        "fusion_views": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "LATE-EARLY"
+        ],
+        "fusion_channels": 64,
+        "trunk_channels": [
+          96,
+          128
+        ],
+        "hidden": 64,
+        "dropout": 0.4,
+        "normalization": "batch",
+        "clinical": null
+      }
+    },
+    {
+      "path": "pesos/semilla_42_fold_3.pt",
+      "sha256": "bd642c571f02a473263848a0f3d17f1598259338a8d2817888deab9d3e1d5c30",
+      "seed": 42,
+      "fold": 3,
+      "outer_fold": 3,
+      "model_config": {
+        "architecture": "shared_phase_encoder_ordered_temporal_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "phase_encoder_shared": true,
+        "stem_channels": [
+          16,
+          32
+        ],
+        "fusion_views": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "LATE-EARLY"
+        ],
+        "fusion_channels": 64,
+        "trunk_channels": [
+          96,
+          128
+        ],
+        "hidden": 64,
+        "dropout": 0.4,
+        "normalization": "batch",
+        "clinical": null
+      }
+    },
+    {
+      "path": "pesos/semilla_42_fold_4.pt",
+      "sha256": "6b96ea70a499777d6149e84bd3acd6cfb3d88269aa21bcb17ba1a1197744b514",
+      "seed": 42,
+      "fold": 4,
+      "outer_fold": 4,
+      "model_config": {
+        "architecture": "shared_phase_encoder_ordered_temporal_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "phase_encoder_shared": true,
+        "stem_channels": [
+          16,
+          32
+        ],
+        "fusion_views": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "LATE-EARLY"
+        ],
+        "fusion_channels": 64,
+        "trunk_channels": [
+          96,
+          128
+        ],
+        "hidden": 64,
+        "dropout": 0.4,
+        "normalization": "batch",
+        "clinical": null
+      }
+    },
+    {
+      "path": "pesos/semilla_2026_fold_0.pt",
+      "sha256": "70eb514c165fc3f75079c7582b150938fec2f6e77cee21dc16364bfcbe672439",
+      "seed": 2026,
+      "fold": 0,
+      "outer_fold": 0,
+      "model_config": {
+        "architecture": "shared_phase_encoder_ordered_temporal_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "phase_encoder_shared": true,
+        "stem_channels": [
+          16,
+          32
+        ],
+        "fusion_views": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "LATE-EARLY"
+        ],
+        "fusion_channels": 64,
+        "trunk_channels": [
+          96,
+          128
+        ],
+        "hidden": 64,
+        "dropout": 0.4,
+        "normalization": "batch",
+        "clinical": null
+      }
+    },
+    {
+      "path": "pesos/semilla_2026_fold_1.pt",
+      "sha256": "683e4fe2942489efe8b9e8def22b25a14b40b2d1280ac16a749ac789a290af34",
+      "seed": 2026,
+      "fold": 1,
+      "outer_fold": 1,
+      "model_config": {
+        "architecture": "shared_phase_encoder_ordered_temporal_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "phase_encoder_shared": true,
+        "stem_channels": [
+          16,
+          32
+        ],
+        "fusion_views": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "LATE-EARLY"
+        ],
+        "fusion_channels": 64,
+        "trunk_channels": [
+          96,
+          128
+        ],
+        "hidden": 64,
+        "dropout": 0.4,
+        "normalization": "batch",
+        "clinical": null
+      }
+    },
+    {
+      "path": "pesos/semilla_2026_fold_2.pt",
+      "sha256": "1c8aaed42ca4ae47e45ac976555ad120dc515511465707ad0126589b0b8afdd9",
+      "seed": 2026,
+      "fold": 2,
+      "outer_fold": 2,
+      "model_config": {
+        "architecture": "shared_phase_encoder_ordered_temporal_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "phase_encoder_shared": true,
+        "stem_channels": [
+          16,
+          32
+        ],
+        "fusion_views": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "LATE-EARLY"
+        ],
+        "fusion_channels": 64,
+        "trunk_channels": [
+          96,
+          128
+        ],
+        "hidden": 64,
+        "dropout": 0.4,
+        "normalization": "batch",
+        "clinical": null
+      }
+    },
+    {
+      "path": "pesos/semilla_2026_fold_3.pt",
+      "sha256": "3fd19a07c1df596731387e90b142155285604ecb414592b18a4369f05a2011a1",
+      "seed": 2026,
+      "fold": 3,
+      "outer_fold": 3,
+      "model_config": {
+        "architecture": "shared_phase_encoder_ordered_temporal_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "phase_encoder_shared": true,
+        "stem_channels": [
+          16,
+          32
+        ],
+        "fusion_views": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "LATE-EARLY"
+        ],
+        "fusion_channels": 64,
+        "trunk_channels": [
+          96,
+          128
+        ],
+        "hidden": 64,
+        "dropout": 0.4,
+        "normalization": "batch",
+        "clinical": null
+      }
+    },
+    {
+      "path": "pesos/semilla_2026_fold_4.pt",
+      "sha256": "e4b21f6159d5c910a7bb0e6c08e3f38190ca6c6d3d386096fe00b004d57d481d",
+      "seed": 2026,
+      "fold": 4,
+      "outer_fold": 4,
+      "model_config": {
+        "architecture": "shared_phase_encoder_ordered_temporal_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "phase_encoder_shared": true,
+        "stem_channels": [
+          16,
+          32
+        ],
+        "fusion_views": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "LATE-EARLY"
+        ],
+        "fusion_channels": 64,
+        "trunk_channels": [
+          96,
+          128
+        ],
+        "hidden": 64,
+        "dropout": 0.4,
+        "normalization": "batch",
+        "clinical": null
+      }
+    }
+  ],
+  "loss": "weighted",
+  "slice_aggregation": "mean",
+  "ensemble": "mean probabilities across ten models",
+  "calibration": {
+    "method": "regularized_platt",
+    "input": "logit_patient_aggregated_probability",
+    "slope": 0.0,
+    "intercept": -0.8783114838089386,
+    "C": 1.0,
+    "clip_epsilon": 1e-07,
+    "scope": "patient",
+    "fit_data": "all_development_outer_oof_for_future_independent_test_only",
+    "nonnegative_slope_constraint": true,
+    "boundary_solution": true
+  },
+  "threshold": 1.0,
+  "threshold_policy": {
+    "calibration": {
+      "method": "regularized_platt",
+      "input": "logit_patient_aggregated_probability",
+      "slope": 0.0,
+      "intercept": -0.8783114838089386,
+      "C": 1.0,
+      "clip_epsilon": 1e-07,
+      "scope": "patient",
+      "fit_data": "all_development_outer_oof_for_future_independent_test_only",
+      "nonnegative_slope_constraint": true,
+      "boundary_solution": true
+    },
+    "threshold": 1.0,
+    "strategy": "max_sensitivity_at_min_specificity",
+    "min_specificity": 0.9,
+    "fit_data": "development OOF; do not report apparent decision metrics as test"
+  },
+  "preprocessing": {
+    "phases": [
+      "PRE",
+      "EARLY",
+      "LATE"
+    ],
+    "shape": [
+      3,
+      256,
+      256
+    ],
+    "phase_semantics": "ordered DCE times, never RGB",
+    "scaling": "uint8/255 followed by 2*x-1 inside each shared phase encoder",
+    "clinical_required": false
+  },
+  "test_evaluated_once": false,
+  "recommended_for_prediction": false,
+  "training_git_commit": "3eec1f0dd1a3ceefd83070e8213db32d6acef2c7",
+  "training_source_sha256": "1237174a1eee471e2468d2f2e286c24070226d3f3009d5ff9f6e0eedd0afe6db",
+  "selection": {
+    "configuration": "cnn_imagen_fases",
+    "loss": "weighted",
+    "won_development_loss_comparison": true,
+    "metrics_raw_oof": {
+      "n_patients": 1097,
+      "n_positive": 322,
+      "prevalence": 0.2935278030993619,
+      "roc_auc": 0.5245722300140253,
+      "average_precision": 0.317947619299155,
+      "brier": 0.2531819169318953,
+      "log_loss": 0.7011859583619713,
+      "accuracy": 0.406563354603464,
+      "balanced_accuracy": 0.4974053295932679,
+      "precision_no_pcr": 0.7026143790849673,
+      "recall_no_pcr": 0.27741935483870966,
+      "f1_no_pcr": 0.39777983348751156,
+      "precision_pcr": 0.2920353982300885,
+      "recall_pcr": 0.717391304347826,
+      "f1_pcr": 0.41509433962264153,
+      "macro_f1": 0.40643708655507654,
+      "weighted_f1": 0.40286212243510666,
+      "threshold": 0.5,
+      "tn": 215,
+      "fp": 560,
+      "fn": 91,
+      "tp": 231,
+      "support_no_pcr": 775,
+      "support_pcr": 322,
+      "confusion_matrix": [
+        [
+          215,
+          560
+        ],
+        [
+          91,
+          231
+        ]
+      ],
+      "mean_fold_auc": 0.5485714044547185,
+      "std_fold_auc": 0.050435443579945415,
+      "fold_auc": [
+        0.516633064516129,
+        0.5337990548592562,
+        0.6219602063375093,
+        0.495264367816092,
+        0.5752003287446066
+      ]
+    },
+    "crossfit_decision": {
+      "accuracy": 0.6727438468550593,
+      "balanced_accuracy": 0.508803846924464,
+      "precision_no_pcr": 0.7105263157894737,
+      "recall_no_pcr": 0.9058064516129032,
+      "f1_no_pcr": 0.7963698241633579,
+      "precision_pcr": 0.3302752293577982,
+      "recall_pcr": 0.11180124223602485,
+      "f1_pcr": 0.16705336426914152,
+      "macro_f1": 0.4817115942162497,
+      "tn": 702,
+      "fp": 73,
+      "fn": 286,
+      "tp": 36,
+      "support_no_pcr": 775,
+      "support_pcr": 322,
+      "threshold": "fold_specific_inner_validation"
+    },
+    "promotion": "none; retained for reproducibility of an insufficient result"
+  },
+  "provenance_files": [
+    {
+      "path": "evidencia/repo/resultados/14_informe_cnn_imagen_20261014/seleccion.json",
+      "sha256": "954126316a15c121c7dfcd85babf11b4b36c4c68d178f898301335a450d71de3"
+    },
+    {
+      "path": "evidencia/repo/resultados/14_informe_cnn_imagen_20261014/oof_pacientes_weighted.csv",
+      "sha256": "cba41cfe1a1d71642acd39a4891941318e6f17a800487bb1586c2167ed389ce7"
+    },
+    {
+      "path": "evidencia/repo/resultados/14_informe_cnn_imagen_20261014/procedencia.json",
+      "sha256": "135a54bb6b48bb8e42d935c96cae0cd134de9d95c0e6185a029eb4fc062836cb"
+    },
+    {
+      "path": "evidencia/repo/resultados/14_informe_cnn_imagen_20261014/verificacion_entrenamiento.json",
+      "sha256": "ad6da8b951fd822a0533bb8d84571c555d7992b1a37f945ad9063ce97edc1053"
+    }
+  ]
+}
