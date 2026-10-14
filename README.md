@@ -11,10 +11,36 @@ La mejora de BCE normal frente a un control reentrenado no justificaba sustituir
 v002. Se conservan los resultados y todas las versiones de pesos.
 Véase el [registro de experimentos descartados](docs/EXPERIMENTOS_DESCARTADOS.md).
 
+## Nuevo candidato principal solo imagen (preparado, no entrenado)
+
+Siguiendo el criterio docente, el repositorio incluye un entrenamiento separado
+para una CNN propia que utiliza exclusivamente PRE, EARLY y LATE. Un encoder
+monocanal compartido procesa las fases por separado y una fusión ordenada combina
+sus características y diferencias temporales. No se usan variables clínicas ni
+se reinterpretan las fases como RGB. V002 permanece intacta como comparador.
+
+El protocolo fija media de cortes por paciente, cinco folds exteriores protegidos,
+selección interna de checkpoint y umbral, BCE normal frente a ponderada y dos
+semillas. Son 20 runs y el test no se abre. Para comprobar el otro ordenador sin
+entrenar:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/entrenar_cnn_imagen_gpu.ps1 -SoloComprobar
+```
+
+Para ejecutar posteriormente el humo y la matriz completa:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/entrenar_cnn_imagen_gpu.ps1
+```
+
+El diseño completo está en el
+[protocolo de CNN por fases](docs/mejoras_cnn/PROTOCOLO_CNN_IMAGEN_FASES.md).
+
 ## Estructura
 
 ```text
-src/cancer_mama/          # datos, entrenador multimodal e informes originales
+src/cancer_mama/          # datos, entrenador multimodal y candidato solo imagen
 tests/                   # pruebas del código activo
 app.py                   # aplicación Streamlit con v002
 scripts/                 # lanzador GPU y comprobación de inferencia
