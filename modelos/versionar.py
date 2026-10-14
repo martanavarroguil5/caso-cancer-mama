@@ -69,8 +69,13 @@ def check_manifest(path):
     return manifest
 
 
-def training_code(root):
+def training_code(root, manifest=None):
     root = Path(root)
+    if manifest and manifest.get("model_class") == "CNNImagenFases":
+        image_runtime = root / "src/cancer_mama/inferencia_imagen.py"
+        if not image_runtime.is_file():
+            raise FileNotFoundError(f"Falta el código compatible de imagen en {root}")
+        return image_runtime
     legacy = root / "04_entrenamiento.py"
     packaged = root / "src/cancer_mama/entrenamiento.py"
     if legacy.is_file():
@@ -83,10 +88,10 @@ def training_code(root):
 def code_command(code, action, manifest, arguments=()):
     code = Path(code).resolve()
     environment = os.environ.copy()
-    if code.name == "entrenamiento.py" and code.parent.name == "cancer_mama":
+    if code.name in {"entrenamiento.py", "inferencia_imagen.py"} and code.parent.name == "cancer_mama":
         source = str(code.parent.parent)
         environment["PYTHONPATH"] = source + (os.pathsep + environment["PYTHONPATH"] if environment.get("PYTHONPATH") else "")
-        command = [sys.executable, "-B", "-m", "cancer_mama.entrenamiento"]
+        command = [sys.executable, "-B", "-m", f"cancer_mama.{code.stem}"]
     else:
         command = [sys.executable, "-B", str(code)]
     return [*command, action, "--manifest", str(manifest), *arguments], environment
@@ -169,7 +174,7 @@ def verify_version(identifier, archive=ARCHIVE, runtime=True):
     manifest = check_manifest(manifest_path)
     for item in [*manifest["models"], *manifest.get("provenance_files", [])]:
         inside(folder, item["path"])
-    model_check = run_verification(training_code(folder / "codigo"), manifest_path) if runtime else None
+    model_check = run_verification(training_code(folder / "codigo", manifest), manifest_path) if runtime else None
     return {"id": identifier, "files_verified": len(expected), "models": len(manifest["models"]),
             "checksums_verified": True, "runtime": model_check}
 
@@ -188,7 +193,7 @@ def archive_version(manifest_path, identifier, description, evidence=(), archive
         if destination.exists():
             raise ValueError("La versión ya existe y no se puede sobrescribir")
         source_manifest = check_manifest(manifest_path)
-        source_code = training_code(source_root)
+        source_code = training_code(source_root, source_manifest)
         source_check = run_verification(source_code, manifest_path)
         staging = Path(tempfile.mkdtemp(prefix=".staging-", dir=archive))
         try:
@@ -251,7 +256,7 @@ def archive_version(manifest_path, identifier, description, evidence=(), archive
                     packages[package] = None
             write_json(staging / "entorno.json", {"scope": "entorno compatible usado al archivar; no afirma ser el entorno original de entrenamiento",
                        "python": platform.python_version(), "platform": platform.platform(), "packages": packages})
-            frozen_check = run_verification(training_code(staging / "codigo"), staging / "manifiesto.json")
+            frozen_check = run_verification(training_code(staging / "codigo", operative), staging / "manifiesto.json")
             if frozen_check != source_check:
                 raise ValueError("El paquete no coincide con el modelo de origen")
             git = subprocess.run(["git", "rev-parse", "HEAD"], cwd=source_root, capture_output=True, text=True)
@@ -313,7 +318,7 @@ def main():
             arguments = args.arguments[1:] if args.arguments[:1] == ["--"] else args.arguments
             if any(arg == "--manifest" or arg.startswith("--manifest=") for arg in arguments):
                 raise ValueError("El manifiesto se selecciona con la versión; no pases --manifest")
-            command, environment = code_command(training_code(folder / "codigo"), "predecir", folder / "manifiesto.json", arguments)
+            command, environment = code_command(training_code(folder / "codigo", check_manifest(folder / "manifiesto.json")), "predecir", folder / "manifiesto.json", arguments)
             completed = subprocess.run(command, env=environment)
             return completed.returncode
         print(json.dumps(result, ensure_ascii=False, indent=2))

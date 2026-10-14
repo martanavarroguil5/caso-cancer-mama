@@ -81,3 +81,6 @@ Thumbs.db
 
 # Ensayo SAM: ejecuciones locales y pesos candidatos
 /resultados/04_entrenamiento/sam_multimodal_20261011/
+
+# CNN por fases: ejecuciones y checkpoints de trabajo locales
+/resultados/04_entrenamiento/cnn_imagen_fases_20261014/

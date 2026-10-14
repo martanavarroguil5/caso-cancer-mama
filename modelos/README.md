@@ -73,6 +73,18 @@ se omiten las variables clínicas. Las fases son PNG monocromos de 8 bits,
 Cada versión usa su código congelado aunque se retiren módulos experimentales
 del paquete principal. El dataset no es necesario para inferir nuevas imágenes.
 
+## Compatibilidad de la CNN por fases
+
+El archivador distingue el multimodal de los manifiestos con
+`model_class: CNNImagenFases`. Para estos conserva y ejecuta
+`cancer_mama.inferencia_imagen`, junto con la arquitectura de
+`entrenamiento_imagen.py`; no intenta cargarlos como el multimodal.
+La verificación comprueba diez pesos, sus configuraciones y todos los hashes.
+La inferencia usa media de modelos y cortes, conserva exactamente la calibración
+y el umbral archivados y no necesita dataset ni variables clínicas.
+Una calibración constante se identifica expresamente en la salida y se conserva
+como evidencia del resultado, sin modificarla al archivar.
+
 ## Archivar una futura actualización
 
 Solo después de justificar la selección frente a la referencia adecuada:
