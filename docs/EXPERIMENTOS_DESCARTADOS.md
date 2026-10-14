@@ -1,12 +1,46 @@
 # Experimentos cerrados y retirados del entrenador
 
-Actualizado el 12/10/2026. Estos ensayos no forman parte del código activo de
+Actualizado el 14/10/2026. Estos ensayos no forman parte del código activo de
 `src/cancer_mama/entrenamiento.py` y sus comandos de comparación se han eliminado. No se
 vuelven a ejecutar automáticamente. Se conservan sus informes, predicciones,
 curvas, configuraciones y evidencia histórica en `resultados/04_entrenamiento/`.
 El código y los README anteriores se conservan en el historial de `main`;
 los commits citados identifican cada ensayo. Las copias locales de limpiezas
 antiguas no forman parte del código activo ni son necesarias para recuperarlo.
+
+## CNN solo imagen por fases: discriminación insuficiente (14/10/2026)
+
+Las 20 ejecuciones de BCE normal/ponderada, dos semillas y cinco folds
+terminaron correctamente en 1 h 58 min, con 326 épocas y el test sin abrir.
+La CNN desde cero emplea un encoder monocanal compartido para PRE/EARLY/LATE
+y fusión de diferencias temporales, sin clínica. Código de entrenamiento:
+commit `3eec1f0`; entrenamiento y arquitectura no se modifican al archivar.
+
+| Métrica | Normal | Ponderada |
+|---|---:|---:|
+| AUC medio por fold ± desviación | 0,5330 ± 0,0253 | 0,5486 ± 0,0504 |
+| AUC global OOF cruda | 0,5087 | 0,5246 |
+| Sensibilidad con umbral interno conservador | 6,52 % | 11,18 % |
+| Especificidad | 92,13 % | 90,58 % |
+| FP / FN | 61 / 301 | 73 / 286 |
+
+**Resultado insuficiente; no se promociona a la aplicación.** Persiste una
+brecha creciente entre fit y selección interna. La ponderada gana por el
+criterio prefijado de media de AUC por fold, pero su calibración final acaba
+en pendiente 0 y umbral 1, con probabilidad constante 0,293528. No se confunde
+esa política final con los umbrales por fold de la tabla ni se corrige después
+sin tratarlo como otro experimento.
+
+Se conservan todos los pesos de inferencia en v005 (normal) y v006 (ponderada),
+con código compatible y hashes. El entrenador independiente de imagen se
+mantiene para reproducibilidad de la nueva preparación docente; el entrenador
+y los pesos activos del multimodal v002 no cambian. No se lanza otra prueba.
+La comparación con v002 es descriptiva por sus entradas y selección distintas.
+
+[Informe, evidencia y límites](../resultados/14_informe_cnn_imagen_20261014/INFORME_RESULTADOS.md).
+No repetir esta misma configuración esperando que más épocas eliminen el
+sobreajuste. Este resultado no demuestra que todas las arquitecturas visuales
+fallen ni que las imágenes carezcan de señal.
 
 ## SAM: señal interna insuficiente y aporte visual prácticamente nulo (12/10/2026)
 

@@ -11,31 +11,28 @@ La mejora de BCE normal frente a un control reentrenado no justificaba sustituir
 v002. Se conservan los resultados y todas las versiones de pesos.
 Véase el [registro de experimentos descartados](docs/EXPERIMENTOS_DESCARTADOS.md).
 
-## Nuevo candidato principal solo imagen (preparado, no entrenado)
+## CNN solo imagen por fases: entrenamiento terminado
 
-Siguiendo el criterio docente, el repositorio incluye un entrenamiento separado
-para una CNN propia que utiliza exclusivamente PRE, EARLY y LATE. Un encoder
-monocanal compartido procesa las fases por separado y una fusión ordenada combina
-sus características y diferencias temporales. No se usan variables clínicas ni
-se reinterpretan las fases como RGB. V002 permanece intacta como comparador.
+El ensayo del 14/10/2026 completó **20 ejecuciones y 326 épocas** en 1 h 58 min.
+BCE ponderada obtuvo AUC medio por fold **0,5486 ± 0,0504** y AUC OOF global
+**0,5246**; BCE normal, **0,5330 ± 0,0253** y **0,5087**, respectivamente.
+El resultado es insuficiente: persiste sobreajuste y la calibración final
+ponderada devuelve una probabilidad constante. No se promocionan estos pesos.
 
-El protocolo fija media de cortes por paciente, cinco folds exteriores protegidos,
-selección interna de checkpoint y umbral, BCE normal frente a ponderada y dos
-semillas. Son 20 runs y el test no se abre. Para comprobar el otro ordenador sin
-entrenar:
+Se conservan los **20 pesos de inferencia** en
+[v005, BCE normal](modelos/versiones/v005_cnn_imagen_fases_normal_20261014/) y
+[v006, BCE ponderada](modelos/versiones/v006_cnn_imagen_fases_ponderada_20261014/),
+con código compatible y SHA-256. V002 continúa activa en la aplicación multimodal.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/entrenar_cnn_imagen_gpu.ps1 -SoloComprobar
-```
+- [Informe completo, curvas y límites](resultados/14_informe_cnn_imagen_20261014/INFORME_RESULTADOS.md).
+- [Métricas y predicciones](resultados/14_informe_cnn_imagen_20261014/).
+- [Protocolo prefijado de CNN por fases](docs/mejoras_cnn/PROTOCOLO_CNN_IMAGEN_FASES.md).
 
-Para ejecutar posteriormente el humo y la matriz completa:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/entrenar_cnn_imagen_gpu.ps1
-```
-
-El diseño completo está en el
-[protocolo de CNN por fases](docs/mejoras_cnn/PROTOCOLO_CNN_IMAGEN_FASES.md).
+El entrenamiento independiente de imagen permanece reproducible desde
+`cancer_mama.entrenamiento_imagen`: CNN desde cero, PRE/EARLY/LATE, encoder
+compartido, sin variables clínicas, media de cortes y selección interna por
+paciente. El lanzador GPU se conserva en `scripts/entrenar_cnn_imagen_gpu.ps1`.
+Los checkpoints de trabajo y estados de optimización permanecen locales.
 
 ## Estructura
 

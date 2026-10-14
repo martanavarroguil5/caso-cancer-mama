@@ -13,6 +13,8 @@ calibración Platt, mediana y umbral 0,3543331693. No hace falta volver a entren
 | `v002_multimodal_clinico_20261007` | **Activa, multimodal original** | **0,7246** | 10 archivos |
 | `v003_multimodal_loss_20261010` | Experimento descartado; mejora no concluyente | 0,7061 | 10 archivos |
 | `v004_multimodal_bce_normal_20261011` | Experimento descartado; no supera al original | 0,7109 | 10 archivos |
+| `v005_cnn_imagen_fases_normal_20261014` | Solo imagen, BCE normal; resultado insuficiente conservado | 0,5087 | 10 archivos |
+| `v006_cnn_imagen_fases_ponderada_20261014` | Solo imagen, BCE ponderada; resultado insuficiente conservado | 0,5246 | 10 archivos |
 
 Los protocolos de selección difieren: estas AUC describen cada desarrollo y
 no constituyen una comparación independiente entre modelos. El cambio de decisión
@@ -27,11 +29,25 @@ y 210 FP/126 FN de v004. Son métricas aparentes de desarrollo.
 La [decisión de cierre](../docs/EXPERIMENTOS_DESCARTADOS.md) documenta la corrección,
 las comparaciones y sus límites. El test reservado no se abrió para elegir.
 
+## CNN por fases del 14/10/2026
+
+V005/v006 contienen los veinte pesos elegidos del ensayo de imagen, separados
+por pérdida. La media de AUC por fold es 0,5330 ± 0,0253 y 0,5486 ± 0,0504;
+la tabla anterior muestra AUC global OOF, una agregación distinta.
+El [informe](../resultados/14_informe_cnn_imagen_20261014/INFORME_RESULTADOS.md)
+recoge las predicciones y curvas de las veinte ejecuciones.
+
+Se archivan como `ensayo_insuficiente_conservado`, sin promoción. La calibración
+final de v006 tiene pendiente 0 y umbral 1: siempre predice no pCR. V005 no ganó
+la selección de pérdida y se guarda con calibración identidad y umbral crudo
+0,5 solo para diagnóstico, sin ajustar una nueva política tras ver el resultado.
+Estos umbrales del paquete no son los umbrales internos por fold del informe.
+
 ## Paquetes congelados
 
 Cada carpeta conserva pesos, manifiesto, preprocesado, calibración, código
 compatible, entorno y evidencia, con SHA-256. No se permite sobrescribir una
-versión ni reutilizar su número. V001, v002, v003 y v004 permanecen intactas.
+versión ni reutilizar su número. Las versiones publicadas son inmutables; archivar v005/v006 no modifica v001–v004.
 
 ```text
 versiones/v002_multimodal_clinico_20261007/
@@ -91,7 +107,7 @@ Solo después de justificar la selección frente a la referencia adecuada:
 
 ```bash
 .venv/bin/python -B modelos/versionar.py guardar \
-  --id v005_multimodal_clinico_AAAAMMDD \
+  --id v007_multimodal_clinico_AAAAMMDD \
   --manifest resultados/04_entrenamiento/nueva_ejecucion/comparacion/modelo_desarrollo.json \
   --descripcion "Descripción de la actualización y su evaluación"
 .venv/bin/python -B modelos/versionar.py verificar
