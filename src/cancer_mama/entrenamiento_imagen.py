@@ -382,7 +382,8 @@ def _patient_auc(samples, probabilities) -> float:
     return float(roc_auc_score(patients.label, patients.probability_raw))
 
 
-def graficar_historia(run_dir: Path):
+def graficar_historia(run_dir: Path,
+                      title: str = "CNN solo imagen: fit frente a selección; outer no interviene"):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -398,7 +399,7 @@ def graficar_historia(run_dir: Path):
     for axis in axes:
         axis.grid(alpha=.2)
         axis.legend()
-    fig.suptitle("CNN solo imagen: fit frente a selección; outer no interviene")
+    fig.suptitle(title)
     fig.tight_layout()
     fig.savefig(run_dir/"curvas_train_seleccion.png", dpi=160)
     plt.close(fig)
@@ -411,12 +412,15 @@ def _loader(samples, root, batch_size, workers, seed, shuffle=False):
 
 
 def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
-                 root: Path, output: Path, device: torch.device, smoke=False):
+                 root: Path, output: Path, device: torch.device, smoke=False,
+                 model_type=CNNImagenFases, experiment_name: str | None = None,
+                 extra_source_files: dict[str, Path] | None = None):
     """Entrena sin consultar el fold exterior hasta fijar el checkpoint."""
     config = deepcopy(config)
     if loss_name not in LOSSES or seed not in SEEDS or outer_fold not in FOLDS:
         raise ValueError("Pérdida, semilla o fold fuera del protocolo")
-    if config.get("name") != EXPERIMENT_NAME:
+    experiment_name = experiment_name or EXPERIMENT_NAME
+    if config.get("name") != experiment_name:
         raise ValueError("Configuración de experimento inesperada")
     config.update(loss=loss_name, seed=seed, outer_fold=outer_fold, smoke=bool(smoke),
                   device_type=device.type)
@@ -424,6 +428,8 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
         "entrenamiento_imagen.py": base.sha256(Path(__file__)),
         "datos.py": base.sha256(Path(pdatos.__file__)),
     }
+    for name, path in (extra_source_files or {}).items():
+        config["source_sha256"][name] = base.sha256(Path(path))
     training = config["training"]
     torch.set_num_threads(int(training["cpu_threads"]))
     base.seed_everything(seed, bool(training["deterministic"]))
@@ -441,7 +447,7 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
     config["pos_weight"] = (float(pdatos.pos_weight_cortes(fit))
                             if loss_name == "weighted" else 1.0)
 
-    run_dir = (Path(output)/EXPERIMENT_NAME/loss_name/f"seed_{seed}"/f"fold_{outer_fold}")
+    run_dir = (Path(output)/experiment_name/loss_name/f"seed_{seed}"/f"fold_{outer_fold}")
     run_dir.mkdir(parents=True, exist_ok=True)
     config_path = run_dir/"config.json"
     if config_path.exists() and base.config_hash(json.loads(config_path.read_text())) != base.config_hash(config):
@@ -472,7 +478,7 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
     selection_loader = _loader(selection, root, batch_size, workers, seed+60000+outer_fold)
     outer_loader = _loader(outer, root, batch_size, workers, seed+70000+outer_fold)
 
-    model = CNNImagenFases(config).to(device)
+    model = model_type(config).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=training["lr"],
                                   weight_decay=training["weight_decay"])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
@@ -540,7 +546,10 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
             epoch, best_auc, bad_epochs, config, train_generator,
             augmentation_generator, history, best_epoch)
         base.history_write(run_dir/"history.csv", history)
-        graficar_historia(run_dir)
+        graficar_historia(run_dir, config.get(
+            "history_plot_title",
+            "CNN solo imagen: fit frente a selección; outer no interviene",
+        ))
         print(f"Epoch {epoch+1:02d}/{epochs_limit}: fitAUC={fit_auc:.4f} "
               f"selecciónAUC={selection_auc:.4f} brecha={fit_auc-selection_auc:+.4f} "
               f"selecciónLoss={selection_loss:.4f}", flush=True)
@@ -604,7 +613,8 @@ def _aligned_average(frames: list[pd.DataFrame]) -> pd.DataFrame:
     return result
 
 
-def _fold_candidate(loss_name: str, fold: int, runs: dict) -> tuple[dict, pd.DataFrame]:
+def _fold_candidate(loss_name: str, fold: int, runs: dict,
+                    protocol: dict | None = None) -> tuple[dict, pd.DataFrame]:
     selection = _aligned_average([
         pd.read_csv(runs[loss_name, seed, fold]/"selection_patients.csv") for seed in SEEDS])
     outer = _aligned_average([
@@ -615,7 +625,7 @@ def _fold_candidate(loss_name: str, fold: int, runs: dict) -> tuple[dict, pd.Dat
         selection.probability_raw.to_numpy(), calibration)
     outer["probability_calibrated"] = base.apply_calibration(
         outer.probability_raw.to_numpy(), calibration)
-    min_specificity = configuracion()["evaluation"]["min_specificity"]
+    min_specificity = (protocol or configuracion())["evaluation"]["min_specificity"]
     threshold = threshold_min_specificity(
         selection.label, selection.probability_calibrated, min_specificity)
     balanced_threshold = threshold_macro_f1(selection.label, selection.probability_calibrated)
@@ -637,7 +647,8 @@ def _fold_candidate(loss_name: str, fold: int, runs: dict) -> tuple[dict, pd.Dat
     return result, outer
 
 
-def graficar_comparacion(output: Path, runs: dict):
+def graficar_comparacion(output: Path, runs: dict,
+                         title: str = "CNN solo imagen: mediana e IQR de semillas y folds"):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -664,24 +675,33 @@ def graficar_comparacion(output: Path, runs: dict):
     for axis in axes:
         axis.grid(alpha=.2)
         axis.legend(title="Pérdida")
-    fig.suptitle("CNN solo imagen: mediana e IQR de semillas y folds")
+    fig.suptitle(title)
     fig.tight_layout()
     fig.savefig(Path(output)/"comparacion/curvas_train_validacion.png", dpi=170)
     plt.close(fig)
 
 
-def comparar_ejecuciones(root: Path, output: Path) -> dict:
+def comparar_ejecuciones(root: Path, output: Path, *, protocol: dict | None = None,
+                         experiment_name: str | None = None,
+                         model_class_name: str = "CNNImagenFases",
+                         primary_model: str = "image_only_cnn_from_scratch",
+                         preprocessing: dict | None = None,
+                         figure_title: str | None = None) -> dict:
     """Compara BCE sin usar test y con umbrales ajustados solo internamente."""
+    protocol = deepcopy(protocol or configuracion())
+    experiment_name = experiment_name or EXPERIMENT_NAME
+    if protocol.get("name") != experiment_name:
+        raise ValueError("El protocolo no coincide con el experimento")
     all_train = base.cargar_train(root, include_clinical=False)
     data_signature = hashlib.sha256(all_train.to_csv(index=False).encode()).hexdigest()
     runs = {}
-    for summary_path in sorted((Path(output)/EXPERIMENT_NAME).rglob("summary.json")):
+    for summary_path in sorted((Path(output)/experiment_name).rglob("summary.json")):
         summary = json.loads(summary_path.read_text())
         if summary.get("status") != "complete" or not summary.get("eligible_for_selection"):
             continue
         run_dir = summary_path.parent
         config = json.loads((run_dir/"config.json").read_text())
-        if (config.get("name") != EXPERIMENT_NAME or config.get("data_signature") != data_signature or
+        if (config.get("name") != experiment_name or config.get("data_signature") != data_signature or
                 summary.get("config_hash") != base.config_hash(config)):
             raise ValueError(f"Run incompatible o modificado: {run_dir}")
         key = (config["loss"], int(config["seed"]), int(config["outer_fold"]))
@@ -705,7 +725,7 @@ def comparar_ejecuciones(root: Path, output: Path) -> dict:
     for loss_name in LOSSES:
         fold_results, outer_frames = [], []
         for fold in FOLDS:
-            fold_result, outer = _fold_candidate(loss_name, fold, runs)
+            fold_result, outer = _fold_candidate(loss_name, fold, runs, protocol)
             fold_results.append(fold_result)
             outer_frames.append(outer)
         oof = pd.concat(outer_frames, ignore_index=True).sort_values("patient_id").reset_index(drop=True)
@@ -757,7 +777,7 @@ def comparar_ejecuciones(root: Path, output: Path) -> dict:
         selected_oof.probability_raw.to_numpy(), final_calibration)
     final_threshold = threshold_min_specificity(
         selected_oof.label, final_probability,
-        configuracion()["evaluation"]["min_specificity"])
+        protocol["evaluation"]["min_specificity"])
     always_no_pcr = metricas_binarias(
         selected_oof.label, np.zeros(len(selected_oof)), 0.5)
 
@@ -775,7 +795,7 @@ def comparar_ejecuciones(root: Path, output: Path) -> dict:
     pd.DataFrame(records).to_csv(destination/"comparacion_perdidas.csv", index=False)
     report = {
         "status": "desarrollo_sin_test",
-        "primary_model": "image_only_cnn_from_scratch",
+        "primary_model": primary_model,
         "clinical_variables_used": False,
         "patient_aggregation": PATIENT_AGGREGATION,
         "warning": ("La pérdida se elige con validación cruzada de desarrollo; sus métricas "
@@ -789,7 +809,7 @@ def comparar_ejecuciones(root: Path, output: Path) -> dict:
             "calibration": final_calibration,
             "threshold": final_threshold,
             "strategy": "max_sensitivity_at_min_specificity",
-            "min_specificity": configuracion()["evaluation"]["min_specificity"],
+            "min_specificity": protocol["evaluation"]["min_specificity"],
             "fit_data": "development OOF; do not report apparent decision metrics as test",
         },
         "test_images_loaded": 0,
@@ -809,7 +829,7 @@ def comparar_ejecuciones(root: Path, output: Path) -> dict:
     manifest = {
         "schema_version": 1,
         "status": "desarrollo_sin_test",
-        "model_class": "CNNImagenFases",
+        "model_class": model_class_name,
         "models": model_entries,
         "loss": selected_loss,
         "slice_aggregation": PATIENT_AGGREGATION,
@@ -817,7 +837,7 @@ def comparar_ejecuciones(root: Path, output: Path) -> dict:
         "calibration": final_calibration,
         "threshold": final_threshold,
         "threshold_policy": report["future_independent_test_policy"],
-        "preprocessing": {
+        "preprocessing": preprocessing or {
             "phases": list(pdatos.FASES), "shape": [3, 256, 256],
             "phase_semantics": "ordered DCE times, never RGB",
             "scaling": "uint8/255 followed by 2*x-1 inside each shared phase encoder",
@@ -828,7 +848,8 @@ def comparar_ejecuciones(root: Path, output: Path) -> dict:
     base.json_write(destination/"modelo_desarrollo_imagen.json", manifest)
     (destination/"modelo_desarrollo_imagen.json.sha256").write_text(
         base.sha256(destination/"modelo_desarrollo_imagen.json")+"\n")
-    graficar_comparacion(output, runs)
+    graficar_comparacion(output, runs, figure_title or
+                         "CNN solo imagen: mediana e IQR de semillas y folds")
     return report
 
 

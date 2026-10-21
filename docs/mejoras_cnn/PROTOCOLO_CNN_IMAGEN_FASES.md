@@ -105,3 +105,16 @@ La comparación normal/ponderada sigue siendo selección de desarrollo. Las
 predicciones exteriores proporcionan validación cruzada, no una nueva cohorte
 independiente. El test histórico ya consultado no se reabre para escoger modelos;
 la política final queda preparada para una prueba independiente futura.
+
+## Resultado obtenido
+
+Las 20 ejecuciones terminaron. La BCE ponderada fue seleccionada con AUC cruda
+media entre folds de **0,5486 ± 0,0504** y AUC OOF agrupado descriptivo de
+**0,5246**; BCE normal obtuvo 0,5087 agrupado. En la decisión cross-fit con
+especificidad protegida se observaron 702 TN, 73 FP, 286 FN y 36 TP. La
+sensibilidad pCR fue 0,1118 y la especificidad 0,9058.
+
+No supera el criterio de utilidad ni al multimodal v002. Se conserva como control
+para el experimento cinético. Las predicciones, métricas y curvas publicadas están
+en `resultados/14_informe_cnn_imagen_20261014/`; el test reservado no se utilizó
+para escoger esta conclusión.

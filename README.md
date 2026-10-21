@@ -34,6 +34,39 @@ compartido, sin variables clínicas, media de cortes y selección interna por
 paciente. El lanzador GPU se conserva en `scripts/entrenar_cnn_imagen_gpu.ps1`.
 Los checkpoints de trabajo y estados de optimización permanecen locales.
 
+## Nuevo candidato cinético multiescala (preparado, no entrenado)
+
+El siguiente experimento calcula explícitamente `EARLY−PRE`, `LATE−PRE` y
+`EARLY−LATE` antes de la CNN. Los tres tiempos y las tres diferencias entran juntos
+en la primera convolución, recuperando la fusión temporal temprana del modelo
+histórico que alcanzó 0,5945 OOF. Cada caso se representa en tres escalas centradas:
+imagen completa de 256 píxeles, región de 128 y núcleo de 64, con el mismo backbone.
+Esto reduce el dominio del fondo sin perder el contexto peritumoral. Se añade
+Dropout2d 0,10 para limitar el sobreajuste; sigue siendo una CNN 2D propia, desde
+cero, solo imagen y las seis entradas tienen semántica temporal, no RGB.
+
+Se conserva exactamente el protocolo anterior: media de cortes por paciente,
+cinco folds exteriores, selección interna, BCE normal frente a ponderada y dos
+semillas. Son 20 runs, el test no se abre y la comparación final es pareada con
+la CNN por fases ya congelada. La adopción exige además alcanzar AUC OOF ≥ 0,60;
+desplazar el umbral no cuenta como mejora de AUC. Para comprobar el otro
+ordenador sin entrenar:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/entrenar_cnn_cinetica_gpu.ps1 -SoloComprobar
+```
+
+Para ejecutar posteriormente el humo y la matriz completa:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/entrenar_cnn_cinetica_gpu.ps1
+```
+
+El diseño completo está en el
+[protocolo de CNN cinética](docs/mejoras_cnn/PROTOCOLO_CNN_CINETICA.md). El
+[protocolo anterior](docs/mejoras_cnn/PROTOCOLO_CNN_IMAGEN_FASES.md) se mantiene
+como trazabilidad del control.
+
 ## Estructura
 
 ```text
