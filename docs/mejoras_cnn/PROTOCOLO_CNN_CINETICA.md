@@ -2,6 +2,60 @@
 
 Fecha de fijación: 21/10/2026. Estado: **preparado, no entrenado**.
 
+## Ajuste autorizado de entrenamiento, con arquitectura fija (21/10/2026)
+
+Tras revisar el candidato, se autoriza entrenar y ajustar su optimización para
+alcanzar un AUC mínimo de 0,60 y un objetivo de 0,70. Esto amplía el ensayo
+original de 20 ejecuciones antes de consultar sus resultados. No se cambian
+la clase `CNNMultiescalaCinetica`, sus 593.521 parámetros, filtros, recortes,
+mapas cinéticos, BatchNorm, pooling, clasificador ni tasas de dropout.
+
+Se prefijan tres combinaciones de AdamW:
+
+| Nombre | Tasa de aprendizaje | Weight decay |
+|---|---:|---:|
+| referencia | 0,0008 | 0,001 |
+| lr_menor | 0,0003 | 0,001 |
+| lr_menor_wd_mayor | 0,0003 | 0,01 |
+
+Cada combinación usa BCE normal/ponderada, semillas 42/2026 y cinco folds:
+60 entrenamientos. Se mantienen lote 32, aumentos, máximo 40 épocas, parada
+temprana de ocho épocas y selección del checkpoint por AUC interno de paciente.
+Cada fold elige entre seis alternativas por el AUC de las probabilidades
+medias de sus dos semillas sobre los mismos pacientes de selección interna.
+En empate exacto se prefiere referencia, menor weight decay y BCE normal.
+
+Durante la búsqueda solo se cargan imágenes de fit y selección interna. Primero
+se guardan las cinco elecciones, sus pesos y hashes; después se evalúan los
+folds exteriores. El control usa la configuración referencia y escoge su pérdida
+también solo dentro de cada fold. Se informan AUC OOF agrupado, media de folds,
+calibración, sensibilidad, especificidad y matriz de confusión; el umbral y la
+calibración se ajustan internamente, con especificidad objetivo del 90 %.
+El historial previo hace que estas OOF sigan siendo evidencia de desarrollo,
+pendiente de confirmación independiente. El test reservado permanece cerrado.
+
+La monitorización revisa pesos y pérdidas finitos, pasos de AdamW omitidos por
+AMP, brecha fit/selección y parada temprana. Una menor brecha por sí sola no
+demuestra mayor discriminación. Los cambios posteriores al protocolo se
+registrarán como otro ensayo; no se cambiará una ejecución en marcha.
+
+Ejecución en Linux con GPU:
+
+```bash
+.venv/bin/python -B -m cancer_mama.ajuste_cinetico verificar
+.venv/bin/python -B -m cancer_mama.ajuste_cinetico prueba
+.venv/bin/python -u -B -m cancer_mama.ajuste_cinetico entrenar
+```
+
+Salida de trabajo ignorada por Git:
+`resultados/04_entrenamiento/ajuste_cnn_cinetica_20261021/`. La acción `prueba`
+realiza un lote por pérdida y no participa en la selección. El ajuste guarda
+estado, configuración, código, predicciones y checkpoints reanudables. Un
+bloqueo de proceso impide iniciar dos lanzadores simultáneos.
+
+El protocolo original que se conserva debajo documenta la hipótesis y el plan
+inicial. La ampliación anterior gobierna esta ejecución autorizada.
+
 ## Motivo e hipótesis
 
 La CNN solo imagen por fases obtuvo AUC OOF agrupado 0,5087 con BCE normal y

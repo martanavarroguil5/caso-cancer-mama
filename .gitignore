@@ -87,3 +87,5 @@ Thumbs.db
 
 # CNN cinética: ejecuciones y checkpoints de trabajo locales
 /resultados/04_entrenamiento/cnn_imagen_cinetica_multiescala_20261015/
+/resultados/04_entrenamiento/cnn_imagen_cinetica_multiescala_20261021/
+/resultados/04_entrenamiento/ajuste_cnn_cinetica_20261021/

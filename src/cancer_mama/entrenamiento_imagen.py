@@ -414,7 +414,8 @@ def _loader(samples, root, batch_size, workers, seed, shuffle=False):
 def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
                  root: Path, output: Path, device: torch.device, smoke=False,
                  model_type=CNNImagenFases, experiment_name: str | None = None,
-                 extra_source_files: dict[str, Path] | None = None):
+                 extra_source_files: dict[str, Path] | None = None,
+                 evaluate_outer: bool = True):
     """Entrena sin consultar el fold exterior hasta fijar el checkpoint."""
     config = deepcopy(config)
     if loss_name not in LOSSES or seed not in SEEDS or outer_fold not in FOLDS:
@@ -424,6 +425,8 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
         raise ValueError("Configuración de experimento inesperada")
     config.update(loss=loss_name, seed=seed, outer_fold=outer_fold, smoke=bool(smoke),
                   device_type=device.type)
+    if not evaluate_outer:
+        config["selection_only"] = True
     config["source_sha256"] = {
         "entrenamiento_imagen.py": base.sha256(Path(__file__)),
         "datos.py": base.sha256(Path(pdatos.__file__)),
@@ -458,9 +461,11 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
         if summary.get("config_hash") != base.config_hash(config):
             raise ValueError("El resumen no coincide con la configuración")
         if summary.get("status") == "complete":
-            for filename, key in (("inference.pt", "inference_sha256"),
-                                  ("outer_patients.csv", "outer_sha256"),
-                                  ("selection_patients.csv", "selection_sha256")):
+            artifacts = [("inference.pt", "inference_sha256"),
+                         ("selection_patients.csv", "selection_sha256")]
+            if summary.get("outer_evaluated", True):
+                artifacts.append(("outer_patients.csv", "outer_sha256"))
+            for filename, key in artifacts:
                 if base.sha256(run_dir/filename) != summary[key]:
                     raise ValueError(f"Artefacto modificado: {run_dir/filename}")
             print(f"Ya completado: {run_dir}", flush=True)
@@ -476,7 +481,8 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
                                     shuffle=True, clinical=False)
     fit_loader = _loader(fit, root, batch_size, workers, seed+50000+outer_fold)
     selection_loader = _loader(selection, root, batch_size, workers, seed+60000+outer_fold)
-    outer_loader = _loader(outer, root, batch_size, workers, seed+70000+outer_fold)
+    outer_loader = (_loader(outer, root, batch_size, workers, seed+70000+outer_fold)
+                    if evaluate_outer else None)
 
     model = model_type(config).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=training["lr"],
@@ -507,6 +513,11 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
           f"outer={config['counts']['outer_patients']}; test=0", flush=True)
     wall_start = time.perf_counter()
     for epoch in range(start_epoch, epochs_limit):
+        # Una interrupción después de guardar last.pt no debe añadir una época
+        # si ese checkpoint ya había alcanzado la parada temprana.
+        if (not smoke and epoch >= int(training["min_epochs"]) and
+                bad_epochs >= int(training["patience"])):
+            break
         tic = time.perf_counter()
         train_loss = train_epoch(
             model, train_loader, optimizer, scaler, criterion, device, amp,
@@ -561,21 +572,27 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
 
     base.load_checkpoint(run_dir/"best.pt", model)
     selection_probability, selection_loss = predict_slices(model, selection_loader, device, criterion)
-    # Primera y única consulta al fold exterior de este run: el checkpoint ya está fijado.
-    outer_probability, outer_loss = predict_slices(model, outer_loader, device, criterion)
     selection_patients = patient_predictions(selection, selection_probability)
-    outer_patients = patient_predictions(outer, outer_probability)
     selection_patients.to_csv(run_dir/"selection_patients.csv", index=False)
-    outer_patients.to_csv(run_dir/"outer_patients.csv", index=False)
-    outer_slices = outer[["sample_id", "patient_id", "pCR", "fold", "dataset"]].copy()
-    outer_slices["probability_raw"] = outer_probability
-    outer_slices.to_csv(run_dir/"outer_slices.csv", index=False)
+    outer_loss, outer_metrics, outer_sha256 = None, None, None
+    if evaluate_outer:
+        # En el ajuste anidado esta consulta se difiere hasta fijar parámetros.
+        outer_probability, outer_loss = predict_slices(model, outer_loader, device, criterion)
+        outer_patients = patient_predictions(outer, outer_probability)
+        outer_patients.to_csv(run_dir/"outer_patients.csv", index=False)
+        outer_slices = outer[["sample_id", "patient_id", "pCR", "fold", "dataset"]].copy()
+        outer_slices["probability_raw"] = outer_probability
+        outer_slices.to_csv(run_dir/"outer_slices.csv", index=False)
+        outer_metrics = metricas_binarias(
+            outer_patients.label, outer_patients.probability_raw, 0.5)
+        outer_sha256 = base.sha256(run_dir/"outer_patients.csv")
     base.export_inference_checkpoint(run_dir)
 
     summary = {
         "schema_version": 1,
         "status": "complete",
-        "eligible_for_selection": not smoke,
+        "eligible_for_selection": bool(not smoke and evaluate_outer),
+        "outer_evaluated": bool(evaluate_outer),
         "smoke": bool(smoke),
         "config_hash": base.config_hash(config),
         "loss": loss_name,
@@ -586,14 +603,13 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
         "best_inner_patient_auc": best_auc,
         "inner_selection_loss": selection_loss,
         "outer_loss": outer_loss,
-        "outer_raw_metrics_at_0_5": metricas_binarias(
-            outer_patients.label, outer_patients.probability_raw, 0.5),
+        "outer_raw_metrics_at_0_5": outer_metrics,
         "parameters": numero_parametros(model),
         "total_train_seconds": float(sum(row["epoch_seconds"] for row in history)),
         "current_session_seconds": time.perf_counter()-wall_start,
         "test_images_loaded": 0,
         "inference_sha256": base.sha256(run_dir/"inference.pt"),
-        "outer_sha256": base.sha256(run_dir/"outer_patients.csv"),
+        "outer_sha256": outer_sha256,
         "selection_sha256": base.sha256(run_dir/"selection_patients.csv"),
     }
     base.json_write(run_dir/"summary.json", summary)
