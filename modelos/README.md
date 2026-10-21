@@ -15,6 +15,7 @@ calibración Platt, mediana y umbral 0,3543331693. No hace falta volver a entren
 | `v004_multimodal_bce_normal_20261011` | Experimento descartado; no supera al original | 0,7109 | 10 archivos |
 | `v005_cnn_imagen_fases_normal_20261014` | Solo imagen, BCE normal; resultado insuficiente conservado | 0,5087 | 10 archivos |
 | `v006_cnn_imagen_fases_ponderada_20261014` | Solo imagen, BCE ponderada; resultado insuficiente conservado | 0,5246 | 10 archivos |
+| `v007_cnn_cinetica_multiescala_20261021` | Solo imagen, ajuste anidado; resultado insuficiente conservado | 0,5264 | 10 archivos |
 
 Los protocolos de selección difieren: estas AUC describen cada desarrollo y
 no constituyen una comparación independiente entre modelos. El cambio de decisión
@@ -43,11 +44,28 @@ la selección de pérdida y se guarda con calibración identidad y umbral crudo
 0,5 solo para diagnóstico, sin ajustar una nueva política tras ver el resultado.
 Estos umbrales del paquete no son los umbrales internos por fold del informe.
 
+## CNN cinética multiescala del 21/10/2026
+
+V007 conserva los diez pesos elegidos mediante validación interna entre tres
+pares LR/weight decay, BCE normal/ponderada y dos semillas por fold. Las
+60 ejecuciones mantienen exactamente la red de 593.521 parámetros de `39bd951`.
+El AUC exterior global es 0,5264; la media por fold, 0,5766 ± 0,0301; el AUC
+global con calibración interna por fold, 0,5618. No alcanza el mínimo 0,60 ni
+el objetivo 0,70. La referencia de la misma red obtiene 0,5360 global.
+
+El [informe completo](../resultados/15_informe_cinetico_20261021/INFORME_RESULTADOS.md)
+explica los intervalos, el sobreajuste, las comparaciones y los errores. La
+versión guarda el candidato prefijado como `ensayo_insuficiente_conservado`,
+sin promoción. La política global para una posible prueba futura tiene Platt
+con pendiente 0,0982743656 y umbral 0,3087942921. No se confunde con los umbrales
+internos por fold usados para obtener 74 FP, 281 FN y 41 TP en el informe.
+
 ## Paquetes congelados
 
 Cada carpeta conserva pesos, manifiesto, preprocesado, calibración, código
 compatible, entorno y evidencia, con SHA-256. No se permite sobrescribir una
-versión ni reutilizar su número. Las versiones publicadas son inmutables; archivar v005/v006 no modifica v001–v004.
+versión ni reutilizar su número. Las versiones publicadas son inmutables;
+archivar v007 no modifica v001–v006.
 
 ```text
 versiones/v002_multimodal_clinico_20261007/
@@ -89,12 +107,14 @@ se omiten las variables clínicas. Las fases son PNG monocromos de 8 bits,
 Cada versión usa su código congelado aunque se retiren módulos experimentales
 del paquete principal. El dataset no es necesario para inferir nuevas imágenes.
 
-## Compatibilidad de la CNN por fases
+## Compatibilidad de las CNN solo imagen
 
 El archivador distingue el multimodal de los manifiestos con
-`model_class: CNNImagenFases`. Para estos conserva y ejecuta
-`cancer_mama.inferencia_imagen`, junto con la arquitectura de
-`entrenamiento_imagen.py`; no intenta cargarlos como el multimodal.
+`model_class: CNNImagenFases` o `CNNMultiescalaCinetica`. Para estos conserva
+y ejecuta `cancer_mama.inferencia_imagen`, junto con la arquitectura de
+`entrenamiento_imagen.py` o `entrenamiento_cinetico.py`, respectivamente.
+Comprueba la clase, la configuración y, en la cinética, los recortes y mapas
+firmados; no intenta cargarlos como el multimodal.
 La verificación comprueba diez pesos, sus configuraciones y todos los hashes.
 La inferencia usa media de modelos y cortes, conserva exactamente la calibración
 y el umbral archivados y no necesita dataset ni variables clínicas.
@@ -107,7 +127,7 @@ Solo después de justificar la selección frente a la referencia adecuada:
 
 ```bash
 .venv/bin/python -B modelos/versionar.py guardar \
-  --id v007_multimodal_clinico_AAAAMMDD \
+  --id v008_multimodal_clinico_AAAAMMDD \
   --manifest resultados/04_entrenamiento/nueva_ejecucion/comparacion/modelo_desarrollo.json \
   --descripcion "Descripción de la actualización y su evaluación"
 .venv/bin/python -B modelos/versionar.py verificar

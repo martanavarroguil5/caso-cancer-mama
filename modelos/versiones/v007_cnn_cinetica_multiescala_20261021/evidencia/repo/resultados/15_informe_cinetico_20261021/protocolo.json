@@ -1,0 +1,100 @@
+{
+  "architecture": {
+    "architecture": "multiscale_early_temporal_kinetic_fusion",
+    "input_phases": [
+      "PRE",
+      "EARLY",
+      "LATE"
+    ],
+    "derived_maps": [
+      "EARLY-PRE",
+      "LATE-PRE",
+      "EARLY-LATE"
+    ],
+    "temporal_channels": [
+      "PRE",
+      "EARLY",
+      "LATE",
+      "EARLY-PRE",
+      "LATE-PRE",
+      "EARLY-LATE"
+    ],
+    "center_crop_sizes": [
+      256,
+      128,
+      64
+    ],
+    "encoder_input_size": 128,
+    "scale_encoder_shared": true,
+    "backbone_channels": [
+      24,
+      48,
+      96,
+      160
+    ],
+    "hidden": 64,
+    "dropout": 0.35,
+    "spatial_dropout": 0.1,
+    "normalization": "batch",
+    "clinical": null
+  },
+  "architecture_source_sha256": "a85b4eebc44f0b13628db6383e5b8110708d4976cd98f88db52c6fcd097774c5",
+  "parameters": 593521,
+  "trials": {
+    "referencia": {
+      "lr": 0.0008,
+      "weight_decay": 0.001
+    },
+    "lr_menor": {
+      "lr": 0.0003,
+      "weight_decay": 0.001
+    },
+    "lr_menor_wd_mayor": {
+      "lr": 0.0003,
+      "weight_decay": 0.01
+    }
+  },
+  "losses": [
+    "normal",
+    "weighted"
+  ],
+  "seeds": [
+    42,
+    2026
+  ],
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "training": {
+    "epochs": 40,
+    "min_epochs": 8,
+    "patience": 8,
+    "min_delta": 0.001,
+    "batch_size": 32,
+    "lr": 0.0008,
+    "min_lr": 1e-05,
+    "weight_decay": 0.001,
+    "clip_grad_norm": 5.0,
+    "amp": true,
+    "num_workers": 4,
+    "cpu_threads": 8,
+    "deterministic": true
+  },
+  "planned_runs": 60,
+  "selection": "inner AUC of mean probabilities of two seeds per outer fold",
+  "tie_break": "reference first, then lower WD, then normal loss",
+  "minimum_auc": 0.6,
+  "objective_auc": 0.7,
+  "outer_policy": "evaluate only after all five choices frozen",
+  "test_images_loaded": 0,
+  "source_sha256": {
+    "ajuste_cinetico": "102b1080240ae40b992e266a6b13531b9409baf9dc20ecc39d1ffa5ae46646f5",
+    "entrenamiento_cinetico": "a91b86424bb96e4cbe9e60340c745c71bfcdd0dbf51e5d48232fa17032b50481",
+    "entrenamiento_imagen": "584c96be08bc70b6da423a03262a91c435e859d25f7d12abacffad4413868858",
+    "entrenamiento": "4d011c1bccf43ddc0d361c821c383b5c5935c0f64a06591f5a165ee260fc5b0e"
+  }
+}

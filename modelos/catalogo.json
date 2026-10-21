@@ -241,6 +241,51 @@
           0.5752003287446066
         ]
       }
+    },
+    {
+      "id": "v007_cnn_cinetica_multiescala_20261021",
+      "description": "CNN cinética multiescala: 60 ajustes con selección interna; AUC OOF 0,5264, insuficiente y conservada sin activar",
+      "archived_at": "2026-10-21T17:13:42.798483+02:00",
+      "status": "ensayo_insuficiente_conservado",
+      "clinical_required": false,
+      "n_models": 10,
+      "weights_bytes": 23957070,
+      "metrics_raw_oof": {
+        "n_patients": 1097,
+        "n_positive": 322,
+        "prevalence": 0.2935278030993619,
+        "roc_auc": 0.5264035263474254,
+        "average_precision": 0.3251139447841574,
+        "brier": 0.23827773448676606,
+        "log_loss": 0.6768293588555861,
+        "accuracy": 0.577028258887876,
+        "balanced_accuracy": 0.5127649769585253,
+        "precision_no_pcr": 0.7144827586206897,
+        "recall_no_pcr": 0.6683870967741935,
+        "f1_no_pcr": 0.6906666666666667,
+        "precision_pcr": 0.30913978494623656,
+        "recall_pcr": 0.35714285714285715,
+        "f1_pcr": 0.3314121037463977,
+        "macro_f1": 0.5110393852065321,
+        "weighted_f1": 0.5852154640592586,
+        "threshold": 0.5,
+        "tn": 518,
+        "fp": 257,
+        "fn": 207,
+        "tp": 115,
+        "support_no_pcr": 775,
+        "support_pcr": 322,
+        "confusion_matrix": [
+          [
+            518,
+            257
+          ],
+          [
+            207,
+            115
+          ]
+        ]
+      }
     }
   ]
 }

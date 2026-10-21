@@ -1,0 +1,23 @@
+{
+  "started_at": "2026-10-21T13:43:26.142489+02:00",
+  "pid": 5514,
+  "command": [
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/.venv/bin/python",
+    "-u",
+    "-B",
+    "-m",
+    "cancer_mama.ajuste_cinetico",
+    "entrenar"
+  ],
+  "source_commit": "39bd9517ff441b87d5bb5fa6e5ed600f869f86d0",
+  "tests_passed": 56,
+  "gpu_smoke_losses": [
+    "normal",
+    "weighted"
+  ],
+  "architecture_matches_commit_39bd951": true,
+  "architecture_source_sha256": "ec806cbbffd5db633e6efda6e1ea8d6f37d160bf504a932780a8edf248a90c27",
+  "planned_runs": 60,
+  "minimum_auc": 0.6,
+  "objective_auc": 0.7
+}

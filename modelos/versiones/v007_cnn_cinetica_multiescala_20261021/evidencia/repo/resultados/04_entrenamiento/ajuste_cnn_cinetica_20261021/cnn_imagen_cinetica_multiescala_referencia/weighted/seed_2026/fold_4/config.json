@@ -1,0 +1,97 @@
+{
+  "name": "cnn_imagen_cinetica_multiescala_referencia",
+  "model": {
+    "architecture": "multiscale_early_temporal_kinetic_fusion",
+    "input_phases": [
+      "PRE",
+      "EARLY",
+      "LATE"
+    ],
+    "derived_maps": [
+      "EARLY-PRE",
+      "LATE-PRE",
+      "EARLY-LATE"
+    ],
+    "temporal_channels": [
+      "PRE",
+      "EARLY",
+      "LATE",
+      "EARLY-PRE",
+      "LATE-PRE",
+      "EARLY-LATE"
+    ],
+    "center_crop_sizes": [
+      256,
+      128,
+      64
+    ],
+    "encoder_input_size": 128,
+    "scale_encoder_shared": true,
+    "backbone_channels": [
+      24,
+      48,
+      96,
+      160
+    ],
+    "hidden": 64,
+    "dropout": 0.35,
+    "spatial_dropout": 0.1,
+    "normalization": "batch",
+    "clinical": null
+  },
+  "training": {
+    "epochs": 40,
+    "min_epochs": 8,
+    "patience": 8,
+    "min_delta": 0.001,
+    "batch_size": 32,
+    "lr": 0.0008,
+    "min_lr": 1e-05,
+    "weight_decay": 0.001,
+    "clip_grad_norm": 5.0,
+    "amp": true,
+    "num_workers": 4,
+    "cpu_threads": 8,
+    "deterministic": true
+  },
+  "augmentation": {
+    "hflip": 0.5,
+    "rot90": true
+  },
+  "evaluation": {
+    "unit": "patient",
+    "slice_aggregation": "mean",
+    "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+    "inner_selection_fraction": 0.15,
+    "inner_split_seed": 20261014,
+    "checkpoint_metric": "inner_patient_auc",
+    "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+    "min_specificity": 0.9,
+    "secondary_threshold_strategy": "max_macro_f1",
+    "test_policy": "never_load_during_development"
+  },
+  "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+  "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+  "loss": "weighted",
+  "seed": 2026,
+  "outer_fold": 4,
+  "smoke": false,
+  "device_type": "cuda",
+  "selection_only": true,
+  "source_sha256": {
+    "entrenamiento_imagen.py": "584c96be08bc70b6da423a03262a91c435e859d25f7d12abacffad4413868858",
+    "datos.py": "b61e550788d321536dccb96c87b09a3b04c1ef87f885c6945056b935215eb8eb",
+    "entrenamiento_cinetico.py": "a91b86424bb96e4cbe9e60340c745c71bfcdd0dbf51e5d48232fa17032b50481",
+    "ajuste_cinetico.py": "102b1080240ae40b992e266a6b13531b9409baf9dc20ecc39d1ffa5ae46646f5"
+  },
+  "data_signature": "d5dd0e325f58f06e82085fd1c37017aa94a0ef6549b89d6ed57d941a289a0212",
+  "counts": {
+    "fit_slices": 7444,
+    "fit_patients": 746,
+    "selection_slices": 1316,
+    "selection_patients": 132,
+    "outer_slices": 2185,
+    "outer_patients": 219
+  },
+  "pos_weight": 2.3683257918552036
+}
