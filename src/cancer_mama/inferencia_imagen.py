@@ -1,4 +1,4 @@
-"""Carga las versiones archivadas de CNN por fases sin utilizar el dataset."""
+"""Carga las CNN por fases o cinéticas archivadas sin utilizar el dataset."""
 from __future__ import annotations
 
 import argparse
@@ -13,6 +13,12 @@ from .app_logic import PHASES, uploads_from_paths, validate_phase_uploads
 from .entrenamiento_imagen import CNNImagenFases, numero_parametros
 
 
+ARCHITECTURES = {
+    'CNNImagenFases': 'shared_phase_encoder_ordered_temporal_fusion',
+    'CNNMultiescalaCinetica': 'multiscale_early_temporal_kinetic_fusion',
+}
+
+
 def cargar_manifest(path):
     path = Path(path).resolve()
     if base.sha256(path) != path.with_suffix(path.suffix + '.sha256').read_text().strip():
@@ -23,11 +29,20 @@ def cargar_manifest(path):
     if len(models) != 10 or {(m['seed'], m['fold']) for m in models} != expected:
         raise ValueError('Se requieren diez modelos: dos semillas y cinco folds')
     prep = manifest['preprocessing']
-    if (manifest.get('model_class') != 'CNNImagenFases' or
+    if (manifest.get('model_class') not in ARCHITECTURES or
             manifest.get('slice_aggregation') != 'mean' or
             prep.get('clinical_required') is not False or
             prep.get('phases') != list(PHASES) or prep.get('shape') != [3, 256, 256]):
         raise ValueError('Contrato incompatible con la CNN solo imagen')
+    architecture = ARCHITECTURES[manifest['model_class']]
+    if any(item['model_config'].get('architecture') != architecture for item in models):
+        raise ValueError('La clase del manifiesto no coincide con la arquitectura de los pesos')
+    if manifest['model_class'] == 'CNNMultiescalaCinetica':
+        if (prep.get('center_crop_sizes') != [256, 128, 64] or
+                prep.get('encoder_input_size') != [128, 128] or
+                prep.get('scale_weights_shared') is not True or
+                prep.get('kinetic_maps') != ['EARLY-PRE', 'LATE-PRE', 'EARLY-LATE']):
+            raise ValueError('Preprocesado incompatible con la CNN cinética')
     calibration = manifest['calibration']
     if (calibration.get('clip_epsilon') != base.EPS or calibration['slope'] < 0 or
             not np.isfinite([calibration['slope'], calibration['intercept'],
@@ -47,7 +62,14 @@ def cargar_modelo(path, item):
         raise ValueError('Configuración de pesos y manifiesto diferentes')
     if not all(bool(torch.isfinite(value).all()) for value in artifact['state_dict'].values()):
         raise ValueError('Los pesos contienen valores no finitos')
-    model = CNNImagenFases(artifact['model_config'])
+    architecture = artifact['model_config'].get('architecture')
+    if architecture == ARCHITECTURES['CNNImagenFases']:
+        model = CNNImagenFases(artifact['model_config'])
+    elif architecture == ARCHITECTURES['CNNMultiescalaCinetica']:
+        from .entrenamiento_cinetico import CNNMultiescalaCinetica
+        model = CNNMultiescalaCinetica(artifact['model_config'])
+    else:
+        raise ValueError('Arquitectura de pesos desconocida')
     model.load_state_dict(artifact['state_dict'], strict=True)
     return model.eval()
 
@@ -57,7 +79,8 @@ def verificar_modelo_final(path):
     counts = {numero_parametros(cargar_modelo(path, item)) for item in manifest['models']}
     if len(counts) != 1:
         raise ValueError('El ensemble contiene arquitecturas diferentes')
-    return {'models': 10, 'parameters_per_model': counts.pop(),
+    return {'models': 10, 'model_class': manifest['model_class'],
+            'parameters_per_model': counts.pop(),
             'checksums_verified': True, 'clinical_required': False,
             'aggregation': 'mean', 'threshold': manifest['threshold'],
             'calibration_is_constant': manifest['calibration']['slope'] == 0,

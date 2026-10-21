@@ -71,7 +71,7 @@ def check_manifest(path):
 
 def training_code(root, manifest=None):
     root = Path(root)
-    if manifest and manifest.get("model_class") == "CNNImagenFases":
+    if manifest and manifest.get("model_class") in {"CNNImagenFases", "CNNMultiescalaCinetica"}:
         image_runtime = root / "src/cancer_mama/inferencia_imagen.py"
         if not image_runtime.is_file():
             raise FileNotFoundError(f"Falta el código compatible de imagen en {root}")

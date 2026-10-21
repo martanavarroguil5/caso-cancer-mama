@@ -12,6 +12,7 @@ import torch
 
 from cancer_mama import entrenamiento as base
 from cancer_mama import entrenamiento_imagen as imagen
+from cancer_mama import entrenamiento_cinetico as cinetico
 from cancer_mama import inferencia_imagen as runtime
 
 
@@ -91,6 +92,43 @@ class TestInferenciaImagen(unittest.TestCase):
         self.assertFalse(result['clinical_used'])
         with self.assertRaisesRegex(ValueError, 'Corte duplicado'):
             runtime.predecir_cortes(self.manifest, [triples[0], triples[0]])
+
+    def test_cinetica_carga_sus_pesos_y_rechaza_contrato_de_otra_red(self):
+        config = cinetico.configuracion()['model']
+        config.update(backbone_channels=[2,2,2,2], hidden=2, dropout=0.0,
+                      spatial_dropout=0.0)
+        model = cinetico.CNNMultiescalaCinetica(config)
+        with torch.no_grad():
+            for parameter in model.parameters():
+                parameter.zero_()
+            model.classifier[-1].bias.fill_(.4)
+        torch.save({'schema_version': 1, 'model_config': config,
+                    'state_dict': model.state_dict()}, self.weight)
+        for item in self.value['models']:
+            item.update(sha256=base.sha256(self.weight), model_config=deepcopy(config))
+        self.value.update(model_class='CNNMultiescalaCinetica', threshold=.5,
+                          calibration={'slope': 1.0, 'intercept': 0.0,
+                                       'clip_epsilon': base.EPS})
+        self.value['preprocessing'].update(
+            center_crop_sizes=[256,128,64], encoder_input_size=[128,128],
+            scale_weights_shared=True, kinetic_maps=['EARLY-PRE','LATE-PRE','EARLY-LATE'])
+        self.write()
+        verification = runtime.verificar_modelo_final(self.manifest)
+        self.assertEqual(verification['model_class'], 'CNNMultiescalaCinetica')
+        self.assertEqual(verification['parameters_per_model'], imagen.numero_parametros(model))
+        result = runtime.predecir_cortes(self.manifest, self.triples())
+        expected = float(torch.sigmoid(torch.tensor(.4)))
+        self.assertAlmostEqual(result['probability_raw'], expected, places=6)
+        self.assertAlmostEqual(result['probability_calibrated'], expected, places=6)
+        self.assertEqual(result['pCR'], 1)
+        self.value['preprocessing']['kinetic_maps'][-1] = 'LATE-EARLY'
+        self.write()
+        with self.assertRaisesRegex(ValueError, 'Preprocesado incompatible'):
+            runtime.cargar_manifest(self.manifest)
+        self.value['model_class'] = 'CNNImagenFases'
+        self.write()
+        with self.assertRaisesRegex(ValueError, 'clase del manifiesto'):
+            runtime.cargar_manifest(self.manifest)
 
 
 if __name__ == '__main__':

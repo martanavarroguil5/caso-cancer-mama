@@ -120,17 +120,19 @@ class TestVersiones(unittest.TestCase):
         for name in ("__init__.py", "entrenamiento.py", "inferencia_imagen.py", "entrenamiento_imagen.py"):
             (package / name).write_text("# Paquete compatible conservado\n", encoding="utf-8")
         value = json.loads(self.manifest.read_text())
-        value["model_class"] = "CNNImagenFases"
-        versionar.write_json(self.manifest, value)
-        self.manifest.with_suffix(".json.sha256").write_text(versionar.sha256(self.manifest) + "\n")
-        row = self.save()
-        folder = self.archive / "versiones" / row["id"]
-        code = versionar.training_code(folder / "codigo", value)
-        self.assertEqual(code.name, "inferencia_imagen.py")
-        command, environment = versionar.code_command(code, "verificar", folder / "manifiesto.json")
-        self.assertIn("cancer_mama.inferencia_imagen", command)
-        self.assertIn(str(folder / "codigo/src"), environment["PYTHONPATH"])
-        versionar.verify_version(row["id"], archive=self.archive, runtime=False)
+        for index, model_class in enumerate(("CNNImagenFases", "CNNMultiescalaCinetica"), 1):
+            with self.subTest(model_class=model_class):
+                value["model_class"] = model_class
+                versionar.write_json(self.manifest, value)
+                self.manifest.with_suffix(".json.sha256").write_text(versionar.sha256(self.manifest) + "\n")
+                row = self.save(f"v{index:03d}_imagen_fixture")
+                folder = self.archive / "versiones" / row["id"]
+                code = versionar.training_code(folder / "codigo", value)
+                self.assertEqual(code.name, "inferencia_imagen.py")
+                command, environment = versionar.code_command(code, "verificar", folder / "manifiesto.json")
+                self.assertIn("cancer_mama.inferencia_imagen", command)
+                self.assertIn(str(folder / "codigo/src"), environment["PYTHONPATH"])
+                versionar.verify_version(row["id"], archive=self.archive, runtime=False)
 
 
 if __name__ == "__main__":
