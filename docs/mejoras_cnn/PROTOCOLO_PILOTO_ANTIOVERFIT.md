@@ -1,6 +1,27 @@
 # Protocolo: piloto anti-sobreajuste de la CNN solo imagen
 
-Fecha de fijación: 21/10/2026. Estado: **preparado, no entrenado**.
+Fecha de fijación: 21/10/2026. Estado: **terminado; piloto de desarrollo no adoptado**.
+
+## Resultado (21/10/2026)
+
+16 entrenamientos y 122 épocas completados en 26 min 21 s. Evaluación exterior
+de 439 pacientes en folds 0 y 3, con test y validación privada cerrados.
+Con BCE normal, la AUC media control/anti-overfit es 0,559266/0,556672:
+no mejora. Con BCE ponderada pasa de 0,533843 a 0,557058; mejora +0,023215,
+IC95 % pareado de la diferencia media [−0,029557; +0,072034]. Cumple el gate
+exploratorio, sin demostrar mejora independiente ni alcanzar el mínimo 0,60.
+
+La mediana de brecha fit−selección al final baja de 0,146538 a 0,032580 con
+BCE normal y de 0,127340 a 0,019223 con ponderada. Menor brecha no basta:
+el rendimiento exterior sigue siendo insuficiente. V002 permanece activo.
+No se inicia otra matriz. Los 16 pesos quedan como paquete experimental de
+dos folds, separado de las versiones finales de diez modelos.
+
+Se corrigió localmente un desfase de una época en el informe (`best_epoch`
+ya empieza en uno), con prueba de regresión. No cambia el entrenamiento.
+
+[Informe completo y evidencia](../../resultados/16_informe_piloto_antioverfit_20261021/INFORME_RESULTADOS.md).
+El protocolo fijado antes de entrenar se conserva debajo.
 
 ## Pregunta
 
