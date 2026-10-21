@@ -350,7 +350,8 @@ def predict_slices(model, loader, device, criterion=None):
 
 
 def train_epoch(model, loader, optimizer, scaler, criterion, device, amp,
-                augmentation, augmentation_generator, clip_norm, max_batches=None):
+                augmentation, augmentation_generator, clip_norm, max_batches=None,
+                equal_patient_weight=False):
     model.train()
     total = torch.zeros((), device=device)
     count = 0
@@ -362,7 +363,18 @@ def train_epoch(model, loader, optimizer, scaler, criterion, device, amp,
         optimizer.zero_grad(set_to_none=True)
         with base.amp_context(device, amp):
             logits = model(x).squeeze(1)
-            loss = criterion(logits, y)
+            if equal_patient_weight:
+                losses = torch.nn.functional.binary_cross_entropy_with_logits(
+                    logits, y, pos_weight=criterion.pos_weight, reduction="none")
+                patient_ids = [str(value) for value in batch["patient_id"]]
+                counts = {patient: patient_ids.count(patient) for patient in set(patient_ids)}
+                weights = torch.tensor([1/counts[patient] for patient in patient_ids],
+                                       device=device, dtype=losses.dtype)
+                loss = (losses*weights).sum()/weights.sum()
+                batch_weight = len(counts)
+            else:
+                loss = criterion(logits, y)
+                batch_weight = len(y)
         if not torch.isfinite(loss):
             raise FloatingPointError("Pérdida no finita")
         scaler.scale(loss).backward()
@@ -370,8 +382,8 @@ def train_epoch(model, loader, optimizer, scaler, criterion, device, amp,
         nn.utils.clip_grad_norm_(model.parameters(), clip_norm, error_if_nonfinite=not amp)
         scaler.step(optimizer)
         scaler.update()
-        total += loss.detach()*len(y)
-        count += len(y)
+        total += loss.detach()*batch_weight
+        count += batch_weight
     if count == 0:
         raise RuntimeError("El loader no produjo ningún lote")
     return float(total/count)
@@ -478,7 +490,8 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
     train_generator = torch.Generator().manual_seed(seed + outer_fold*1000)
     augmentation_generator = torch.Generator().manual_seed(seed + outer_fold*1000 + 1)
     train_loader = base.make_loader(fit, root, batch_size, workers, train_generator,
-                                    shuffle=True, clinical=False)
+                                    shuffle=True, clinical=False,
+                                    patients_per_batch=training.get("patients_per_batch"))
     fit_loader = _loader(fit, root, batch_size, workers, seed+50000+outer_fold)
     selection_loader = _loader(selection, root, batch_size, workers, seed+60000+outer_fold)
     outer_loader = (_loader(outer, root, batch_size, workers, seed+70000+outer_fold)
@@ -522,7 +535,8 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
         train_loss = train_epoch(
             model, train_loader, optimizer, scaler, criterion, device, amp,
             config["augmentation"], augmentation_generator, training["clip_grad_norm"],
-            max_batches=1 if smoke else None)
+            max_batches=1 if smoke else None,
+            equal_patient_weight=bool(training.get("equal_patient_weight", False)))
         fit_probability, fit_loss = predict_slices(model, fit_loader, device, criterion)
         selection_probability, selection_loss = predict_slices(
             model, selection_loader, device, criterion)
