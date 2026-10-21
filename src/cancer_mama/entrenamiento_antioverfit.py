@@ -157,7 +157,8 @@ def _gaps(output: Path, arm: str, loss: str) -> dict:
             path = run_path(output, arm, loss, seed, fold)
             summary = json.loads((path/"summary.json").read_text())
             history = pd.read_csv(path/"history.csv")
-            chosen = history.loc[history.epoch.eq(int(summary["best_epoch"])+1)].iloc[0]
+            # Tanto summary.best_epoch como history.epoch empiezan en uno.
+            chosen = history.loc[history.epoch.eq(int(summary["best_epoch"]))].iloc[0]
             selected.append(float(chosen.auc_gap))
             final.append(float(history.iloc[-1].auc_gap))
     return {
