@@ -427,7 +427,7 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
                  root: Path, output: Path, device: torch.device, smoke=False,
                  model_type=CNNImagenFases, experiment_name: str | None = None,
                  extra_source_files: dict[str, Path] | None = None,
-                 evaluate_outer: bool = True):
+                 evaluate_outer: bool = True, fit_samples_transform=None):
     """Entrena sin consultar el fold exterior hasta fijar el checkpoint."""
     config = deepcopy(config)
     if loss_name not in LOSSES or seed not in SEEDS or outer_fold not in FOLDS:
@@ -449,8 +449,23 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
     torch.set_num_threads(int(training["cpu_threads"]))
     base.seed_everything(seed, bool(training["deterministic"]))
     all_train = base.cargar_train(root, include_clinical=False)
+    if "development_patient_ids" in config:
+        ids = set(config["development_patient_ids"])
+        if not ids or not ids.issubset(set(all_train.patient_id)):
+            raise ValueError("Pacientes del piloto fuera de desarrollo")
+        all_train = all_train[all_train.patient_id.isin(ids)].reset_index(drop=True)
     config["data_signature"] = hashlib.sha256(all_train.to_csv(index=False).encode()).hexdigest()
     fit, selection, outer = particion_anidada(all_train, outer_fold, config)
+    if fit_samples_transform is not None:
+        original_fit = fit
+        fit = fit_samples_transform(fit.copy()).reset_index(drop=True)
+        if (fit.sample_id.duplicated().any() or
+                set(fit.patient_id) != set(original_fit.patient_id) or
+                not set(fit.sample_id).issubset(set(original_fit.sample_id))):
+            raise ValueError("La selección debe conservar pacientes y usar cortes de fit únicos")
+        expected = original_fit.set_index("sample_id").loc[fit.sample_id]
+        if not expected.reset_index().equals(fit[expected.reset_index().columns].reset_index(drop=True)):
+            raise ValueError("La selección no puede modificar datos de los cortes")
     if smoke:
         fit, selection, outer = (_small_balanced(frame) for frame in (fit, selection, outer))
     config["counts"] = {
@@ -459,7 +474,9 @@ def run_training(config: dict, loss_name: str, seed: int, outer_fold: int,
         "selection_patients": int(selection.patient_id.nunique()),
         "outer_slices": int(len(outer)), "outer_patients": int(outer.patient_id.nunique()),
     }
-    config["pos_weight"] = (float(pdatos.pos_weight_cortes(fit))
+    weight_function = (pdatos.pos_weight_pacientes if training.get("loss_weight_unit") == "patient"
+                       else pdatos.pos_weight_cortes)
+    config["pos_weight"] = (float(weight_function(fit))
                             if loss_name == "weighted" else 1.0)
 
     run_dir = (Path(output)/experiment_name/loss_name/f"seed_{seed}"/f"fold_{outer_fold}")
