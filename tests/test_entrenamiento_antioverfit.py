@@ -1,5 +1,8 @@
 """Contratos del piloto anti-sobreajuste."""
 import unittest
+import json
+from pathlib import Path
+import tempfile
 
 import pandas as pd
 import torch
@@ -70,6 +73,21 @@ class TestEntrenamientoAntioverfit(unittest.TestCase):
         self.assertEqual(status["planned_runs"], 16)
         self.assertEqual(status["control_parameters"], status["candidate_parameters"])
         self.assertEqual(status["test_images_loaded"], 0)
+
+    def test_brecha_usa_la_epoca_elegida_incluso_si_es_la_ultima(self):
+        for best_epoch, expected in ((1, .10), (2, .20), (3, .90)):
+            with self.subTest(best_epoch=best_epoch), tempfile.TemporaryDirectory() as directory:
+                output = Path(directory)
+                for seed in (42, 2026):
+                    for fold in (0, 3):
+                        run = pilot.run_path(output, "control", "normal", seed, fold)
+                        run.mkdir(parents=True)
+                        (run/"summary.json").write_text(json.dumps({"best_epoch": best_epoch}))
+                        pd.DataFrame({"epoch": [1, 2, 3], "auc_gap": [.10, .20, .90]}).to_csv(
+                            run/"history.csv", index=False)
+                gaps = pilot._gaps(output, "control", "normal")
+                self.assertEqual(gaps["selected_gaps"], [expected]*4)
+                self.assertEqual(gaps["final_gaps"], [.90]*4)
 
 
 if __name__ == "__main__":
