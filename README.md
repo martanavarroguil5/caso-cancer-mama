@@ -55,14 +55,21 @@ abrió y no se inicia otro ensayo antes de revisar estos resultados.
 - [Informe completo y curvas](resultados/15_informe_cinetico_20261021/INFORME_RESULTADOS.md).
 - [Métricas, intervalos, predicciones y evidencia](resultados/15_informe_cinetico_20261021/).
 
-## Piloto anti-sobreajuste (preparado, no entrenado)
+## Piloto anti-sobreajuste (terminado, no adoptado)
 
-El siguiente ensayo vuelve a una CNN temporal simple de una escala y compara un
-control con un paquete anti-sobreajuste: lotes por paciente, peso igual por
-paciente, Dropout2d y aumentos conjuntos suaves. Son 16 ejecuciones en los folds
-0 y 3; sirven para filtrar la dirección antes de pagar otra matriz completa. El
-test permanece cerrado y el criterio de éxito está prefijado en el
-[protocolo](docs/mejoras_cnn/PROTOCOLO_PILOTO_ANTIOVERFIT.md).
+El piloto completó 16 ejecuciones y 122 épocas en 26 min 21 s, con una CNN
+temporal simple de una escala. El paquete de lotes por paciente, peso igual por
+paciente, Dropout2d y aumentos conjuntos redujo la brecha fit−selección.
+Con BCE ponderada la AUC media pasó de 0,5338 a 0,5571: cumple el filtro
+exploratorio, pero el intervalo de diferencia incluye cero y no alcanza 0,60.
+Con BCE normal pasó de 0,5593 a 0,5567. Son solo los folds 0 y 3; no se
+promociona ningún modelo ni se abre test. V002 continúa activo.
+
+- [Informe, curvas y métricas completas](resultados/16_informe_piloto_antioverfit_20261021/INFORME_RESULTADOS.md).
+- [Paquete de pesos experimental del piloto](modelos/pilotos/p001_antioverfit_20261021/).
+- [Protocolo original y cierre](docs/mejoras_cnn/PROTOCOLO_PILOTO_ANTIOVERFIT.md).
+
+El siguiente comando reproduce el piloto; no se vuelve a ejecutar automáticamente:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/piloto_antioverfit_gpu.ps1

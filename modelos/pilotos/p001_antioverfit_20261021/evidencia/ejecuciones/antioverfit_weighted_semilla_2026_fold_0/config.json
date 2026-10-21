@@ -1,0 +1,84 @@
+{
+  "name": "cnn_imagen_antioverfit_piloto_antioverfit",
+  "model": {
+    "architecture": "single_scale_early_temporal_fusion",
+    "input_phases": [
+      "PRE",
+      "EARLY",
+      "LATE"
+    ],
+    "backbone_channels": [
+      24,
+      48,
+      96,
+      160
+    ],
+    "hidden": 64,
+    "dropout": 0.35,
+    "spatial_dropout": 0.1,
+    "normalization": "batch",
+    "clinical": null
+  },
+  "training": {
+    "epochs": 15,
+    "min_epochs": 4,
+    "patience": 4,
+    "min_delta": 0.001,
+    "batch_size": 64,
+    "lr": 0.0008,
+    "min_lr": 1e-05,
+    "weight_decay": 0.001,
+    "clip_grad_norm": 5.0,
+    "amp": true,
+    "num_workers": 4,
+    "cpu_threads": 8,
+    "deterministic": true,
+    "patients_per_batch": 6,
+    "equal_patient_weight": true
+  },
+  "augmentation": {
+    "hflip": 0.5,
+    "rot90": true,
+    "translate": 0.03,
+    "scale_min": 0.95,
+    "scale_max": 1.05,
+    "gain_min": 0.9,
+    "gain_max": 1.1,
+    "gamma_min": 0.9,
+    "gamma_max": 1.1,
+    "noise_std": 0.01
+  },
+  "evaluation": {
+    "unit": "patient",
+    "slice_aggregation": "mean",
+    "outer_protocol": "pilot_folds_0_and_3_with_inner_checkpoint_selection",
+    "inner_selection_fraction": 0.15,
+    "inner_split_seed": 20261014,
+    "checkpoint_metric": "inner_patient_auc",
+    "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+    "min_specificity": 0.9,
+    "secondary_threshold_strategy": "max_macro_f1",
+    "test_policy": "never_load_during_pilot"
+  },
+  "history_plot_title": "Piloto anti-sobreajuste: antioverfit",
+  "loss": "weighted",
+  "seed": 2026,
+  "outer_fold": 0,
+  "smoke": false,
+  "device_type": "cuda",
+  "source_sha256": {
+    "entrenamiento_imagen.py": "964abfbdee1835c361c7c9d296396aca6dc981430664373eb3ac3c90ef477937",
+    "datos.py": "b61e550788d321536dccb96c87b09a3b04c1ef87f885c6945056b935215eb8eb",
+    "entrenamiento_antioverfit.py": "649ba607fd6afce9bb4ec05acebb5bc2ace04e1fc893fe2238ebe184c88b1b7f"
+  },
+  "data_signature": "d5dd0e325f58f06e82085fd1c37017aa94a0ef6549b89d6ed57d941a289a0212",
+  "counts": {
+    "fit_slices": 7444,
+    "fit_patients": 746,
+    "selection_slices": 1315,
+    "selection_patients": 132,
+    "outer_slices": 2186,
+    "outer_patients": 219
+  },
+  "pos_weight": 2.405306495882891
+}
