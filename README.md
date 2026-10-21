@@ -34,38 +34,36 @@ compartido, sin variables clínicas, media de cortes y selección interna por
 paciente. El lanzador GPU se conserva en `scripts/entrenar_cnn_imagen_gpu.ps1`.
 Los checkpoints de trabajo y estados de optimización permanecen locales.
 
-## Nuevo candidato cinético multiescala (preparado, no entrenado)
+## CNN cinética multiescala: ajuste terminado, resultado insuficiente
 
-El siguiente experimento calcula explícitamente `EARLY−PRE`, `LATE−PRE` y
-`EARLY−LATE` antes de la CNN. Los tres tiempos y las tres diferencias entran juntos
-en la primera convolución, recuperando la fusión temporal temprana del modelo
-histórico que alcanzó 0,5945 OOF. Cada caso se representa en tres escalas centradas:
-imagen completa de 256 píxeles, región de 128 y núcleo de 64, con el mismo backbone.
-Esto reduce el dominio del fondo sin perder el contexto peritumoral. Se añade
-Dropout2d 0,10 para limitar el sobreajuste; sigue siendo una CNN 2D propia, desde
-cero, solo imagen y las seis entradas tienen semántica temporal, no RGB.
+El ensayo del 21/10/2026 completó **60 entrenamientos, 948 épocas y 220.884 pasos
+de AdamW** en 3 h 17 min. Se conservó la arquitectura de `39bd951`, con
+593.521 parámetros, mapas de realce explícitos y recortes de 256/128/64 píxeles.
+Solo se compararon tres pares de LR/weight decay, dos pérdidas y dos semillas.
+Cada fold eligió los parámetros internamente antes de la evaluación exterior.
 
-Se conserva exactamente el protocolo anterior: media de cortes por paciente,
-cinco folds exteriores, selección interna, BCE normal frente a ponderada y dos
-semillas. Son 20 runs, el test no se abre y la comparación final es pareada con
-la CNN por fases ya congelada. La adopción exige además alcanzar AUC OOF ≥ 0,60;
-desplazar el umbral no cuenta como mejora de AUC. Para comprobar el otro
-ordenador sin entrenar:
+El candidato obtuvo **AUC global OOF cruda 0,5264**, media por fold
+**0,5766 ± 0,0301** y AUC con calibración interna **0,5618**. La misma red de
+referencia obtuvo 0,5360 global. No se alcanzó el mínimo 0,60 ni el objetivo
+0,70; persiste el sobreajuste y el ajuste no demuestra mejora.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/entrenar_cnn_cinetica_gpu.ps1 -SoloComprobar
+Se conservan los diez pesos seleccionados, configuración, calibración y código
+en [v007](modelos/versiones/v007_cnn_cinetica_multiescala_20261021/), como
+`ensayo_insuficiente_conservado`. **V002 sigue activo.** El test reservado no se
+abrió y no se inicia otro ensayo antes de revisar estos resultados.
+
+- [Informe completo y curvas](resultados/15_informe_cinetico_20261021/INFORME_RESULTADOS.md).
+- [Métricas, intervalos, predicciones y evidencia](resultados/15_informe_cinetico_20261021/).
+- [Protocolo original y ampliación del ajuste](docs/mejoras_cnn/PROTOCOLO_CNN_CINETICA.md).
+
+El módulo `cancer_mama.ajuste_cinetico` conserva la búsqueda ejecutada en Linux.
+`cancer_mama.entrenamiento_cinetico` y el lanzador PowerShell conservan la matriz
+original de 20 ejecuciones. Ambos emplean la misma arquitectura, desde cero y
+sin variables clínicas. Para comprobar la configuración del ajuste sin entrenar:
+
+```bash
+.venv/bin/python -B -m cancer_mama.ajuste_cinetico verificar
 ```
-
-Para ejecutar posteriormente el humo y la matriz completa:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/entrenar_cnn_cinetica_gpu.ps1
-```
-
-El diseño completo está en el
-[protocolo de CNN cinética](docs/mejoras_cnn/PROTOCOLO_CNN_CINETICA.md). El
-[protocolo anterior](docs/mejoras_cnn/PROTOCOLO_CNN_IMAGEN_FASES.md) se mantiene
-como trazabilidad del control.
 
 ## Estructura
 

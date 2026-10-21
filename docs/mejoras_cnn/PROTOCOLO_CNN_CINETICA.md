@@ -1,6 +1,29 @@
 # Protocolo: CNN cinética multiescala con realce DCE explícito
 
-Fecha de fijación: 21/10/2026. Estado: **preparado, no entrenado**.
+Fecha de fijación: 21/10/2026. Estado: **60 entrenamientos terminados; resultado
+insuficiente conservado como v007**.
+
+## Resultado y cierre (21/10/2026)
+
+Se completaron 60 ejecuciones y 948 épocas en 3 h 17 min, con 220.884 pasos
+de AdamW y ninguno omitido por AMP. No cambió la arquitectura de 593.521
+parámetros del commit `39bd951` ni se cargó test. Las cinco elecciones de
+parámetros y pérdida se congelaron antes de evaluar imágenes exteriores.
+
+El candidato obtuvo AUC OOF global cruda **0,526404**, IC95 %
+**[0,498565; 0,552856]**, media por fold **0,576593 ± 0,030063** y AUC global
+con calibración interna **0,561803**. La referencia obtuvo 0,535981 global.
+La diferencia pareada es −0,009577, IC95 % [−0,028690; +0,008952]. No hay
+evidencia de mejora ni se alcanza el mínimo 0,60 o el objetivo 0,70.
+
+Se archivan los diez pesos seleccionados como
+`v007_cnn_cinetica_multiescala_20261021`, sin promoción. V002 continúa activo
+y no se inicia otra búsqueda antes de revisar el resultado con el usuario.
+El código de entrenamiento se conserva para reproducir esta preparación.
+
+[Informe, métricas y curvas](../../resultados/15_informe_cinetico_20261021/INFORME_RESULTADOS.md).
+La ampliación siguiente y el protocolo original se conservan como trazabilidad;
+el lanzador PowerShell mantiene la matriz original de 20, no la búsqueda de 60.
 
 ## Ajuste autorizado de entrenamiento, con arquitectura fija (21/10/2026)
 

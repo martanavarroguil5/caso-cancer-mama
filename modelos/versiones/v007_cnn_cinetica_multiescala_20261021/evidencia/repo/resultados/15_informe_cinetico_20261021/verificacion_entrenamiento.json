@@ -1,0 +1,422 @@
+[
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/normal/seed_2026/fold_0",
+    "finite_weights": true,
+    "optimizer_steps": 4194,
+    "expected_steps": 4194,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/normal/seed_2026/fold_1",
+    "finite_weights": true,
+    "optimizer_steps": 3262,
+    "expected_steps": 3262,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/normal/seed_2026/fold_2",
+    "finite_weights": true,
+    "optimizer_steps": 4893,
+    "expected_steps": 4893,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/normal/seed_2026/fold_3",
+    "finite_weights": true,
+    "optimizer_steps": 3029,
+    "expected_steps": 3029,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/normal/seed_2026/fold_4",
+    "finite_weights": true,
+    "optimizer_steps": 2330,
+    "expected_steps": 2330,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/normal/seed_42/fold_0",
+    "finite_weights": true,
+    "optimizer_steps": 8388,
+    "expected_steps": 8388,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/normal/seed_42/fold_1",
+    "finite_weights": true,
+    "optimizer_steps": 2563,
+    "expected_steps": 2563,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/normal/seed_42/fold_2",
+    "finite_weights": true,
+    "optimizer_steps": 2097,
+    "expected_steps": 2097,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/normal/seed_42/fold_3",
+    "finite_weights": true,
+    "optimizer_steps": 2097,
+    "expected_steps": 2097,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/normal/seed_42/fold_4",
+    "finite_weights": true,
+    "optimizer_steps": 3262,
+    "expected_steps": 3262,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/weighted/seed_2026/fold_0",
+    "finite_weights": true,
+    "optimizer_steps": 6757,
+    "expected_steps": 6757,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/weighted/seed_2026/fold_1",
+    "finite_weights": true,
+    "optimizer_steps": 2796,
+    "expected_steps": 2796,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/weighted/seed_2026/fold_2",
+    "finite_weights": true,
+    "optimizer_steps": 2097,
+    "expected_steps": 2097,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/weighted/seed_2026/fold_3",
+    "finite_weights": true,
+    "optimizer_steps": 3262,
+    "expected_steps": 3262,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/weighted/seed_2026/fold_4",
+    "finite_weights": true,
+    "optimizer_steps": 3728,
+    "expected_steps": 3728,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/weighted/seed_42/fold_0",
+    "finite_weights": true,
+    "optimizer_steps": 4893,
+    "expected_steps": 4893,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/weighted/seed_42/fold_1",
+    "finite_weights": true,
+    "optimizer_steps": 3961,
+    "expected_steps": 3961,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/weighted/seed_42/fold_2",
+    "finite_weights": true,
+    "optimizer_steps": 2330,
+    "expected_steps": 2330,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/weighted/seed_42/fold_3",
+    "finite_weights": true,
+    "optimizer_steps": 2563,
+    "expected_steps": 2563,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor/weighted/seed_42/fold_4",
+    "finite_weights": true,
+    "optimizer_steps": 4194,
+    "expected_steps": 4194,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/normal/seed_2026/fold_0",
+    "finite_weights": true,
+    "optimizer_steps": 5359,
+    "expected_steps": 5359,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/normal/seed_2026/fold_1",
+    "finite_weights": true,
+    "optimizer_steps": 5592,
+    "expected_steps": 5592,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/normal/seed_2026/fold_2",
+    "finite_weights": true,
+    "optimizer_steps": 2330,
+    "expected_steps": 2330,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/normal/seed_2026/fold_3",
+    "finite_weights": true,
+    "optimizer_steps": 3029,
+    "expected_steps": 3029,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/normal/seed_2026/fold_4",
+    "finite_weights": true,
+    "optimizer_steps": 2563,
+    "expected_steps": 2563,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/normal/seed_42/fold_0",
+    "finite_weights": true,
+    "optimizer_steps": 7223,
+    "expected_steps": 7223,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/normal/seed_42/fold_1",
+    "finite_weights": true,
+    "optimizer_steps": 2563,
+    "expected_steps": 2563,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/normal/seed_42/fold_2",
+    "finite_weights": true,
+    "optimizer_steps": 3262,
+    "expected_steps": 3262,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/normal/seed_42/fold_3",
+    "finite_weights": true,
+    "optimizer_steps": 3029,
+    "expected_steps": 3029,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/normal/seed_42/fold_4",
+    "finite_weights": true,
+    "optimizer_steps": 3262,
+    "expected_steps": 3262,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/weighted/seed_2026/fold_0",
+    "finite_weights": true,
+    "optimizer_steps": 7922,
+    "expected_steps": 7922,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/weighted/seed_2026/fold_1",
+    "finite_weights": true,
+    "optimizer_steps": 2796,
+    "expected_steps": 2796,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/weighted/seed_2026/fold_2",
+    "finite_weights": true,
+    "optimizer_steps": 2097,
+    "expected_steps": 2097,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/weighted/seed_2026/fold_3",
+    "finite_weights": true,
+    "optimizer_steps": 3029,
+    "expected_steps": 3029,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/weighted/seed_2026/fold_4",
+    "finite_weights": true,
+    "optimizer_steps": 5825,
+    "expected_steps": 5825,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/weighted/seed_42/fold_0",
+    "finite_weights": true,
+    "optimizer_steps": 4893,
+    "expected_steps": 4893,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/weighted/seed_42/fold_1",
+    "finite_weights": true,
+    "optimizer_steps": 2563,
+    "expected_steps": 2563,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/weighted/seed_42/fold_2",
+    "finite_weights": true,
+    "optimizer_steps": 2097,
+    "expected_steps": 2097,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/weighted/seed_42/fold_3",
+    "finite_weights": true,
+    "optimizer_steps": 3029,
+    "expected_steps": 3029,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_lr_menor_wd_mayor/weighted/seed_42/fold_4",
+    "finite_weights": true,
+    "optimizer_steps": 4660,
+    "expected_steps": 4660,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/normal/seed_2026/fold_0",
+    "finite_weights": true,
+    "optimizer_steps": 4427,
+    "expected_steps": 4427,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/normal/seed_2026/fold_1",
+    "finite_weights": true,
+    "optimizer_steps": 3029,
+    "expected_steps": 3029,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/normal/seed_2026/fold_2",
+    "finite_weights": true,
+    "optimizer_steps": 5825,
+    "expected_steps": 5825,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/normal/seed_2026/fold_3",
+    "finite_weights": true,
+    "optimizer_steps": 2097,
+    "expected_steps": 2097,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/normal/seed_2026/fold_4",
+    "finite_weights": true,
+    "optimizer_steps": 3961,
+    "expected_steps": 3961,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/normal/seed_42/fold_0",
+    "finite_weights": true,
+    "optimizer_steps": 4660,
+    "expected_steps": 4660,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/normal/seed_42/fold_1",
+    "finite_weights": true,
+    "optimizer_steps": 2563,
+    "expected_steps": 2563,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/normal/seed_42/fold_2",
+    "finite_weights": true,
+    "optimizer_steps": 2330,
+    "expected_steps": 2330,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/normal/seed_42/fold_3",
+    "finite_weights": true,
+    "optimizer_steps": 4194,
+    "expected_steps": 4194,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/normal/seed_42/fold_4",
+    "finite_weights": true,
+    "optimizer_steps": 2563,
+    "expected_steps": 2563,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/weighted/seed_2026/fold_0",
+    "finite_weights": true,
+    "optimizer_steps": 4194,
+    "expected_steps": 4194,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/weighted/seed_2026/fold_1",
+    "finite_weights": true,
+    "optimizer_steps": 2796,
+    "expected_steps": 2796,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/weighted/seed_2026/fold_2",
+    "finite_weights": true,
+    "optimizer_steps": 2563,
+    "expected_steps": 2563,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/weighted/seed_2026/fold_3",
+    "finite_weights": true,
+    "optimizer_steps": 3029,
+    "expected_steps": 3029,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/weighted/seed_2026/fold_4",
+    "finite_weights": true,
+    "optimizer_steps": 5825,
+    "expected_steps": 5825,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/weighted/seed_42/fold_0",
+    "finite_weights": true,
+    "optimizer_steps": 3961,
+    "expected_steps": 3961,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/weighted/seed_42/fold_1",
+    "finite_weights": true,
+    "optimizer_steps": 4194,
+    "expected_steps": 4194,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/weighted/seed_42/fold_2",
+    "finite_weights": true,
+    "optimizer_steps": 3262,
+    "expected_steps": 3262,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/weighted/seed_42/fold_3",
+    "finite_weights": true,
+    "optimizer_steps": 3029,
+    "expected_steps": 3029,
+    "skipped_steps": 0
+  },
+  {
+    "run": "cnn_imagen_cinetica_multiescala_referencia/weighted/seed_42/fold_4",
+    "finite_weights": true,
+    "optimizer_steps": 2563,
+    "expected_steps": 2563,
+    "skipped_steps": 0
+  }
+]

@@ -1,0 +1,76 @@
+{
+  "status": "complete",
+  "started_at": "2026-10-21T13:43:27.735247+02:00",
+  "pid": 5514,
+  "planned_runs": 60,
+  "architecture_parameters": 593521,
+  "minimum_auc": 0.6,
+  "objective_auc": 0.7,
+  "test_images_loaded": 0,
+  "updated_at": "2026-10-21T17:00:37.649369+02:00",
+  "completed_runs": 60,
+  "current": {
+    "fold": 4,
+    "trial": "lr_menor_wd_mayor",
+    "loss": "weighted",
+    "seed": 2026
+  },
+  "finished_at": "2026-10-21T17:00:37.649376+02:00",
+  "results": {
+    "selected": {
+      "pooled_raw_auc": 0.5264035263474254,
+      "mean_fold_auc": 0.5765933368618896,
+      "std_fold_auc": 0.030062707671024938,
+      "fold_auc": [
+        0.5348790322580645,
+        0.5767413190877337,
+        0.6157490262132856,
+        0.5647816091954022,
+        0.5908156975549619
+      ],
+      "average_precision": 0.3251139447841574,
+      "crossfit_calibrated_log_loss": 0.6137874330870201,
+      "crossfit_calibrated_brier": 0.20941803846618415,
+      "decision": {
+        "tn": 701,
+        "fp": 74,
+        "fn": 281,
+        "tp": 41,
+        "sensitivity": 0.12732919254658384,
+        "specificity": 0.9045161290322581,
+        "balanced_accuracy": 0.515922660789421,
+        "macro_f1": 0.4927970367630492
+      },
+      "minimum_reached": false,
+      "objective_reached": false
+    },
+    "reference": {
+      "pooled_raw_auc": 0.5359807653776798,
+      "mean_fold_auc": 0.5810144248470503,
+      "std_fold_auc": 0.016780600131371552,
+      "fold_auc": [
+        0.5582157258064515,
+        0.5767413190877337,
+        0.6027476576481735,
+        0.5765517241379311,
+        0.5908156975549619
+      ],
+      "average_precision": 0.34144248239124514,
+      "crossfit_calibrated_log_loss": 0.6040720187896428,
+      "crossfit_calibrated_brier": 0.20583840610066045,
+      "decision": {
+        "tn": 720,
+        "fp": 55,
+        "fn": 281,
+        "tp": 41,
+        "sensitivity": 0.12732919254658384,
+        "specificity": 0.9290322580645162,
+        "balanced_accuracy": 0.52818072530555,
+        "macro_f1": 0.5034915298073193
+      },
+      "minimum_reached": false,
+      "objective_reached": false
+    }
+  },
+  "previous_versions_unchanged": true
+}

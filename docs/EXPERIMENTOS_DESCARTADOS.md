@@ -1,12 +1,52 @@
 # Experimentos cerrados y retirados del entrenador
 
-Actualizado el 14/10/2026. Estos ensayos no forman parte del código activo de
+Actualizado el 21/10/2026. Estos ensayos no forman parte del código activo de
 `src/cancer_mama/entrenamiento.py` y sus comandos de comparación se han eliminado. No se
 vuelven a ejecutar automáticamente. Se conservan sus informes, predicciones,
 curvas, configuraciones y evidencia histórica en `resultados/04_entrenamiento/`.
 El código y los README anteriores se conservan en el historial de `main`;
 los commits citados identifican cada ensayo. Las copias locales de limpiezas
 antiguas no forman parte del código activo ni son necesarias para recuperarlo.
+
+## CNN cinética multiescala: ajuste insuficiente (21/10/2026)
+
+**No alcanza el mínimo AUC 0,60 ni el objetivo 0,70; no sustituye V002.**
+Se mantiene exactamente la arquitectura de `39bd951`, con 593.521 parámetros.
+El ajuste compara LR/WD 0,0008/0,001, 0,0003/0,001 y 0,0003/0,01, ambas BCE,
+semillas 42/2026 y cinco folds. Son 60 ejecuciones, 948 épocas y 220.884 pasos
+de AdamW, sin pasos omitidos; duración 3 h 17 min. No se abre test.
+
+| Métrica exterior | Referencia de la misma red | Ajustada |
+|---|---:|---:|
+| AUC OOF global cruda | 0,535981 | 0,526404 |
+| Media de AUC por fold | 0,581014 | 0,576593 |
+| AUC con calibración interna por fold | 0,578982 | 0,561803 |
+| Log-loss con calibración interna | 0,604072 | 0,613787 |
+| Brier con calibración interna | 0,205838 | 0,209418 |
+| FP / FN / TP | 55 / 281 / 41 | 74 / 281 / 41 |
+
+La diferencia de AUC global candidato − referencia es −0,009577, IC95 %
+pareado [−0,028690; +0,008952]. Frente a la CNN por fases v006 la mejora
+puntual es solo +0,001831 y su intervalo también incluye cero. El AUC histórico
+solo imagen de v001 (0,594510) y el multimodal v002 (0,724568) no se superan;
+esas comparaciones son descriptivas por sus protocolos e información distintos.
+
+El máximo interno 0,710 de un fold cae a 0,577 en su evaluación exterior.
+En los diez modelos elegidos, la mediana de brechas fit − selección crece de
+0,058252 en el checkpoint seleccionado a 0,268942 en la última época. Los diez
+terminan con peor pérdida interna que en su checkpoint elegido. Más épocas
+no resuelven el sobreajuste observado y los ajustes probados no aportan una
+mejora exterior respaldada.
+
+Se conservan los diez pesos, fuentes, calibración y hashes en
+`v007_cnn_cinetica_multiescala_20261021`, como `ensayo_insuficiente_conservado`.
+El código de esta preparación docente permanece disponible para revisión y
+reproducción; no forma parte del modelo activo de la aplicación ni se ejecuta
+automáticamente. La arquitectura no se retira ni se rehace antes de que el
+usuario revise el resultado. No se inicia otro entrenamiento.
+
+Código del ajuste: `b0d4ea2`; soporte de carga y archivo: `6a50a77`.
+[Informe completo, curvas y verificación](../resultados/15_informe_cinetico_20261021/INFORME_RESULTADOS.md).
 
 ## CNN solo imagen por fases: discriminación insuficiente (14/10/2026)
 

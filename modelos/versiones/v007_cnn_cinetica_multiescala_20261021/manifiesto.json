@@ -1,0 +1,655 @@
+{
+  "schema_version": 1,
+  "status": "ensayo_insuficiente_conservado",
+  "recommended_for_prediction": false,
+  "model_class": "CNNMultiescalaCinetica",
+  "models": [
+    {
+      "path": "pesos/semilla_42_fold_0.pt",
+      "sha256": "3bc0fef4d6e418b60cd25d8ad40ca8f7ef972a2e434c1a16946a95455b7396e2",
+      "seed": 42,
+      "fold": 0,
+      "outer_fold": 0,
+      "model_config": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training_trial": "lr_menor_wd_mayor",
+      "training_loss": "weighted"
+    },
+    {
+      "path": "pesos/semilla_2026_fold_0.pt",
+      "sha256": "d90ad25ddfe89e482f59abacc5398f45a58088a9c2eb88ececbdf408ff5464ab",
+      "seed": 2026,
+      "fold": 0,
+      "outer_fold": 0,
+      "model_config": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training_trial": "lr_menor_wd_mayor",
+      "training_loss": "weighted"
+    },
+    {
+      "path": "pesos/semilla_42_fold_1.pt",
+      "sha256": "5ab714b32407cc8149cec831e6b960874863a23eecc331e3a1a748af516fe5ca",
+      "seed": 42,
+      "fold": 1,
+      "outer_fold": 1,
+      "model_config": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training_trial": "referencia",
+      "training_loss": "normal"
+    },
+    {
+      "path": "pesos/semilla_2026_fold_1.pt",
+      "sha256": "248c49d9bedc6021525df7af9b39b02d876142467647df03be5eb77beb322bdd",
+      "seed": 2026,
+      "fold": 1,
+      "outer_fold": 1,
+      "model_config": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training_trial": "referencia",
+      "training_loss": "normal"
+    },
+    {
+      "path": "pesos/semilla_42_fold_2.pt",
+      "sha256": "de5d9cafd400d73ccb2a4920246e9d8095ae2e144fa3e913e3cbd64be18bd3f2",
+      "seed": 42,
+      "fold": 2,
+      "outer_fold": 2,
+      "model_config": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training_trial": "lr_menor_wd_mayor",
+      "training_loss": "weighted"
+    },
+    {
+      "path": "pesos/semilla_2026_fold_2.pt",
+      "sha256": "7b78df269a3357866fc495d8caea1b3537c28e093a3b836ff2fc1ce03b24a17b",
+      "seed": 2026,
+      "fold": 2,
+      "outer_fold": 2,
+      "model_config": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training_trial": "lr_menor_wd_mayor",
+      "training_loss": "weighted"
+    },
+    {
+      "path": "pesos/semilla_42_fold_3.pt",
+      "sha256": "544f84d1fc41ed0d7cac3ba2fd6482a3ff43b1d1b3ecdcf77d2a6b9fb8c9246b",
+      "seed": 42,
+      "fold": 3,
+      "outer_fold": 3,
+      "model_config": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training_trial": "lr_menor_wd_mayor",
+      "training_loss": "normal"
+    },
+    {
+      "path": "pesos/semilla_2026_fold_3.pt",
+      "sha256": "cea07e694f618298dca78ef4e5e48367980fe75eb4c146ccf68fab4856b633aa",
+      "seed": 2026,
+      "fold": 3,
+      "outer_fold": 3,
+      "model_config": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training_trial": "lr_menor_wd_mayor",
+      "training_loss": "normal"
+    },
+    {
+      "path": "pesos/semilla_42_fold_4.pt",
+      "sha256": "90bf33ee0add5becd2491dce97badc62794b9929a2da6a0bc2b746a3a2ba5ff3",
+      "seed": 42,
+      "fold": 4,
+      "outer_fold": 4,
+      "model_config": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training_trial": "referencia",
+      "training_loss": "weighted"
+    },
+    {
+      "path": "pesos/semilla_2026_fold_4.pt",
+      "sha256": "828c40e87ca7072b5dcf09463b6e446ba67d1eda9503f2e290541e32158ec7b1",
+      "seed": 2026,
+      "fold": 4,
+      "outer_fold": 4,
+      "model_config": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training_trial": "referencia",
+      "training_loss": "weighted"
+    }
+  ],
+  "slice_aggregation": "mean",
+  "ensemble": "mean probabilities across ten models",
+  "calibration": {
+    "method": "regularized_platt",
+    "input": "logit_patient_aggregated_probability",
+    "slope": 0.09827436555331139,
+    "intercept": -0.8330288655384191,
+    "C": 1.0,
+    "clip_epsilon": 1e-07,
+    "scope": "patient",
+    "fit_data": "all_development_outer_oof_for_future_independent_test_only",
+    "nonnegative_slope_constraint": true,
+    "boundary_solution": false
+  },
+  "threshold": 0.30879429210003834,
+  "threshold_policy": {
+    "calibration": {
+      "method": "regularized_platt",
+      "input": "logit_patient_aggregated_probability",
+      "slope": 0.09827436555331139,
+      "intercept": -0.8330288655384191,
+      "C": 1.0,
+      "clip_epsilon": 1e-07,
+      "scope": "patient",
+      "fit_data": "all_development_outer_oof_for_future_independent_test_only",
+      "nonnegative_slope_constraint": true,
+      "boundary_solution": false
+    },
+    "threshold": 0.30879429210003834,
+    "fit_data": "development OOF; apparent metrics are not test metrics"
+  },
+  "selection": {
+    "metrics_raw_oof": {
+      "n_patients": 1097,
+      "n_positive": 322,
+      "prevalence": 0.2935278030993619,
+      "roc_auc": 0.5264035263474254,
+      "average_precision": 0.3251139447841574,
+      "brier": 0.23827773448676606,
+      "log_loss": 0.6768293588555861,
+      "accuracy": 0.577028258887876,
+      "balanced_accuracy": 0.5127649769585253,
+      "precision_no_pcr": 0.7144827586206897,
+      "recall_no_pcr": 0.6683870967741935,
+      "f1_no_pcr": 0.6906666666666667,
+      "precision_pcr": 0.30913978494623656,
+      "recall_pcr": 0.35714285714285715,
+      "f1_pcr": 0.3314121037463977,
+      "macro_f1": 0.5110393852065321,
+      "weighted_f1": 0.5852154640592586,
+      "threshold": 0.5,
+      "tn": 518,
+      "fp": 257,
+      "fn": 207,
+      "tp": 115,
+      "support_no_pcr": 775,
+      "support_pcr": 322,
+      "confusion_matrix": [
+        [
+          518,
+          257
+        ],
+        [
+          207,
+          115
+        ]
+      ]
+    },
+    "crossfit_evaluation": {
+      "pooled_raw_auc": 0.5264035263474254,
+      "mean_fold_auc": 0.5765933368618896,
+      "std_fold_auc": 0.030062707671024938,
+      "fold_auc": [
+        0.5348790322580645,
+        0.5767413190877337,
+        0.6157490262132856,
+        0.5647816091954022,
+        0.5908156975549619
+      ],
+      "average_precision": 0.3251139447841574,
+      "crossfit_calibrated_log_loss": 0.6137874330870201,
+      "crossfit_calibrated_brier": 0.20941803846618415,
+      "decision": {
+        "tn": 701,
+        "fp": 74,
+        "fn": 281,
+        "tp": 41,
+        "sensitivity": 0.12732919254658384,
+        "specificity": 0.9045161290322581,
+        "balanced_accuracy": 0.515922660789421,
+        "macro_f1": 0.4927970367630492,
+        "accuracy": 0.6763901549680948,
+        "precision_pcr": 0.3565217391304348,
+        "f1_pcr": 0.18764302059496568
+      },
+      "minimum_reached": false,
+      "objective_reached": false,
+      "crossfit_calibrated_auc": 0.5618032458425165
+    },
+    "method": "inner AUC of mean probabilities of two seeds per outer fold",
+    "minimum_auc": 0.6,
+    "objective_auc": 0.7
+  },
+  "preprocessing": {
+    "phases": [
+      "PRE",
+      "EARLY",
+      "LATE"
+    ],
+    "shape": [
+      3,
+      256,
+      256
+    ],
+    "clinical_required": false,
+    "phase_scaling": "uint8/255",
+    "center_crop_sizes": [
+      256,
+      128,
+      64
+    ],
+    "encoder_input_size": [
+      128,
+      128
+    ],
+    "scale_weights_shared": true,
+    "kinetic_maps": [
+      "EARLY-PRE",
+      "LATE-PRE",
+      "EARLY-LATE"
+    ]
+  },
+  "test_evaluated_once": false,
+  "provenance_files": [
+    {
+      "path": "evidencia/repo/resultados/15_informe_cinetico_20261021/evaluacion.json",
+      "sha256": "f0d62dfbec82632ecdb607c175ca855d9923693bef502535bf583717c6052f41"
+    },
+    {
+      "path": "evidencia/repo/resultados/15_informe_cinetico_20261021/seleccion_congelada.json",
+      "sha256": "935b2f831879c586436d1c301848ea6a6f003aecf143be4754759180c25a3ae4"
+    },
+    {
+      "path": "evidencia/repo/resultados/15_informe_cinetico_20261021/protocolo.json",
+      "sha256": "b56ba0344c475171068c04818712e986c37f03853e077609e83cbc5d77b04e4c"
+    },
+    {
+      "path": "evidencia/repo/resultados/15_informe_cinetico_20261021/oof_pacientes_selected.csv",
+      "sha256": "e2bc76c10aea80c2e2960e9cc5e17cfb55b8cbe533a1e68c3e29dc747b17d609"
+    },
+    {
+      "path": "evidencia/repo/resultados/15_informe_cinetico_20261021/oof_pacientes_reference.csv",
+      "sha256": "35a5345b0a7f2d8a30dfa9b09bf68196045f9d952f753a0776466e9ae6750dd1"
+    },
+    {
+      "path": "evidencia/repo/resultados/15_informe_cinetico_20261021/ejecuciones.json",
+      "sha256": "242b26d456a7acaf3051c72b62a4fa45aade0a7de38a5cb3b39d2603df52dce3"
+    },
+    {
+      "path": "evidencia/repo/resultados/15_informe_cinetico_20261021/diagnostico_ejecuciones.csv",
+      "sha256": "458211a89598e4f7a285c3ba0a7fde0f66e22f122f66c0616a5844ad6c2221db"
+    },
+    {
+      "path": "evidencia/repo/resultados/15_informe_cinetico_20261021/verificacion_entrenamiento.json",
+      "sha256": "de366e72e5ef420bf018326f8c95c511e428874fd02d8e5d78fc27f5faecdf74"
+    }
+  ]
+}
