@@ -18,6 +18,7 @@ cancer-mama-preparar = "cancer_mama.preparacion:main"
 cancer-mama-entrenar = "cancer_mama.entrenamiento:main"
 cancer-mama-entrenar-imagen = "cancer_mama.entrenamiento_imagen:main"
 cancer-mama-entrenar-cinetica = "cancer_mama.entrenamiento_cinetico:main"
+cancer-mama-piloto-antioverfit = "cancer_mama.entrenamiento_antioverfit:main"
 cancer-mama-informe-mejora = "cancer_mama.informe_mejora:main"
 cancer-mama-informe-multimodal = "cancer_mama.informe_multimodal:main"
 

@@ -36,7 +36,8 @@ import sklearn
 import PIL
 import torch
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.nn import functional as F
+from torch.utils.data import DataLoader, Sampler
 
 from . import datos as pdatos
 from .paths import PACKAGE_DIR, PROJECT_ROOT, RESULTS_DIR, MULTIMODAL_MANIFEST, MULTIMODAL_RUNS
@@ -360,16 +361,54 @@ class DatasetEntrenamiento(pdatos.BreastDCESliceDataset):
         return result
 
 
-def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None, clinical=False):
+class PatientBatchSampler(Sampler):
+    """Agrupa todos los cortes de varias pacientes en el mismo lote."""
+
+    def __init__(self, samples, patients_per_batch, generator):
+        if not isinstance(patients_per_batch, int) or patients_per_batch < 1:
+            raise ValueError("patients_per_batch debe ser un entero positivo")
+        if "patient_id" not in samples:
+            raise ValueError("Falta patient_id para construir lotes por paciente")
+        self.patients_per_batch = patients_per_batch
+        self.generator = generator
+        self.patient_indices = [group.index.to_list() for _, group in
+                                samples.reset_index(drop=True).groupby(
+                                    "patient_id", sort=True)]
+        if not self.patient_indices:
+            raise ValueError("No hay pacientes para construir lotes")
+
+    def __iter__(self):
+        order = torch.randperm(len(self.patient_indices), generator=self.generator).tolist()
+        for start in range(0, len(order), self.patients_per_batch):
+            batch = []
+            for patient_index in order[start:start+self.patients_per_batch]:
+                batch.extend(self.patient_indices[patient_index])
+            yield batch
+
+    def __len__(self):
+        return (len(self.patient_indices)+self.patients_per_batch-1)//self.patients_per_batch
+
+
+def make_loader(samples, root, batch_size, workers, generator, shuffle=False, cache=None,
+                clinical=False, patients_per_batch=None):
     # Los lectores trabajan en CPU; Linux usa fork y Windows/macOS spawn.
     context = ("fork" if sys.platform.startswith("linux") else "spawn") if workers else None
     dataset = DatasetEntrenamiento(samples, root, cache, clinical)
+    common = dict(num_workers=workers, pin_memory=torch.cuda.is_available(),
+                  persistent_workers=False, worker_init_fn=pdatos.inicializar_worker,
+                  generator=generator, multiprocessing_context=context)
+    if patients_per_batch is not None:
+        if not shuffle:
+            raise ValueError("Los lotes por paciente solo se usan en entrenamiento")
+        return DataLoader(dataset, batch_sampler=PatientBatchSampler(
+            samples, patients_per_batch, generator), **common)
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle,
-        num_workers=workers, pin_memory=torch.cuda.is_available(), persistent_workers=False,
-        worker_init_fn=pdatos.inicializar_worker, generator=generator, multiprocessing_context=context)
+                      **common)
 
 
-def aumentar_geometria(x, generator, hflip=0.5, rot90=True):
+def aumentar_geometria(x, generator, hflip=0.5, rot90=True, translate=0.0,
+                       scale_min=1.0, scale_max=1.0, gain_min=1.0, gain_max=1.0,
+                       gamma_min=1.0, gamma_max=1.0, noise_std=0.0):
     # Cada decisión se aplica al corte completo, conservando las tres fases.
     if hflip:
         mask = (torch.rand(len(x), generator=generator) < hflip).to(x.device)
@@ -379,6 +418,36 @@ def aumentar_geometria(x, generator, hflip=0.5, rot90=True):
         for k in (1, 2, 3):
             mask = (ks == k).to(x.device)
             x[mask] = torch.rot90(x[mask], k, dims=(-2, -1))
+    if (translate < 0 or translate > .25 or scale_min <= 0 or
+            scale_max < scale_min or gain_min <= 0 or gain_max < gain_min or
+            gamma_min <= 0 or gamma_max < gamma_min or noise_std < 0):
+        raise ValueError("Parámetros de aumento fuera de rango")
+    if translate or scale_min != 1 or scale_max != 1:
+        n = len(x)
+        zoom = torch.empty(n).uniform_(scale_min, scale_max, generator=generator)
+        shift = torch.empty(n, 2).uniform_(-translate, translate, generator=generator)
+        theta = torch.zeros(n, 2, 3, dtype=x.dtype)
+        theta[:, 0, 0] = 1/zoom
+        theta[:, 1, 1] = 1/zoom
+        theta[:, :, 2] = 2*shift
+        theta = theta.to(x.device)
+        grid = F.affine_grid(theta, x.shape, align_corners=False)
+        x = F.grid_sample(x, grid, mode="bilinear", padding_mode="zeros",
+                          align_corners=False)
+    if (gain_min != 1 or gain_max != 1 or gamma_min != 1 or
+            gamma_max != 1 or noise_std):
+        n = len(x)
+        gain = torch.empty(n, 1, 1, 1).uniform_(
+            gain_min, gain_max, generator=generator).to(x.device, x.dtype)
+        gamma = torch.empty(n, 1, 1, 1).uniform_(
+            gamma_min, gamma_max, generator=generator).to(x.device, x.dtype)
+        x = x.clamp(0, 1).pow(gamma)*gain
+        if noise_std:
+            # El mismo ruido se aplica a las tres fases para no inventar realce.
+            noise = torch.randn((n, 1, x.shape[-2], x.shape[-1]),
+                                generator=generator).to(x.device, x.dtype)
+            x = x + noise*noise_std
+        x = x.clamp(0, 1)
     return x
 
 

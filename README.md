@@ -54,6 +54,19 @@ abrió y no se inicia otro ensayo antes de revisar estos resultados.
 
 - [Informe completo y curvas](resultados/15_informe_cinetico_20261021/INFORME_RESULTADOS.md).
 - [Métricas, intervalos, predicciones y evidencia](resultados/15_informe_cinetico_20261021/).
+
+## Piloto anti-sobreajuste (preparado, no entrenado)
+
+El siguiente ensayo vuelve a una CNN temporal simple de una escala y compara un
+control con un paquete anti-sobreajuste: lotes por paciente, peso igual por
+paciente, Dropout2d y aumentos conjuntos suaves. Son 16 ejecuciones en los folds
+0 y 3; sirven para filtrar la dirección antes de pagar otra matriz completa. El
+test permanece cerrado y el criterio de éxito está prefijado en el
+[protocolo](docs/mejoras_cnn/PROTOCOLO_PILOTO_ANTIOVERFIT.md).
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/piloto_antioverfit_gpu.ps1
+```
 - [Protocolo original y ampliación del ajuste](docs/mejoras_cnn/PROTOCOLO_CNN_CINETICA.md).
 
 El módulo `cancer_mama.ajuste_cinetico` conserva la búsqueda ejecutada en Linux.
