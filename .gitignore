@@ -84,3 +84,6 @@ Thumbs.db
 
 # CNN por fases: ejecuciones y checkpoints de trabajo locales
 /resultados/04_entrenamiento/cnn_imagen_fases_20261014/
+
+# CNN cinética: ejecuciones y checkpoints de trabajo locales
+/resultados/04_entrenamiento/cnn_imagen_cinetica_multiescala_20261015/
