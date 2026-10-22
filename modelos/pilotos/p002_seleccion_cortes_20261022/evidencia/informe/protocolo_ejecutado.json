@@ -1,0 +1,251 @@
+{
+  "source_commit": "d9f46fe105497a77ffbcb9211b7d61e8ca6ac0b2",
+  "source_sha256": {
+    "entrenamiento.py": "b53c7afaafebae99326cf49492a86b689ad6bfcf8bc62eb83f649d9da94258a5",
+    "entrenamiento_imagen.py": "c4f80159cefdfeaf0ea2ab35023814494bf08d357cb22198f8c66765312f2f77",
+    "entrenamiento_antioverfit.py": "649ba607fd6afce9bb4ec05acebb5bc2ace04e1fc893fe2238ebe184c88b1b7f",
+    "seleccion_cortes.py": "6d20c7904c62cc8f59ab1f27f658e65d1a553b8641e36798861e134f77a37062",
+    "datos.py": "b61e550788d321536dccb96c87b09a3b04c1ef87f885c6945056b935215eb8eb"
+  },
+  "arms": {
+    "10": {
+      "name": "cnn_seleccion_cortes_10",
+      "model": {
+        "architecture": "single_scale_early_temporal_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 15,
+        "min_epochs": 4,
+        "patience": 4,
+        "min_delta": 0.001,
+        "batch_size": 64,
+        "lr": 0.0008,
+        "min_lr": 1e-05,
+        "weight_decay": 0.001,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 4,
+        "cpu_threads": 8,
+        "deterministic": true,
+        "patients_per_batch": 6,
+        "equal_patient_weight": true,
+        "loss_weight_unit": "patient"
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true,
+        "translate": 0.03,
+        "scale_min": 0.95,
+        "scale_max": 1.05,
+        "gain_min": 0.9,
+        "gain_max": 1.1,
+        "gamma_min": 0.9,
+        "gamma_max": 1.1,
+        "noise_std": 0.01
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "pilot_folds_0_and_3_with_inner_checkpoint_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_pilot"
+      },
+      "history_plot_title": "10 cortes por paciente en fit; evaluación con todos",
+      "slice_selection": {
+        "recipe": "medoid_triplet32_joint_center_scale_then_farthest_spatial_rank_v1",
+        "fit_only": true,
+        "k": 10,
+        "manifest_sha256": "5bef0a577403021097477438160e87e2c444df8a1b19d35d8595133ce53466d2",
+        "selection_and_outer": "all_available_slices"
+      }
+    },
+    "3": {
+      "name": "cnn_seleccion_cortes_3",
+      "model": {
+        "architecture": "single_scale_early_temporal_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 15,
+        "min_epochs": 4,
+        "patience": 4,
+        "min_delta": 0.001,
+        "batch_size": 64,
+        "lr": 0.0008,
+        "min_lr": 1e-05,
+        "weight_decay": 0.001,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 4,
+        "cpu_threads": 8,
+        "deterministic": true,
+        "patients_per_batch": 6,
+        "equal_patient_weight": true,
+        "loss_weight_unit": "patient"
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true,
+        "translate": 0.03,
+        "scale_min": 0.95,
+        "scale_max": 1.05,
+        "gain_min": 0.9,
+        "gain_max": 1.1,
+        "gamma_min": 0.9,
+        "gamma_max": 1.1,
+        "noise_std": 0.01
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "pilot_folds_0_and_3_with_inner_checkpoint_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_pilot"
+      },
+      "history_plot_title": "3 cortes por paciente en fit; evaluación con todos",
+      "slice_selection": {
+        "recipe": "medoid_triplet32_joint_center_scale_then_farthest_spatial_rank_v1",
+        "fit_only": true,
+        "k": 3,
+        "manifest_sha256": "5bef0a577403021097477438160e87e2c444df8a1b19d35d8595133ce53466d2",
+        "selection_and_outer": "all_available_slices"
+      }
+    },
+    "1": {
+      "name": "cnn_seleccion_cortes_1",
+      "model": {
+        "architecture": "single_scale_early_temporal_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 15,
+        "min_epochs": 4,
+        "patience": 4,
+        "min_delta": 0.001,
+        "batch_size": 64,
+        "lr": 0.0008,
+        "min_lr": 1e-05,
+        "weight_decay": 0.001,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 4,
+        "cpu_threads": 8,
+        "deterministic": true,
+        "patients_per_batch": 6,
+        "equal_patient_weight": true,
+        "loss_weight_unit": "patient"
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true,
+        "translate": 0.03,
+        "scale_min": 0.95,
+        "scale_max": 1.05,
+        "gain_min": 0.9,
+        "gain_max": 1.1,
+        "gamma_min": 0.9,
+        "gamma_max": 1.1,
+        "noise_std": 0.01
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "pilot_folds_0_and_3_with_inner_checkpoint_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_pilot"
+      },
+      "history_plot_title": "1 cortes por paciente en fit; evaluación con todos",
+      "slice_selection": {
+        "recipe": "medoid_triplet32_joint_center_scale_then_farthest_spatial_rank_v1",
+        "fit_only": true,
+        "k": 1,
+        "manifest_sha256": "5bef0a577403021097477438160e87e2c444df8a1b19d35d8595133ce53466d2",
+        "selection_and_outer": "all_available_slices"
+      }
+    }
+  },
+  "seeds": [
+    42,
+    2026
+  ],
+  "folds": [
+    0,
+    3
+  ],
+  "loss": "weighted",
+  "planned_runs": 12,
+  "unit_tests_passed": 66,
+  "gpu_smoke_tests_excluded": 3,
+  "cpu_pilot": false,
+  "comparison_primary": "mean_raw_auc_of_two_outer_folds_two_seed_ensemble",
+  "exploratory_gate": {
+    "delta_mean_auc_vs_10_min": 0.01,
+    "worst_fold_delta_min": -0.02,
+    "selected_gap_median_not_larger": true
+  },
+  "threshold_policy": "raw_probability_fixed_0.5_no_posthoc_calibration",
+  "no_test_or_private_validation": true,
+  "no_additional_training": true,
+  "no_model_activation": true
+}

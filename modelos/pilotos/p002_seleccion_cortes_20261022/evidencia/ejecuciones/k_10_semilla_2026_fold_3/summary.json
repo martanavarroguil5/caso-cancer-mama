@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "status": "complete",
+  "eligible_for_selection": true,
+  "outer_evaluated": true,
+  "smoke": false,
+  "config_hash": "a5e9a765623bef988ed9b468a59a5e152eaee6105ef571600239517a802087a3",
+  "loss": "weighted",
+  "seed": 2026,
+  "outer_fold": 3,
+  "best_epoch": 2,
+  "epochs_completed": 6,
+  "best_inner_patient_auc": 0.5260312944523471,
+  "inner_selection_loss": 0.9943358302116394,
+  "outer_loss": 1.0606619119644165,
+  "outer_raw_metrics_at_0_5": {
+    "n_patients": 220,
+    "n_positive": 75,
+    "prevalence": 0.3409090909090909,
+    "roc_auc": 0.48698850574712643,
+    "average_precision": 0.37990965777103225,
+    "brier": 0.24895532861443712,
+    "log_loss": 0.6910564775743084,
+    "accuracy": 0.5863636363636363,
+    "balanced_accuracy": 0.4802298850574712,
+    "precision_no_pcr": 0.6483516483516484,
+    "recall_no_pcr": 0.8137931034482758,
+    "f1_no_pcr": 0.7217125382262997,
+    "precision_pcr": 0.2894736842105263,
+    "recall_pcr": 0.14666666666666667,
+    "f1_pcr": 0.19469026548672566,
+    "macro_f1": 0.45820140185651265,
+    "weighted_f1": 0.5420458543378085,
+    "threshold": 0.5,
+    "tn": 118,
+    "fp": 27,
+    "fn": 64,
+    "tp": 11,
+    "support_no_pcr": 145,
+    "support_pcr": 75,
+    "confusion_matrix": [
+      [
+        118,
+        27
+      ],
+      [
+        64,
+        11
+      ]
+    ]
+  },
+  "parameters": 551913,
+  "total_train_seconds": 72.31013689600013,
+  "current_session_seconds": 76.06396674099983,
+  "test_images_loaded": 0,
+  "inference_sha256": "6175ac1d23b66a0eb4cdce5cab4afc76e4db23d28a649d0e93fa0be4bf00cde1",
+  "outer_sha256": "67ea00518f0f61ac82caa51ee3a3479127862eef7575ad347d8ced76a4524111",
+  "selection_sha256": "302792d9daabcae20fb0151ce563d6bf448b735149b8b92783ef9ca30778ce33"
+}
