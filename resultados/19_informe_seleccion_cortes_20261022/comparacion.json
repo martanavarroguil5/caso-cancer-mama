@@ -1,0 +1,160 @@
+{
+  "results": {
+    "10": {
+      "fold_auc": [
+        0.5497983870967742,
+        0.49324137931034484
+      ],
+      "mean_fold_auc": 0.5215198832035595,
+      "selected_gap_median": -0.0173553972389459,
+      "epochs_completed": [
+        6,
+        5,
+        6,
+        6
+      ],
+      "metrics": {
+        "n_patients": 439,
+        "n_positive": 139,
+        "prevalence": 0.31662870159453305,
+        "roc_auc": 0.5354676258992805,
+        "average_precision": 0.3659681504857609,
+        "brier": 0.24730609869338105,
+        "log_loss": 0.6877571176829975,
+        "accuracy": 0.642369020501139,
+        "balanced_accuracy": 0.5086091127098321,
+        "precision_no_pcr": 0.6876640419947506,
+        "recall_no_pcr": 0.8733333333333333,
+        "f1_no_pcr": 0.7694566813509545,
+        "precision_pcr": 0.3448275862068966,
+        "recall_pcr": 0.14388489208633093,
+        "f1_pcr": 0.20304568527918782,
+        "macro_f1": 0.4862511833150711,
+        "weighted_f1": 0.5901147030958848,
+        "threshold": 0.5,
+        "tn": 262,
+        "fp": 38,
+        "fn": 119,
+        "tp": 20,
+        "support_no_pcr": 300,
+        "support_pcr": 139,
+        "confusion_matrix": [
+          [
+            262,
+            38
+          ],
+          [
+            119,
+            20
+          ]
+        ]
+      }
+    },
+    "3": {
+      "fold_auc": [
+        0.5649193548387097,
+        0.5006896551724138
+      ],
+      "mean_fold_auc": 0.5328045050055618,
+      "selected_gap_median": -0.0108918801552378,
+      "epochs_completed": [
+        12,
+        6,
+        11,
+        15
+      ],
+      "metrics": {
+        "n_patients": 439,
+        "n_positive": 139,
+        "prevalence": 0.31662870159453305,
+        "roc_auc": 0.5051318944844124,
+        "average_precision": 0.32172979773297716,
+        "brier": 0.24914591681386541,
+        "log_loss": 0.6914384595145485,
+        "accuracy": 0.5239179954441914,
+        "balanced_accuracy": 0.4991606714628297,
+        "precision_no_pcr": 0.6827309236947792,
+        "recall_no_pcr": 0.5666666666666667,
+        "f1_no_pcr": 0.6193078324225865,
+        "precision_pcr": 0.3157894736842105,
+        "recall_pcr": 0.4316546762589928,
+        "f1_pcr": 0.364741641337386,
+        "macro_f1": 0.49202473687998627,
+        "weighted_f1": 0.5387048698694136,
+        "threshold": 0.5,
+        "tn": 170,
+        "fp": 130,
+        "fn": 79,
+        "tp": 60,
+        "support_no_pcr": 300,
+        "support_pcr": 139,
+        "confusion_matrix": [
+          [
+            170,
+            130
+          ],
+          [
+            79,
+            60
+          ]
+        ]
+      },
+      "delta_mean_auc_vs_10": 0.011284621802002237,
+      "exploratory_gate": false
+    },
+    "1": {
+      "fold_auc": [
+        0.5402217741935483,
+        0.45811494252873564
+      ],
+      "mean_fold_auc": 0.499168358361142,
+      "selected_gap_median": -0.044412646699361395,
+      "epochs_completed": [
+        6,
+        5,
+        6,
+        6
+      ],
+      "metrics": {
+        "n_patients": 439,
+        "n_positive": 139,
+        "prevalence": 0.31662870159453305,
+        "roc_auc": 0.4907673860911271,
+        "average_precision": 0.3238583798646122,
+        "brier": 0.2345845873743602,
+        "log_loss": 0.6622100342895985,
+        "accuracy": 0.683371298405467,
+        "balanced_accuracy": 0.5,
+        "precision_no_pcr": 0.683371298405467,
+        "recall_no_pcr": 1.0,
+        "f1_no_pcr": 0.8119079837618404,
+        "precision_pcr": 0.0,
+        "recall_pcr": 0.0,
+        "f1_pcr": 0.0,
+        "macro_f1": 0.4059539918809202,
+        "weighted_f1": 0.5548346130490937,
+        "threshold": 0.5,
+        "tn": 300,
+        "fp": 0,
+        "fn": 139,
+        "tp": 0,
+        "support_no_pcr": 300,
+        "support_pcr": 139,
+        "confusion_matrix": [
+          [
+            300,
+            0
+          ],
+          [
+            139,
+            0
+          ]
+        ]
+      },
+      "delta_mean_auc_vs_10": -0.022351524842417536,
+      "exploratory_gate": false
+    }
+  },
+  "test_images_loaded": 0,
+  "warning": "Piloto exploratorio de dos folds; no demuestra generalización independiente."
+}

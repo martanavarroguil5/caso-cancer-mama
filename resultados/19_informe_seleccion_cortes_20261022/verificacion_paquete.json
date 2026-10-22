@@ -1,0 +1,104 @@
+{
+  "verified_at": "2026-10-22T18:29:50.786619+02:00",
+  "loading": {
+    "models": 12,
+    "parameters_per_model": 551913,
+    "strict_loading": true,
+    "checksums_verified": true,
+    "optimizer_or_rng": false,
+    "experimental": true
+  },
+  "isolated_inference": [
+    {
+      "k": 10,
+      "source": {
+        "fit_k": 10,
+        "models": 4,
+        "n_slices": 2,
+        "inference_slice_selection": "all_available",
+        "probability_raw": 0.4080454707145691,
+        "threshold": 0.5,
+        "pCR": 0,
+        "calibration": "none",
+        "experimental": true,
+        "active_model_replaced": false
+      },
+      "isolated": {
+        "fit_k": 10,
+        "models": 4,
+        "n_slices": 2,
+        "inference_slice_selection": "all_available",
+        "probability_raw": 0.4080454707145691,
+        "threshold": 0.5,
+        "pCR": 0,
+        "calibration": "none",
+        "experimental": true,
+        "active_model_replaced": false
+      },
+      "direct_tensor_probability": 0.4080454707145691,
+      "absolute_difference": 0.0
+    },
+    {
+      "k": 3,
+      "source": {
+        "fit_k": 3,
+        "models": 4,
+        "n_slices": 2,
+        "inference_slice_selection": "all_available",
+        "probability_raw": 0.32853490114212036,
+        "threshold": 0.5,
+        "pCR": 0,
+        "calibration": "none",
+        "experimental": true,
+        "active_model_replaced": false
+      },
+      "isolated": {
+        "fit_k": 3,
+        "models": 4,
+        "n_slices": 2,
+        "inference_slice_selection": "all_available",
+        "probability_raw": 0.32853490114212036,
+        "threshold": 0.5,
+        "pCR": 0,
+        "calibration": "none",
+        "experimental": true,
+        "active_model_replaced": false
+      },
+      "direct_tensor_probability": 0.32853490114212036,
+      "absolute_difference": 0.0
+    },
+    {
+      "k": 1,
+      "source": {
+        "fit_k": 1,
+        "models": 4,
+        "n_slices": 2,
+        "inference_slice_selection": "all_available",
+        "probability_raw": 0.16399283707141876,
+        "threshold": 0.5,
+        "pCR": 0,
+        "calibration": "none",
+        "experimental": true,
+        "active_model_replaced": false
+      },
+      "isolated": {
+        "fit_k": 1,
+        "models": 4,
+        "n_slices": 2,
+        "inference_slice_selection": "all_available",
+        "probability_raw": 0.16399283707141876,
+        "threshold": 0.5,
+        "pCR": 0,
+        "calibration": "none",
+        "experimental": true,
+        "active_model_replaced": false
+      },
+      "direct_tensor_probability": 0.16399283707141876,
+      "absolute_difference": 0.0
+    }
+  ],
+  "previous_model_files_unchanged": 678,
+  "dataset_needed": false,
+  "test_images_loaded": 0,
+  "optimizer_or_rng_in_exports": false
+}
