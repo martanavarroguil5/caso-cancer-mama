@@ -79,13 +79,11 @@ adaptativo; esta CV no constituye una confirmación externa nueva ni garantiza
 retoca el candidato ni se lanza otra arquitectura después de observar exterior.
 No se activa modelo, no se entrena refit final y no se hace push.
 
-## Ejecución
+## Ejecución histórica y cierre
 
-```bash
-CUBLAS_WORKSPACE_CONFIG=:4096:8 .venv/bin/python -B -m cancer_mama.cnn_espacial comprobar
-.venv/bin/python -B -m cancer_mama.cnn_espacial preparar
-CUBLAS_WORKSPACE_CONFIG=:4096:8 .venv/bin/python -u -B -m cancer_mama.cnn_espacial entrenar
-```
+Código retirado del árbol activo y conservado en ea01a35ba68f396870973225733fd927ea89ab40.
+Los comandos de preparación/entrenamiento pertenecen a ese commit.
+
 
 La primera comprobación sintética detectó que AdaptiveAvgPool2d no disponía de
 backward CUDA determinista. Antes de usar pacientes o congelar el protocolo se
@@ -98,3 +96,18 @@ de pacientes. Es comprobación funcional, no métrica de generalización.
 Pesos/checkpoints de trabajo solo locales e ignorados en runs/. Al terminar se
 conservan resultados, curvas, configuraciones, fuentes/hashes y se decide con el
 usuario; no se publica ni se crea una versión productiva automáticamente.
+
+## Resultado: no adoptado
+
+20/20 ejecuciones,346 épocas,80.618 pasos AdamW sin omisiones.
+AUC media0,546094±0,032469 frente a control0,556270 y cohorte0,549012.
+Delta frente a cohorte−0,002918, IC95%[-0,042034;+0,037720]; frente al
+control−0,010176, IC95% secundario[-0,041030;+0,021731]. No demuestra mejora
+ni un empeoramiento concluyente. OOF agrupada cruda0,510214.
+
+Descenso conjunto1–14 en4/20 trayectorias,2/10 redes elegidas. Alguna alcanza
+su óptimo en épocas12/16/17, pero no hay mejora exterior. El secundario
+bestAUC tiene media0,556638; no se sustituye el criterio principal a posteriori.
+No se crea versión productiva, no se cambia la app ni se hace push.
+
+[Informe completo, curvas y verificaciones](../resultados/28_cnn_espacial_por_corte_20261025/INFORME_RESULTADOS.md).

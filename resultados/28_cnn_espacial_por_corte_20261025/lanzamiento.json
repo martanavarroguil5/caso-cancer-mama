@@ -1,0 +1,17 @@
+{
+  "pid": 3551913,
+  "started_at": "2026-10-25T23:30:43.932711+01:00",
+  "command": [
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/.venv/bin/python",
+    "-u",
+    "-B",
+    "-m",
+    "cancer_mama.cnn_espacial",
+    "entrenar"
+  ],
+  "commit": "ea01a35ba68f396870973225733fd927ea89ab40",
+  "tests": 109,
+  "parameters": 105569,
+  "synthetic_steps": 60,
+  "no_push": true
+}

@@ -775,3 +775,29 @@ independiente: train tiene antecedentes adaptativos. Test/privada cerrados.
 históricos verificados. Código retirado y conservado en db845626bfca69276217074256fc131c0bffbc01.
 No se inicia otra tanda ni se activa o publica un modelo.
 [Informe completo](../resultados/27_criterio_docente_20261025/INFORME_RESULTADOS.md).
+
+## CNN espacial compacta por corte: no adoptada (25/10/2026)
+
+Una variante prefijada de105.569 parámetros: PRE/EARLY/LATE y diferencias,
+resolución global128, tres bloques16/32/64, cuadrícula4×4, cabeza32, un logit
+por corte y media de probabilidades por paciente. Sin atención entre cortes,
+clínica, EMA, label smoothing ni mixup. Entrenador idéntico al control salvo
+fábrica de modelos; roles, semillas y parámetros conservados.
+
+20 runs, BCE normal/ponderada, dos semillas, cinco folds:346 épocas y80.618
+pasos AdamW sin omisiones. AUC media0,546094±0,032469 frente a cohorte0,549012
+y control0,556270. Delta cohorte−0,002918, IC95%[-0,042034;+0,037720];
+delta control−0,010176, IC95% secundario[-0,041030;+0,021731]. No hay
+mejora demostrada ni empeoramiento concluyente. OOF agrupada cruda0,510214.
+
+Descenso conjunto1–14:4/20 trayectorias y2/10 redes elegidas. La mejora de
+algunas curvas no se traslada a AUC exterior. Política principal: TN750/FP25/
+FN308/TP14, sensibilidad4,35%, especificidad96,77%, F1pCR0,0776.
+El secundario bestAUC da media0,556638; su ponderada fija0,564831, sin
+redefinir después el criterio principal. Train adaptativo, no confirmación
+externa. Test/privada cerrados; datos, versiones y control sin cambios.
+
+109 pruebas previas. Código retirado, conservado en main en
+ea01a35ba68f396870973225733fd927ea89ab40. Pesos/checkpoints de trabajo
+locales e ignorados; no versión productiva ni push ni entrenamiento adicional.
+[Informe completo](../resultados/28_cnn_espacial_por_corte_20261025/INFORME_RESULTADOS.md).

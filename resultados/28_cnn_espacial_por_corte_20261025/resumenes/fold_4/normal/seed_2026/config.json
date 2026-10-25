@@ -1,0 +1,77 @@
+{
+  "name": "cnn_espacial_compacta_por_corte",
+  "model": {
+    "architecture": "compact_spatial_per_slice_kinetic_v1",
+    "input_phases": [
+      "PRE",
+      "EARLY",
+      "LATE"
+    ],
+    "temporal_channels": [
+      "PRE",
+      "EARLY",
+      "LATE",
+      "EARLY-PRE",
+      "LATE-PRE",
+      "EARLY-LATE"
+    ],
+    "input_size": 256,
+    "encoder_input_size": 128,
+    "backbone_channels": [
+      16,
+      32,
+      64
+    ],
+    "spatial_grid": 4,
+    "spatial_pool": "avg_kernel4_stride4_on_16x16",
+    "hidden": 32,
+    "dropout": 0.35,
+    "spatial_dropout": 0.1,
+    "normalization": "batch",
+    "activation": "relu",
+    "clinical": null,
+    "slice_output": "one_logit",
+    "patient_aggregation": "mean_probabilities_outside_network"
+  },
+  "training": {
+    "epochs": 40,
+    "min_epochs": 14,
+    "patience": 8,
+    "min_delta": 0.001,
+    "batch_size": 32,
+    "lr": 0.0003,
+    "min_lr": 1e-05,
+    "weight_decay": 0.01,
+    "clip_grad_norm": 5.0,
+    "amp": true,
+    "num_workers": 0,
+    "cpu_threads": 4,
+    "deterministic": true
+  },
+  "augmentation": {
+    "hflip": 0.5,
+    "rot90": true
+  },
+  "evaluation": {
+    "unit": "patient",
+    "slice_aggregation": "mean",
+    "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+    "inner_selection_fraction": 0.15,
+    "inner_split_seed": 20261014,
+    "checkpoint_metric": "min_inner_patient_bce_same_pos_weight_as_training",
+    "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+    "min_specificity": 0.95,
+    "secondary_threshold_strategy": "max_macro_f1",
+    "test_policy": "never_load_during_development"
+  },
+  "hypothesis": "Una CNN más compacta con cuadrícula espacial4×4 puede conservar localización sin memorizar tan pronto; un logit por corte y media de probabilidades",
+  "history_plot_title": "CNN espacial compacta: fit y selección por paciente",
+  "loss": "normal",
+  "seed": 2026,
+  "pos_weight": 1.0,
+  "outer_fold": 4,
+  "counts": {
+    "fit_patients": 746,
+    "selection_patients": 132
+  }
+}
