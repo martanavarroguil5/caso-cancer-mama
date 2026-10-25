@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-25T01:27:43.927410+00:00",
+  "families": [
+    "hybrid_v1",
+    "hybrid_rank_v2",
+    "hybrid_mlp_stable_v4"
+  ],
+  "seeds": [
+    42,
+    2026,
+    3407
+  ],
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "configurations": {
+    "hybrid_v1": {
+      "mode": "hybrid",
+      "dropout": 0.5,
+      "widths": [
+        12,
+        24,
+        48,
+        64
+      ],
+      "norm": "group",
+      "kinetics": true,
+      "lr": 0.0003,
+      "weight_decay": 0.03,
+      "epochs": 45,
+      "patience": 10,
+      "min_epochs": 10,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.2,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.04
+    },
+    "hybrid_rank_v2": {
+      "mode": "hybrid",
+      "dropout": 0.5,
+      "widths": [
+        12,
+        24,
+        48,
+        64
+      ],
+      "norm": "group",
+      "kinetics": true,
+      "lr": 0.0008,
+      "weight_decay": 0.03,
+      "epochs": 90,
+      "patience": 18,
+      "min_epochs": 10,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.0,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.04,
+      "slice_pool": "attention_mean",
+      "view": "roi",
+      "roi_features": true,
+      "rank_weight": 0.5
+    },
+    "hybrid_mlp_stable_v4": {
+      "mode": "hybrid",
+      "dropout": 0.55,
+      "widths": [
+        12,
+        24,
+        48,
+        64
+      ],
+      "norm": "group",
+      "kinetics": true,
+      "lr": 0.0003,
+      "weight_decay": 0.03,
+      "epochs": 160,
+      "patience": 28,
+      "min_epochs": 35,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.4,
+      "weighted": false,
+      "selection_metric": "inner_auc",
+      "label_smoothing": 0.04,
+      "feature_file": "features_texture_v3.npy",
+      "feature_std_min": 0.02,
+      "max_auc_gap": 0.1,
+      "ema_decay": 0.995,
+      "slice_pool": "attention_mean",
+      "view": "roi",
+      "prior_strength": 6.0,
+      "feature_hidden": 8
+    }
+  },
+  "selector": "highest inner ensemble AUC among fit-minus-selection AUC gap <= 0.12; tie lower BCE",
+  "gap_limit": 0.12,
+  "calibration": "Platt, inner selection only, standardized ensemble logit, C=1, nonnegative slope",
+  "outer_policy": "all training and all five choices fixed before any outer predictions",
+  "test_images_loaded": 0,
+  "source_sha256": "8ee88061e1b33f191b7d699500a715da861da7f7aa39cf901b8e034b539c042d"
+}

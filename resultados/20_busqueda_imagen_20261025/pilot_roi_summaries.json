@@ -1,0 +1,316 @@
+[
+  {
+    "status": "complete",
+    "name": "hybrid_fast_v2",
+    "config": {
+      "mode": "hybrid",
+      "dropout": 0.45,
+      "widths": [
+        12,
+        24,
+        48,
+        64
+      ],
+      "norm": "group",
+      "kinetics": true,
+      "lr": 0.001,
+      "weight_decay": 0.02,
+      "epochs": 100,
+      "patience": 18,
+      "min_epochs": 10,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.2,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.04,
+      "slice_pool": "attention_mean"
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 17,
+    "epochs": 35,
+    "seconds": 17.369980267000074,
+    "parameters": 133930,
+    "test_images_loaded": 0,
+    "inference_sha256": "c359f553455b50807f31a804d41d6d14256799b4188453d3b1d8b50ff5707136",
+    "splits": {
+      "fit": {
+        "auc": 0.6881552978907117,
+        "bce": 0.5735637919132066,
+        "ap": 0.4572060424029589,
+        "brier": 0.19444413082783865
+      },
+      "selection": {
+        "auc": 0.6035216718266253,
+        "bce": 0.5926538289981322,
+        "ap": 0.4519555057971013,
+        "brier": 0.20166836115520037
+      }
+    }
+  },
+  {
+    "status": "complete",
+    "name": "features_roi_v2",
+    "config": {
+      "mode": "features",
+      "dropout": 0.5,
+      "widths": [
+        12,
+        24,
+        48,
+        64
+      ],
+      "norm": "group",
+      "kinetics": true,
+      "lr": 0.001,
+      "weight_decay": 0.1,
+      "epochs": 120,
+      "patience": 18,
+      "min_epochs": 10,
+      "batch_size": 64,
+      "train_slices": 4,
+      "mixup": 0.2,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.04,
+      "roi_features": true
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 31,
+    "epochs": 49,
+    "seconds": 3.754618477999884,
+    "parameters": 30177,
+    "test_images_loaded": 0,
+    "inference_sha256": "95bbe0c5daba4f0ebf777f77ac699d68fb25ba197759494e9120a3f5577b3248",
+    "splits": {
+      "fit": {
+        "auc": 0.7764123596891574,
+        "bce": 0.5500040006033752,
+        "ap": 0.6018368296169194,
+        "brier": 0.18424035330260544
+      },
+      "selection": {
+        "auc": 0.6274509803921569,
+        "bce": 0.5882064550084087,
+        "ap": 0.3740095640140155,
+        "brier": 0.20071162123056877
+      }
+    }
+  },
+  {
+    "status": "complete",
+    "name": "hybrid_roi_v2",
+    "config": {
+      "mode": "hybrid",
+      "dropout": 0.45,
+      "widths": [
+        12,
+        24,
+        48,
+        64
+      ],
+      "norm": "group",
+      "kinetics": true,
+      "lr": 0.001,
+      "weight_decay": 0.02,
+      "epochs": 100,
+      "patience": 18,
+      "min_epochs": 10,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.2,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.04,
+      "slice_pool": "attention_mean",
+      "view": "roi",
+      "roi_features": true
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 23,
+    "epochs": 41,
+    "seconds": 24.092743171999928,
+    "parameters": 148458,
+    "test_images_loaded": 0,
+    "inference_sha256": "552604954475879bff7e7af1ce39e311cffc48cf2424cb193432f5f38b0a73ad",
+    "splits": {
+      "fit": {
+        "auc": 0.7840549319518113,
+        "bce": 0.538208265723763,
+        "ap": 0.5884796051913017,
+        "brier": 0.1794617964105739
+      },
+      "selection": {
+        "auc": 0.635061919504644,
+        "bce": 0.5849221352074536,
+        "ap": 0.37504929805814063,
+        "brier": 0.19958240586691417
+      }
+    }
+  },
+  {
+    "status": "complete",
+    "name": "hybrid_roi_bn_v2",
+    "config": {
+      "mode": "hybrid",
+      "dropout": 0.5,
+      "widths": [
+        16,
+        32,
+        64,
+        96
+      ],
+      "norm": "batch",
+      "kinetics": true,
+      "lr": 0.0008,
+      "weight_decay": 0.01,
+      "epochs": 100,
+      "patience": 18,
+      "min_epochs": 10,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.2,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.04,
+      "slice_pool": "attention_mean",
+      "view": "roi",
+      "roi_features": true
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 11,
+    "epochs": 29,
+    "seconds": 15.342048799000167,
+    "parameters": 260034,
+    "test_images_loaded": 0,
+    "inference_sha256": "aa8a3311888805f1144ddfa45c4a4e629afccc8b60997fb8a3a2d5919da40be5",
+    "splits": {
+      "fit": {
+        "auc": 0.6366514534764196,
+        "bce": 0.5863018600546123,
+        "ap": 0.39438013747163664,
+        "brier": 0.20001713097290927
+      },
+      "selection": {
+        "auc": 0.6179695562435501,
+        "bce": 0.5916627235571077,
+        "ap": 0.42195749211985767,
+        "brier": 0.20194989234785604
+      }
+    }
+  },
+  {
+    "status": "complete",
+    "name": "cnn_roi_bn_v2",
+    "config": {
+      "mode": "cnn",
+      "dropout": 0.4,
+      "widths": [
+        16,
+        32,
+        64,
+        96
+      ],
+      "norm": "batch",
+      "kinetics": true,
+      "lr": 0.001,
+      "weight_decay": 0.01,
+      "epochs": 100,
+      "patience": 18,
+      "min_epochs": 10,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.2,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.04,
+      "slice_pool": "attention_mean",
+      "view": "roi"
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 18,
+    "epochs": 36,
+    "seconds": 19.598761878000005,
+    "parameters": 229922,
+    "test_images_loaded": 0,
+    "inference_sha256": "989d369d98832f153068f5265977dc33992864ceb3aad9547eee930bb5570c44",
+    "splits": {
+      "fit": {
+        "auc": 0.5542997820813289,
+        "bce": 0.6027159972866469,
+        "ap": 0.33540017566385005,
+        "brier": 0.2062667025473373
+      },
+      "selection": {
+        "auc": 0.5763028895768834,
+        "bce": 0.600936474959344,
+        "ap": 0.38729512596129567,
+        "brier": 0.20561288487259918
+      }
+    }
+  },
+  {
+    "status": "complete",
+    "name": "hybrid_rank_v2",
+    "config": {
+      "mode": "hybrid",
+      "dropout": 0.5,
+      "widths": [
+        12,
+        24,
+        48,
+        64
+      ],
+      "norm": "group",
+      "kinetics": true,
+      "lr": 0.0008,
+      "weight_decay": 0.03,
+      "epochs": 90,
+      "patience": 18,
+      "min_epochs": 10,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.0,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.04,
+      "slice_pool": "attention_mean",
+      "view": "roi",
+      "roi_features": true,
+      "rank_weight": 0.5
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 16,
+    "epochs": 34,
+    "seconds": 24.24061906399993,
+    "parameters": 148458,
+    "test_images_loaded": 0,
+    "inference_sha256": "b839e9c2094bda5df0aa6a7480096e8f1191fb16738dbd1aca1248b43a377de8",
+    "splits": {
+      "fit": {
+        "auc": 0.7174047119773036,
+        "bce": 0.5635587590018978,
+        "ap": 0.4881364847729541,
+        "brier": 0.19023736723507134
+      },
+      "selection": {
+        "auc": 0.6576367389060886,
+        "bce": 0.5902790432342699,
+        "ap": 0.39393306542059287,
+        "brier": 0.2008744303549309
+      }
+    }
+  }
+]

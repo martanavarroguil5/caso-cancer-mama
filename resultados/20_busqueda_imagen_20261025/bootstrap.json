@@ -1,0 +1,14 @@
+{
+  "repetitions": 2000,
+  "seed": 20261025,
+  "strata": "fold and patient label",
+  "pooled_auc_ci95": [
+    0.5260822480464836,
+    0.6014045281506712
+  ],
+  "mean_fold_auc_ci95": [
+    0.5295466349602855,
+    0.6052657382156893
+  ],
+  "limitation": "Conditional on fitted models; excludes uncertainty of adaptive historical search"
+}

@@ -12,9 +12,7 @@ sin normalización ImageNet ni aumentos de color; CNN 2D desde cero, un logit,
 BCEWithLogitsLoss y comparación normal/ponderada. Página 6: las entradas de la
 aplicación son tres PNG de un corte. No se usa una red 3D ni se descargan NIfTI.
 
-Las tandas anteriores de transferencia son investigación descartada e incompatibles
-con la entrega. La tanda de textura es un comparador auxiliar, no sustituye la CNN
-obligatoria. Ninguna de ellas modificó la versión activa v002.
+Ninguna de ellas modificó la versión activa v002.
 
 ## Hipótesis y referencias
 

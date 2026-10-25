@@ -1,0 +1,252 @@
+[
+  {
+    "status": "complete",
+    "name": "features_v1",
+    "config": {
+      "mode": "features",
+      "dropout": 0.5,
+      "widths": [
+        12,
+        24,
+        48,
+        64
+      ],
+      "norm": "group",
+      "kinetics": true,
+      "lr": 0.001,
+      "weight_decay": 0.1,
+      "epochs": 80,
+      "patience": 14,
+      "min_epochs": 10,
+      "batch_size": 64,
+      "train_slices": 4,
+      "mixup": 0.2,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.04
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 45,
+    "epochs": 59,
+    "seconds": 5.018349331000081,
+    "parameters": 15649,
+    "test_images_loaded": 0,
+    "inference_sha256": "a803ab50d3e89be243286c88bd0a876bb90dc6cd000389bafdc6913ff049c74f",
+    "splits": {
+      "fit": {
+        "auc": 0.7178467168290776,
+        "bce": 0.5694052299906589,
+        "ap": 0.5348686243799663,
+        "brier": 0.19211625543634803
+      },
+      "selection": {
+        "auc": 0.6055856553147575,
+        "bce": 0.5992237010169134,
+        "ap": 0.3866817069425663,
+        "brier": 0.20465406989919696
+      }
+    }
+  },
+  {
+    "status": "complete",
+    "name": "features_linearish",
+    "config": {
+      "mode": "features",
+      "dropout": 0.65,
+      "widths": [
+        12,
+        24,
+        48,
+        64
+      ],
+      "norm": "group",
+      "kinetics": true,
+      "lr": 0.0003,
+      "weight_decay": 0.3,
+      "epochs": 80,
+      "patience": 14,
+      "min_epochs": 10,
+      "batch_size": 64,
+      "train_slices": 4,
+      "mixup": 0.4,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.04
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 80,
+    "epochs": 80,
+    "seconds": 6.491888392999954,
+    "parameters": 15649,
+    "test_images_loaded": 0,
+    "inference_sha256": "39b4af4f129474970ac6c84a9915f40cfa0d6c562a77a9c934ce4978d7dd3c4d",
+    "splits": {
+      "fit": {
+        "auc": 0.6061993750256979,
+        "bce": 0.6387629954297376,
+        "ap": 0.39521864316344707,
+        "brier": 0.223080176962525
+      },
+      "selection": {
+        "auc": 0.589202786377709,
+        "bce": 0.6400252012115162,
+        "ap": 0.35439243121927155,
+        "brier": 0.22368533487729866
+      }
+    }
+  },
+  {
+    "status": "complete",
+    "name": "cnn_mil_v1",
+    "config": {
+      "mode": "cnn",
+      "dropout": 0.5,
+      "widths": [
+        12,
+        24,
+        48,
+        64
+      ],
+      "norm": "group",
+      "kinetics": true,
+      "lr": 0.0003,
+      "weight_decay": 0.03,
+      "epochs": 40,
+      "patience": 10,
+      "min_epochs": 10,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.2,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.04
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 5,
+    "epochs": 15,
+    "seconds": 7.479871409999987,
+    "parameters": 118346,
+    "test_images_loaded": 0,
+    "inference_sha256": "4fde23755a21e95f2e131735094bd9535cb51183b29d6a1cc7ee7bfea4b88710",
+    "splits": {
+      "fit": {
+        "auc": 0.5628520620040294,
+        "bce": 0.6015635743680047,
+        "ap": 0.3228704255049988,
+        "brier": 0.20587702336016042
+      },
+      "selection": {
+        "auc": 0.5482456140350876,
+        "bce": 0.6067912017970722,
+        "ap": 0.3577069994005276,
+        "brier": 0.20806565398073715
+      }
+    }
+  },
+  {
+    "status": "complete",
+    "name": "hybrid_v1",
+    "config": {
+      "mode": "hybrid",
+      "dropout": 0.5,
+      "widths": [
+        12,
+        24,
+        48,
+        64
+      ],
+      "norm": "group",
+      "kinetics": true,
+      "lr": 0.0003,
+      "weight_decay": 0.03,
+      "epochs": 45,
+      "patience": 10,
+      "min_epochs": 10,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.2,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.04
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 44,
+    "epochs": 45,
+    "seconds": 21.689998978999938,
+    "parameters": 133930,
+    "test_images_loaded": 0,
+    "inference_sha256": "210a6aed9fbf8d7d62a95c4b02d5e759312940e9c907e4c0bf6bc92f8f01cf21",
+    "splits": {
+      "fit": {
+        "auc": 0.6474343160231897,
+        "bce": 0.5912138859446843,
+        "ap": 0.42181322731261894,
+        "brier": 0.20153944165485393
+      },
+      "selection": {
+        "auc": 0.6213235294117647,
+        "bce": 0.5962895526244146,
+        "ap": 0.40212862982818226,
+        "brier": 0.20370186914956395
+      }
+    }
+  },
+  {
+    "status": "complete",
+    "name": "hybrid_weighted_v1",
+    "config": {
+      "mode": "hybrid",
+      "dropout": 0.5,
+      "widths": [
+        12,
+        24,
+        48,
+        64
+      ],
+      "norm": "group",
+      "kinetics": true,
+      "lr": 0.0003,
+      "weight_decay": 0.03,
+      "epochs": 45,
+      "patience": 10,
+      "min_epochs": 10,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.2,
+      "weighted": true,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.04
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 43,
+    "epochs": 45,
+    "seconds": 21.922110391000047,
+    "parameters": 133930,
+    "test_images_loaded": 0,
+    "inference_sha256": "aa37ab11c36df6c9646a576ca659786bf76c8e84d0bbdf7890c0d6dd7870805d",
+    "splits": {
+      "fit": {
+        "auc": 0.6266909255376013,
+        "bce": 0.6902595878012614,
+        "ap": 0.41043289343693423,
+        "brier": 0.24862000642431653
+      },
+      "selection": {
+        "auc": 0.6064241486068112,
+        "bce": 0.6889876657941036,
+        "ap": 0.391424613418015,
+        "brier": 0.24795279725166613
+      }
+    }
+  }
+]

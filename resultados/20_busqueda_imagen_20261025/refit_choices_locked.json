@@ -1,0 +1,166 @@
+{
+  "choices": [
+    {
+      "fold": 0,
+      "family": "hybrid_rank_v2",
+      "fit_auc": 0.7296883351835861,
+      "selection_auc": 0.6554437564499485,
+      "selection_bce": 0.5879648627843171,
+      "auc_gap": 0.07424457873363766,
+      "eligible": true,
+      "calibration": {
+        "mean": -0.8232097468799746,
+        "std": 0.3648946913694482,
+        "coef": 0.48245560669556675,
+        "intercept": -0.9183345025024298
+      },
+      "checkpoints": [
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_0/seed_42/best.pt",
+          "sha256": "927e806fa947d352997667fef1369048f8401e3733d94d0e485e235bb244f70c",
+          "seed": 42
+        },
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_0/seed_2026/best.pt",
+          "sha256": "dba46114b25f881273f61eb876868f0b8525fc3db728cd5f1841ac5ce5100131",
+          "seed": 2026
+        },
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_0/seed_3407/best.pt",
+          "sha256": "98356443cad21e8ab1a39f1524e95ff1a36d89c041a349a64099bca9ec3c6512",
+          "seed": 3407
+        }
+      ]
+    },
+    {
+      "fold": 1,
+      "family": "hybrid_mlp_stable_v4",
+      "fit_auc": 0.6070559859370849,
+      "selection_auc": 0.6105521155830752,
+      "selection_bce": 0.614297282510145,
+      "auc_gap": -0.0034961296459903313,
+      "eligible": true,
+      "calibration": {
+        "mean": -0.5774225743618979,
+        "std": 0.02763937169501356,
+        "coef": 0.33233907764018067,
+        "intercept": -0.8921557252470591
+      },
+      "checkpoints": [
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_1/seed_42/best.pt",
+          "sha256": "89fc127adc3122aa60e7e1d059061bc95fe9fd0f29ee445626af113d771eb642",
+          "seed": 42
+        },
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_1/seed_2026/best.pt",
+          "sha256": "d701d3143b3b88f0c4d7c45b03e2bdeb63bfd5e15bf7c46e688b57523dab6e81",
+          "seed": 2026
+        },
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_1/seed_3407/best.pt",
+          "sha256": "66c76803c30cc1f59fd758ed7c4383bb5672ace73ea8b97c33aa95652ff6e206",
+          "seed": 3407
+        }
+      ]
+    },
+    {
+      "fold": 2,
+      "family": "hybrid_v1",
+      "fit_auc": 0.609980141555069,
+      "selection_auc": 0.6386973180076628,
+      "selection_bce": 0.6046801086552935,
+      "auc_gap": -0.028717176452593862,
+      "eligible": true,
+      "calibration": {
+        "mean": -0.8530756804028493,
+        "std": 0.08724717077482959,
+        "coef": 0.42951308522823767,
+        "intercept": -0.88171811294007
+      },
+      "checkpoints": [
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_2/seed_42/best.pt",
+          "sha256": "903f8620860697480a047e8264788914e9771648f9da5b92587bc0bd08dd27c0",
+          "seed": 42
+        },
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_2/seed_2026/best.pt",
+          "sha256": "ee79aec42bc88421a942cb8beddfd500375693fcdd75b1eadf42a24ce6037e17",
+          "seed": 2026
+        },
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_2/seed_3407/best.pt",
+          "sha256": "8c3b67f3246628c3b4b805b2d8dc7fb65898817d0a4946554665951dd8868356",
+          "seed": 3407
+        }
+      ]
+    },
+    {
+      "fold": 3,
+      "family": "hybrid_mlp_stable_v4",
+      "fit_auc": 0.6672383130081301,
+      "selection_auc": 0.6063241106719368,
+      "selection_bce": 0.597397572809424,
+      "auc_gap": 0.06091420233619327,
+      "eligible": true,
+      "calibration": {
+        "mean": -0.7474626449125052,
+        "std": 0.06074957789914797,
+        "coef": 0.3068594938850564,
+        "intercept": -0.9400677224570972
+      },
+      "checkpoints": [
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_3/seed_42/best.pt",
+          "sha256": "837ae4d5d25a05dcdb7d0a5083a8a6a2f61bcd8fd3b219276a8d895eb7cfbd52",
+          "seed": 42
+        },
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_3/seed_2026/best.pt",
+          "sha256": "aa7097f8e89c707eab8f68937d0a3eafb688368feddf5e93d6ed10a56bd4d33c",
+          "seed": 2026
+        },
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_3/seed_3407/best.pt",
+          "sha256": "c1b1d19857c52d121f3a4db86d86f161018f500b9a5de9a0f7250bc93e9ab64c",
+          "seed": 3407
+        }
+      ]
+    },
+    {
+      "fold": 4,
+      "family": "hybrid_mlp_stable_v4",
+      "fit_auc": 0.6213028636837479,
+      "selection_auc": 0.5847523219814241,
+      "selection_bce": 0.6296661910587669,
+      "auc_gap": 0.03655054170232375,
+      "eligible": true,
+      "calibration": {
+        "mean": -0.3820019496021964,
+        "std": 0.05738192802214612,
+        "coef": 0.3325289811537874,
+        "intercept": -0.8923333607075251
+      },
+      "checkpoints": [
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_4/seed_42/best.pt",
+          "sha256": "0cf8dd48a635673fe834653352132f67e2dd9e45c24de55fb96ac46a7b01663a",
+          "seed": 42
+        },
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_4/seed_2026/best.pt",
+          "sha256": "71b9472a810c5afded73549bf91ae553e105f2439e3a5d5f2744f2f8c8f0fba0",
+          "seed": 2026
+        },
+        {
+          "file": "/home/jorgesrab/Escritorio/caso-cancer-mama/resultados/20_busqueda_imagen_20261025/refit/fold_4/seed_3407/best.pt",
+          "sha256": "908dfd7aea2f04393e28b2187349f4bac51b00e24166bf5050f78c4f1b33f432",
+          "seed": 3407
+        }
+      ]
+    }
+  ],
+  "plan_sha256": "179a11fc5251c0a081d85dcaad518d8ab268753aa5cb8eed9cb1432f8b97aebf",
+  "locked_utc": "2026-10-25T01:40:07.252863+00:00"
+}

@@ -1,0 +1,328 @@
+[
+  {
+    "status": "complete",
+    "name": "spatial128_normal",
+    "config": {
+      "mode": "cnn",
+      "dropout": 0.25,
+      "widths": [
+        16,
+        32,
+        64
+      ],
+      "norm": "batch",
+      "kinetics": true,
+      "lr": 0.001,
+      "weight_decay": 0.001,
+      "epochs": 100,
+      "patience": 25,
+      "min_epochs": 35,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.0,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.02,
+      "spatial_pool": "grid4",
+      "max_auc_gap": 0.15,
+      "ema_decay": 0.995
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 29,
+    "epochs": 54,
+    "seconds": 22.028803034999783,
+    "parameters": 171170,
+    "test_images_loaded": 0,
+    "inference_sha256": "39c024fd6919e7611ff5c6ff684dd0fd2c3534bf987bff3158d3944d0551acba",
+    "splits": {
+      "fit": {
+        "auc": 0.6507082356810986,
+        "bce": 0.5813299366088753,
+        "ap": 0.4380749391333505,
+        "brier": 0.1975320407978385
+      },
+      "selection": {
+        "auc": 0.5949432404540762,
+        "bce": 0.5943106807224025,
+        "ap": 0.3910829490635168,
+        "brier": 0.20276669839567651
+      }
+    },
+    "selection_constraint_satisfied": true
+  },
+  {
+    "status": "complete",
+    "name": "spatial128_normal",
+    "config": {
+      "mode": "cnn",
+      "dropout": 0.25,
+      "widths": [
+        16,
+        32,
+        64
+      ],
+      "norm": "batch",
+      "kinetics": true,
+      "lr": 0.001,
+      "weight_decay": 0.001,
+      "epochs": 100,
+      "patience": 25,
+      "min_epochs": 35,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.0,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.02,
+      "spatial_pool": "grid4",
+      "max_auc_gap": 0.15,
+      "ema_decay": 0.995
+    },
+    "fold": 3,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 29,
+    "epochs": 54,
+    "seconds": 21.33997192700008,
+    "parameters": 171170,
+    "test_images_loaded": 0,
+    "inference_sha256": "64adf57906fc6431d3c4c0ae828bc686d2faa0655235e75ad1693c39e0c6c639",
+    "splits": {
+      "fit": {
+        "auc": 0.6613577659214093,
+        "bce": 0.572802294079737,
+        "ap": 0.4200666199135153,
+        "brier": 0.19343853058233362
+      },
+      "selection": {
+        "auc": 0.6112648221343874,
+        "bce": 0.5899634341218246,
+        "ap": 0.4273896153292023,
+        "brier": 0.19981024698793387
+      }
+    },
+    "selection_constraint_satisfied": true
+  },
+  {
+    "status": "complete",
+    "name": "spatial256_normal",
+    "config": {
+      "mode": "cnn",
+      "dropout": 0.25,
+      "widths": [
+        16,
+        32,
+        64
+      ],
+      "norm": "batch",
+      "kinetics": true,
+      "lr": 0.001,
+      "weight_decay": 0.001,
+      "epochs": 100,
+      "patience": 25,
+      "min_epochs": 35,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.0,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.02,
+      "spatial_pool": "grid4",
+      "max_auc_gap": 0.15,
+      "ema_decay": 0.995,
+      "view": "multires_native",
+      "image_file": "images_native.npy"
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 19,
+    "epochs": 44,
+    "seconds": 33.26046783399988,
+    "parameters": 269474,
+    "test_images_loaded": 0,
+    "inference_sha256": "ef7db30b83decd2a15c3ce81c3ba3156a68a1b8da4016e52f04a448f5e32d5bb",
+    "splits": {
+      "fit": {
+        "auc": 0.6104498170305497,
+        "bce": 0.5985999873483182,
+        "ap": 0.3693261040831387,
+        "brier": 0.20465185686380574
+      },
+      "selection": {
+        "auc": 0.5540505675954592,
+        "bce": 0.6040058999914306,
+        "ap": 0.35203615581106784,
+        "brier": 0.20694107721417784
+      }
+    },
+    "selection_constraint_satisfied": true
+  },
+  {
+    "status": "complete",
+    "name": "spatial256_normal",
+    "config": {
+      "mode": "cnn",
+      "dropout": 0.25,
+      "widths": [
+        16,
+        32,
+        64
+      ],
+      "norm": "batch",
+      "kinetics": true,
+      "lr": 0.001,
+      "weight_decay": 0.001,
+      "epochs": 100,
+      "patience": 25,
+      "min_epochs": 35,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.0,
+      "weighted": false,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.02,
+      "spatial_pool": "grid4",
+      "max_auc_gap": 0.15,
+      "ema_decay": 0.995,
+      "view": "multires_native",
+      "image_file": "images_native.npy"
+    },
+    "fold": 3,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 30,
+    "epochs": 55,
+    "seconds": 53.187069664999854,
+    "parameters": 269474,
+    "test_images_loaded": 0,
+    "inference_sha256": "049840aa358efc6ededc35fc69e4e0635564ebe38c5fb2f9457e837fbb13a70d",
+    "splits": {
+      "fit": {
+        "auc": 0.7068936314363143,
+        "bce": 0.5517999166488632,
+        "ap": 0.46724341708705114,
+        "brier": 0.1853623258889602
+      },
+      "selection": {
+        "auc": 0.5710144927536231,
+        "bce": 0.5964265219533631,
+        "ap": 0.33126125314337973,
+        "brier": 0.20299913968249478
+      }
+    },
+    "selection_constraint_satisfied": true
+  },
+  {
+    "status": "complete",
+    "name": "spatial256_weighted",
+    "config": {
+      "mode": "cnn",
+      "dropout": 0.25,
+      "widths": [
+        16,
+        32,
+        64
+      ],
+      "norm": "batch",
+      "kinetics": true,
+      "lr": 0.001,
+      "weight_decay": 0.001,
+      "epochs": 100,
+      "patience": 25,
+      "min_epochs": 35,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.0,
+      "weighted": true,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.02,
+      "spatial_pool": "grid4",
+      "max_auc_gap": 0.15,
+      "ema_decay": 0.995,
+      "view": "multires_native",
+      "image_file": "images_native.npy"
+    },
+    "fold": 0,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 21,
+    "epochs": 46,
+    "seconds": 39.19883212900004,
+    "parameters": 269474,
+    "test_images_loaded": 0,
+    "inference_sha256": "cd3df932fc1f94abdffb71007d1e96a22e079c94132dec7659eb1a29c5863b80",
+    "splits": {
+      "fit": {
+        "auc": 0.6385428230747092,
+        "bce": 0.7136583411269459,
+        "ap": 0.41210101398317517,
+        "brier": 0.26041544868694927
+      },
+      "selection": {
+        "auc": 0.5445691434468524,
+        "bce": 0.7256155414445321,
+        "ap": 0.34762928961070144,
+        "brier": 0.2661816899241967
+      }
+    },
+    "selection_constraint_satisfied": true
+  },
+  {
+    "status": "complete",
+    "name": "spatial256_weighted",
+    "config": {
+      "mode": "cnn",
+      "dropout": 0.25,
+      "widths": [
+        16,
+        32,
+        64
+      ],
+      "norm": "batch",
+      "kinetics": true,
+      "lr": 0.001,
+      "weight_decay": 0.001,
+      "epochs": 100,
+      "patience": 25,
+      "min_epochs": 35,
+      "batch_size": 24,
+      "train_slices": 4,
+      "mixup": 0.0,
+      "weighted": true,
+      "selection_metric": "inner_bce_loss",
+      "label_smoothing": 0.02,
+      "spatial_pool": "grid4",
+      "max_auc_gap": 0.15,
+      "ema_decay": 0.995,
+      "view": "multires_native",
+      "image_file": "images_native.npy"
+    },
+    "fold": 3,
+    "seed": 42,
+    "smoke": false,
+    "best_epoch": 28,
+    "epochs": 53,
+    "seconds": 41.21999664699979,
+    "parameters": 269474,
+    "test_images_loaded": 0,
+    "inference_sha256": "8a6635d4756edfdccaf6fd800baca5fbc6c010e3273bce4e586c85fa77f36457",
+    "splits": {
+      "fit": {
+        "auc": 0.7127000762195121,
+        "bce": 0.650679630356927,
+        "ap": 0.5140794412232874,
+        "brier": 0.2298154391175058
+      },
+      "selection": {
+        "auc": 0.5732542819499341,
+        "bce": 0.6842711212494057,
+        "ap": 0.34957249547544084,
+        "brier": 0.24593704482587458
+      }
+    },
+    "selection_constraint_satisfied": true
+  }
+]

@@ -778,7 +778,7 @@
   "provenance_files": [
     {
       "path": "evidencia/repo/resultados/04_entrenamiento/confirmacion_bce_normal_20261011/protocolo.json",
-      "sha256": "57e5df4789e3b88f5566845e406f1367f098abcc4534da1f2fdca6ea352290fd"
+      "sha256": "184069dd450618523ab1f14012396d913e259340e76abeaa88531bfd41a849fe"
     },
     {
       "path": "evidencia/repo/resultados/04_entrenamiento/confirmacion_bce_normal_20261011/comparacion/resumen.json",
@@ -786,7 +786,7 @@
     },
     {
       "path": "evidencia/repo/resultados/04_entrenamiento/bce_mixup_multimodal_20261011/protocolo.json",
-      "sha256": "566dd619835c27e68ce016505d24998e20156f57562c685c4af0cb2ae39fbead"
+      "sha256": "4cdb22f059ab0aa32dc19edbe91573e5dd098981948a9522afe123bf6896b2f2"
     },
     {
       "path": "evidencia/repo/resultados/04_entrenamiento/bce_mixup_multimodal_20261011/comparacion/resumen.json",

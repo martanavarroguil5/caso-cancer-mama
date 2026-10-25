@@ -92,3 +92,13 @@ Thumbs.db
 
 # Piloto anti-sobreajuste: checkpoints y ejecuciones locales
 /resultados/04_entrenamiento/piloto_antioverfit_20261021/
+
+# Cachés de píxeles de las CNN 2D propias
+/resultados/20_busqueda_imagen_20261025/cache/
+/resultados/21_imagen_textura_alta_resolucion_20261025/cache/
+/resultados/22_cnn_espacial_nativa_20261025/cache/
+
+# Ejecuciones de trabajo; se publican informes y pesos de inferencia
+/resultados/20_busqueda_imagen_20261025/runs/
+/resultados/20_busqueda_imagen_20261025/refit/
+/resultados/22_cnn_espacial_nativa_20261025/runs/
