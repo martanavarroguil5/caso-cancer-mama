@@ -5,6 +5,17 @@ PRE/EARLY/LATE PNG alineadas, producir un logit y entrenarse con
 BCEWithLogitsLoss. El caso exige comparar pérdida normal y ponderada y separar
 pacientes. Las transformaciones geométricas se comparten entre fases.
 
+## Evaluación final compartida
+
+La comparación posterior de los paquetes congelados, sobre las mismas 176
+pacientes de test, obtiene V001 **0,5462**, híbrida **0,5039** y V007 **0,6084**.
+Son resultados diferentes de las OOF de desarrollo de la tabla siguiente.
+V007 tiene IC95 % [0,5222; 0,6935] y su umbral archivado detecta 0 de 53 pCR;
+no se interpreta la AUC puntual como garantía de superar 0,60 ni como una
+política de clasificación satisfactoria. El test tiene antecedentes de consulta.
+
+[Evaluación final y límites](EVALUACION_FINAL_CNN_IMAGEN.md).
+
 ## Resultados conservados
 
 | Opción | Pacientes de desarrollo | AUC OOF agrupada | Media AUC por fold | Alcance |

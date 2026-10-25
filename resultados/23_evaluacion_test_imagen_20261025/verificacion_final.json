@@ -1,0 +1,26 @@
+{
+  "completed_at": "2026-10-25T14:44:44.171521+01:00",
+  "protocol_and_frozen_packages_unchanged": true,
+  "same_176_patients": true,
+  "same_slices": true,
+  "historical_v001_reused": true,
+  "private_validation_opened": false,
+  "training_executed": false,
+  "policies_fitted": false,
+  "artifacts_sha256": {
+    "INFORME_RESULTADOS.md": "76ffa8ad5c729c39968ba233d3218230a8270500be9cf773857c2ffef42cc37b",
+    "01_roc_pr.png": "46f492078e4ca20502b12dd93c3de2a092f6596182edf4c24f1afa17909b0e97",
+    "predicciones_hibrida.csv": "2d41ea38061f3234b06b10c039cb5e8526f65292c116b5807f9de1f920fba436",
+    "03_calibracion.png": "dc75876e8ccf8ed594c539ce8977de3e87c614f97a053df4e28de8a569b1f589",
+    "protocolo_congelado.json": "9fa36ab23b65ddc3eb564329726c4c6e55f08457df579947a7681519e4601b34",
+    "evaluacion.lock": "0a37d396615ddf9381584237da646074ebfa076433b09df29e5a4ec4c7f05afe",
+    "02_matrices_umbral_050.png": "f9d88ec49e98c7098a55d084ac65214f02761125aa28ccd6d869f059ddae94ac",
+    "protocolo_congelado.json.sha256": "e3c6ff1672c548230e6843d200445e0a7c41327d9dee7062df23b0103ea4c15c",
+    "metricas.json": "1aa846a7ee93e4ffb8907513de994e2a0e6a7b562839a790cfac21f96dc3e629",
+    "inferencia_hibrida.json": "6b0403397ee7fe68b5acd12fa102a50553b4c7541b4be199dd50f89d11ce14a6",
+    "inferencia_v007.json": "b368c77f1bc4b4b4cecfa7baa147665666393b18e2a36c76e601b88fc0c27314",
+    "predicciones_v007.csv": "7c389083167e9dd295655f2b07d8087ed3a7e9c9f75150148f61de8cea614cdc",
+    "comparacion_pacientes.csv": "a9b23ce94b50342513db54897b7a1c3add387aa07441b02b684d07f9eab18bf8",
+    "entradas_sha256.json": "cdd436f45413340cdc8965f8b9a731122c4dbdc96d7081db0e8232ff5ece26d2"
+  }
+}

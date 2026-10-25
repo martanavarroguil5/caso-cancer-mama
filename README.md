@@ -7,11 +7,13 @@ separan por paciente. Este proyecto no tiene validez clínica.
 
 ## Opciones de solo imágenes
 
-La [comparación de modelos permitidos](docs/OPCIONES_CNN_IMAGEN.md) reúne
-resultados y límites. La CNN histórica V001 obtuvo AUC OOF 0,5945; su test ya
-realizado obtuvo 0,5462. La CNN híbrida por paciente del 25/10 obtiene AUC OOF
-0,5638 y media por fold 0,5673. La CNN cinética alcanza media por fold 0,5766,
-con AUC agrupada cruda 0,5264. Ninguna demuestra todavía AUC independiente 0,60.
+La [comparación de modelos permitidos](docs/OPCIONES_CNN_IMAGEN.md) separa
+el desarrollo de la [evaluación final compartida](docs/EVALUACION_FINAL_CNN_IMAGEN.md).
+Sobre las mismas 176 pacientes de test, los paquetes congelados obtienen AUC
+**0,5462 (V001), 0,5039 (híbrida) y 0,6084 (V007)**. V007 tiene IC95 %
+[0,5222; 0,6935]; su umbral archivado no detecta ninguna de las 53 pCR. Son
+resultados retrospectivos y no una validación externa ciega ni garantía de AUC
+poblacional ≥0,60. La validación privada del profesor permanece cerrada.
 
 - [Modelos conservados](modelos/README.md).
 - [CNN híbrida: informe y curvas](resultados/20_busqueda_imagen_20261025/INFORME_RESULTADOS.md).
