@@ -107,3 +107,6 @@ Thumbs.db
 # Inventario exhaustivo de datos: se conserva local; Git guarda resumen e incidencias
 /resultados/26_auditoria_train_protocolo_20261025/inventario_png.csv
 /resultados/26_auditoria_train_protocolo_20261025/cortes_auditados.csv
+
+# Tanda docente: checkpoints y pesos de trabajo solo locales
+/resultados/27_criterio_docente_20261025/runs/
