@@ -1,0 +1,50 @@
+{
+  "status": "complete",
+  "loss": "normal",
+  "seed": 2026,
+  "epochs": 14,
+  "selected": {
+    "loss": {
+      "epoch": 3,
+      "auc": 0.6087675765095119,
+      "bce": 0.5939467952920261,
+      "bce_unweighted": 0.5939467952920261,
+      "fit_auc": 0.6646391654319705,
+      "auc_gap": 0.05587158892245869,
+      "fit_bce": 0.5779853467330689
+    },
+    "auc": {
+      "epoch": 13,
+      "auc": 0.6421284808381582,
+      "bce": 0.6125777627355219,
+      "bce_unweighted": 0.6125777627355219,
+      "fit_auc": 0.8060790378900123,
+      "auc_gap": 0.16395055705185413,
+      "fit_bce": 0.4827267557719958
+    }
+  },
+  "curve_diagnostic": {
+    "observed_through_epoch_14": true,
+    "window": [
+      1,
+      14
+    ],
+    "comparison": "media épocas12–14 frente a1–3 y pendiente lineal1–14; sin suavizar datos",
+    "fit_change": -0.10770215181105841,
+    "fit_slope": -0.01033644439681673,
+    "selection_change": 0.021210267836206387,
+    "selection_slope": 0.0017336577046143753,
+    "joint_improvement": false
+  },
+  "optimizer_steps": 3262,
+  "skipped_steps": 0,
+  "seconds": 45.51028352296271,
+  "hashes": {
+    "config.json": "3a61b36c5aecef6b589859a0dce60926088b649f887ff92011c783540715e3f1",
+    "history.csv": "67de247272cae2b23197d46c78bb3dd799b5e2241e029d9c16f5ca1f2cfcc96c",
+    "loss.pt": "e3959a341f081f92823cbba1980d552b5599c536d57c579b2712a6b692eea2c8",
+    "auc.pt": "58b6a27f1f353a5d964de5a9b56aadab723a39fc94ddabd3ac7517db3e949470",
+    "selection_loss.csv": "b29a0575fd2acf4b6d6c4b28418d8cbab98cbe220c58aa6409dc142b053278fc",
+    "selection_auc.csv": "05ef87b79df84bfa405f79544d827ebddd5495324bf6bcf89ad26ccb63eac9dd"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "fold": 1,
+  "frozen_at": "2026-10-25T22:41:28.079859+01:00",
+  "rules": {
+    "loss": {
+      "selected_loss": "normal",
+      "candidates": [
+        {
+          "loss": "normal",
+          "selection_auc": 0.7052660601047698,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 1.1533267857088079,
+            "intercept": 0.11999865636111662,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "inner_selection_same_pair_same_patient_means",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          },
+          "threshold": 0.48847866309124827,
+          "secondary_threshold": 0.3179329963456343,
+          "weights": {
+            "runs/fold_1/normal/seed_42/loss.pt": "f97cec42563f0dbd654f4b999c53691f565a835787ad1309c616c957777fb935",
+            "runs/fold_1/normal/seed_2026/loss.pt": "1db1d9c32375484a087c6e91a7a27cbfd1b9223e436f665f480531a57fb3d5f0"
+          }
+        },
+        {
+          "loss": "weighted",
+          "selection_auc": 0.6523297491039426,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 1.208037271374903,
+            "intercept": -0.8834590805928851,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "inner_selection_same_pair_same_patient_means",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          },
+          "threshold": 0.4422486931145688,
+          "secondary_threshold": 0.35920441903147715,
+          "weights": {
+            "runs/fold_1/weighted/seed_42/loss.pt": "8420965cd340200b85fd5f99add034ecc8533b6dd0b66f0003fdea6e256c114c",
+            "runs/fold_1/weighted/seed_2026/loss.pt": "076b1f3fb082dcd40ba557ae72c89eaea5d8564e7e43cc7bb952a58d8a760281"
+          }
+        }
+      ]
+    },
+    "auc": {
+      "selected_loss": "normal",
+      "candidates": [
+        {
+          "loss": "normal",
+          "selection_auc": 0.706368899917287,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.9550827448878911,
+            "intercept": -0.14051140144934357,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "inner_selection_same_pair_same_patient_means",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          },
+          "threshold": 0.5011940306337427,
+          "secondary_threshold": 0.3532112242399734,
+          "weights": {
+            "runs/fold_1/normal/seed_42/auc.pt": "7a1817e05d9f453963bfa2a8afddce30ea374ec9b09928716febc5d0e948aeae",
+            "runs/fold_1/normal/seed_2026/auc.pt": "11acc3a27724d0bbec24020100d6d248d46554087b1623b7f0b54baa029b78ea"
+          }
+        },
+        {
+          "loss": "weighted",
+          "selection_auc": 0.6523297491039426,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 1.208037271374903,
+            "intercept": -0.8834590805928851,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "inner_selection_same_pair_same_patient_means",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          },
+          "threshold": 0.4422486931145688,
+          "secondary_threshold": 0.35920441903147715,
+          "weights": {
+            "runs/fold_1/weighted/seed_42/auc.pt": "30d0bc59bfc3fbc23731047281ae4241bfcefd5cb94e5ef44d66d2be11ad5c34",
+            "runs/fold_1/weighted/seed_2026/auc.pt": "6e98ef578f0d31c6b12e9965f4cc577f1cc557d93f2cb5c97707cc17dd7d15de"
+          }
+        }
+      ]
+    }
+  },
+  "counts": {
+    "fit": 746,
+    "selection": 132,
+    "outer": 219
+  }
+}

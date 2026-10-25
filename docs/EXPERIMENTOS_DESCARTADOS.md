@@ -750,3 +750,28 @@ Misma CNNMultiescalaCinetica de593.521 parámetros: control/campo común entre f
 La política principal, máxima sensibilidad con especificidad≥95 % en calibración, produjo en comprobación: control TN300/FP0/FN139/TP0; campo TN297/FP3/FN135/TP4. El candidato sigue sin sensibilidad útil. No se elige otro umbral con estas pacientes.
 
 Las101 pruebas del piloto/informe pasaron, los37.632 pasos AdamW se verificaron sin omisiones AMP y todos los pesos fueron finitos. Test y validation privada no se cargaron; V001–V008 y las aplicaciones permanecen intactas. Los pesos y checkpoints de trabajo se conservan solo localmente, fuera de Git; configuraciones, historias, hashes, curvas y límites están en el informe. Esta comprobación es desarrollo adaptativo; no es test independiente.
+
+## Selección por pérdida y criterio de curvas: insuficiente (25/10/2026)
+
+CNN cinética593.521 parámetros sin cambios de arquitectura/LR/WD,20 runs,
+BCE normal/ponderada, dos semillas, cinco folds previamente auditados.
+Fit745–746, selección132, exterior219–220; media de todos los cortes por paciente.
+Checkpoint principal por BCE interna del régimen correspondiente; elección de
+pérdida por AUC interna de la pareja, políticas congeladas antes de exterior.
+
+AUC media0,556270±0,035413 frente a solo cohorte0,549012; delta+0,007258,
+IC95% pareado[-0,032640;+0,047542],2000 bootstrap fold/clase. OOF agrupada cruda
+0,512731. Superar0,54 por estimación puntual no demuestra señal superior a cohorte.
+La regla secundaria por máximoAUC da media0,552695 y la ponderada fija0,570209;
+no se sustituye retrospectivamente el objetivo principal por el mejor secundario.
+
+Cero de20 trayectorias cumple descenso conjunto1–14 según el diagnóstico prefijado.
+Mediana de época elegida en las diez redes finales2; una llega a12. Persiste el
+sobreajuste. Política principal: TN739/FP36/FN300/TP22, sensibilidad6,83%,
+especificidad95,35%, F1pCR0,1158. No es una mejora suficiente ni nueva confirmación
+independiente: train tiene antecedentes adaptativos. Test/privada cerrados.
+
+106 pruebas previas;289 épocas;67.337 pasos AdamW sin omisiones; pesos y archivos
+históricos verificados. Código retirado y conservado en db845626bfca69276217074256fc131c0bffbc01.
+No se inicia otra tanda ni se activa o publica un modelo.
+[Informe completo](../resultados/27_criterio_docente_20261025/INFORME_RESULTADOS.md).

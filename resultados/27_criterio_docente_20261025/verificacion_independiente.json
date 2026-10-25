@@ -1,0 +1,78 @@
+{
+  "checked_at": "2026-10-25T23:12:23.794129+01:00",
+  "independent_auc_recalculation": [
+    0.5434475806451613,
+    0.5094514074378467,
+    0.5984840509527318,
+    0.5459310344827586,
+    0.5840353400452024
+  ],
+  "confusion_verified": {
+    "tn": 739,
+    "fp": 36,
+    "fn": 300,
+    "tp": 22
+  },
+  "isolated_cpu_loads_without_optimizer": [
+    {
+      "path": "runs/fold_0/weighted/seed_42/loss.pt",
+      "sha256": "dc8b2327235466daa4c40d3a9fa3c306fd8715b1e7fea7e36644a081cf2d1235",
+      "parameters": 593521
+    },
+    {
+      "path": "runs/fold_0/weighted/seed_2026/loss.pt",
+      "sha256": "f142d299fd87a45ec96054f1efe1a99350066d7aacda975ff7672cfc552bed3a",
+      "parameters": 593521
+    },
+    {
+      "path": "runs/fold_1/normal/seed_42/loss.pt",
+      "sha256": "f97cec42563f0dbd654f4b999c53691f565a835787ad1309c616c957777fb935",
+      "parameters": 593521
+    },
+    {
+      "path": "runs/fold_1/normal/seed_2026/loss.pt",
+      "sha256": "1db1d9c32375484a087c6e91a7a27cbfd1b9223e436f665f480531a57fb3d5f0",
+      "parameters": 593521
+    },
+    {
+      "path": "runs/fold_2/weighted/seed_42/loss.pt",
+      "sha256": "538b59b021f0452e1dc8d2608ef8b8dd3d083572b93272c0daa4257a4e79840f",
+      "parameters": 593521
+    },
+    {
+      "path": "runs/fold_2/weighted/seed_2026/loss.pt",
+      "sha256": "48708eaf3fb020c7802bd7de3e5548e151b677ee7b7f48754e16f621bfbb31dc",
+      "parameters": 593521
+    },
+    {
+      "path": "runs/fold_3/normal/seed_42/loss.pt",
+      "sha256": "107430fc7f9e4061301c02722e7238f229c5c6ba6c066c57af8179245597600a",
+      "parameters": 593521
+    },
+    {
+      "path": "runs/fold_3/normal/seed_2026/loss.pt",
+      "sha256": "f1d0ac443665845d9f772bb52e85aa25f6414d676b2f1b79a5da3dee69b87266",
+      "parameters": 593521
+    },
+    {
+      "path": "runs/fold_4/weighted/seed_42/loss.pt",
+      "sha256": "c7074871adf62f9981e1ad0e86f500398ddcd7159002b045350f492c45fdd35e",
+      "parameters": 593521
+    },
+    {
+      "path": "runs/fold_4/weighted/seed_2026/loss.pt",
+      "sha256": "bdd1cdb075fe0c83b2975af50f57f8c4012fb53cd066ddc1eaf6bf6511bbacf8",
+      "parameters": 593521
+    }
+  ],
+  "all_run_weights_finite": true,
+  "runs": 20,
+  "epochs": 289,
+  "optimizer_steps": 67337,
+  "skipped_steps": 0,
+  "tests_passed_before_training": 106,
+  "old_versions_and_sources_verified_unchanged": true,
+  "all_20_joint_loss_trend_passes": 0,
+  "test_images_loaded": 0,
+  "private_images_loaded": 0
+}

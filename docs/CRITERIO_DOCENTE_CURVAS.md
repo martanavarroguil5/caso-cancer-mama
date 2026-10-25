@@ -49,17 +49,20 @@ Se conservan todos los PNG originales; las incidencias ISPY1_1139 (EARLY=LATE)
 e ISPY1_1193 (brillo LATE) siguen documentadas sin corrección ni exclusión
 inferida. Ningún ajuste se justifica mirando sus etiquetas/resultados.
 
-Comandos:
+## Resultado y cierre
 
-```bash
-.venv/bin/python -B -m cancer_mama.criterio_docente preparar
-.venv/bin/python -u -B -m cancer_mama.criterio_docente entrenar
-```
+20/20 ejecuciones terminadas,289 épocas,67.337 pasos AdamW sin omisiones.
+MediaAUC0,556270±0,035413 frente a cohorte0,549012; delta+0,007258,
+IC95%[-0,032640;+0,047542]. OOF agrupada cruda0,512731. El suelo puntual0,54
+se supera por la media, pero no se demuestra mejora frente a cohorte.
+Cero de20 trayectorias cumple la tendencia conjunta1–14. Ensayo insuficiente;
+no se activa, versiona ni publica un modelo ni se amplía el entrenamiento.
 
-Salida: `resultados/27_criterio_docente_20261025/`. Los checkpoints y pesos de
-trabajo quedan solo localmente bajo runs/. No se modifica ninguna versión
-histórica, no se activa una aplicación, no se entrena un refit final ni se hace
-push. Una vez terminada esta tanda se informa y se decide con el usuario.
+[Informe, curvas y verificación](../resultados/27_criterio_docente_20261025/INFORME_RESULTADOS.md).
+Código retirado del árbol activo conforme a CONTRIBUTING.md, conservado en main
+en db845626bfca69276217074256fc131c0bffbc01; sus comandos pertenecen a ese commit.
+Los pesos/checkpoints de trabajo quedan locales e ignorados; los resúmenes,
+historias, configuraciones y predicciones permanecen revisables.
 
 [Cawley y Talbot2010](https://www.jmlr.org/papers/v11/cawley10a.html) describen el
 sesgo por optimizar repetidamente criterios de selección; cinco folds sobre el
