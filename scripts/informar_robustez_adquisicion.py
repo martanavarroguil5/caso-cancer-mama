@@ -103,7 +103,7 @@ def plots(output,result,frames):
             fpr,tpr,_=roc_curve(g.label,g.probability_raw)
             axes[0].plot(fpr,tpr,color=colors[arm],linestyle='-' if fold==0 else '--',label=f'{arm} fold{fold}: {roc_auc_score(g.label,g.probability_raw):.3f}')
         precision,recall,_=precision_recall_curve(frame.label,frame.probability_calibrated)
-        axes[1].plot(recall,precision,color=colors[arm],label=arm)
+        axes[1].step(recall,precision,where='post',color=colors[arm],label=arm)
     axes[0].plot([0,1],[0,1],':',color='gray');axes[0].set(xlabel='Falsos positivos',ylabel='Sensibilidad',title='ROC cruda por fold · métrica principal')
     axes[1].axhline(frames['control'].label.mean(),color='gray',linestyle=':');axes[1].set(xlabel='Recall',ylabel='Precisión',title='PR agrupada calibrada · secundaria')
     for ax in axes:ax.legend(fontsize=8);ax.grid(alpha=.15)
