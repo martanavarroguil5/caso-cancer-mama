@@ -14,11 +14,17 @@ st.set_page_config(page_title='BreastDCEDL Â· Un corte, tres fases',page_icon='â
 st.markdown('''<style>
 :root{--papel:#f5f7f8;--tinta:#183244;--placa:#101820;--contraste:#187d86;--borde:rgba(24,50,68,.14)}
 .stApp{background:var(--papel);color:var(--tinta)}
-.block-container{max-width:1232px;padding-top:2rem;padding-bottom:2rem}
+.block-container{max-width:1232px;padding-top:4.5rem;padding-bottom:2rem}
 h1,h2,h3{letter-spacing:-.025em;font-family:system-ui,sans-serif}
 [data-testid="stMetricValue"]{font-variant-numeric:tabular-nums}
+[data-testid="stRadio"] p,[data-testid="stWidgetLabel"] p,
+[data-testid="stMetricValue"],[data-testid="stMetricLabel"] p{color:var(--tinta)!important}
+[data-testid="stHeader"]{background:var(--papel)}
+[data-testid="stAppDeployButton"]{display:none}
 [data-testid="stImage"] img{background:var(--placa);border-radius:4px}
 div.stButton>button[kind="primary"]{background:var(--contraste);border:0;color:white;border-radius:5px}
+[data-testid="stDownloadButton"] button{background:var(--contraste);border:0;color:white}
+[data-testid="stDownloadButton"] button p{color:white!important}
 [data-testid="stVerticalBlockBorderWrapper"]{border-color:var(--borde)}
 </style>''',unsafe_allow_html=True)
 
