@@ -23,6 +23,22 @@ poblacional ≥0,60. La validación privada del profesor permanece cerrada.
 - [Piloto de regularización](resultados/16_informe_piloto_antioverfit_20261021/INFORME_RESULTADOS.md).
 - [Piloto de selección de cortes](resultados/19_informe_seleccion_cortes_20261022/INFORME_RESULTADOS.md).
 
+## Aplicación docente de un solo corte
+
+`app_imagen.py` usa el candidato experimental V008: dos semillas de la misma
+CNN cinética, calibración separada y umbral congelado para una tripleta.
+Comprobación interna de 165 pacientes: AUC **0,5598**, sensibilidad **60,42 %** y
+especificidad **46,15 %**; resultado insuficiente para acreditar 0,60. No se le
+atribuye el 0,6084 de V007 con todos los cortes de las pacientes de test.
+
+```bash
+.venv/bin/python -m streamlit run app_imagen.py
+```
+
+[Protocolo de cierre](docs/cierre_cinetico/PROTOCOLO_UN_CORTE.md) ·
+[Informe y curvas](resultados/24_cierre_cinetico_un_corte_20261025/INFORME_RESULTADOS.md).
+La aplicación histórica `app.py` conserva V002; no se sustituye ese archivo.
+
 ## Entorno y pruebas
 
 ```bash

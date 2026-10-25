@@ -70,3 +70,17 @@ activa automáticamente otra versión ni se inicia un nuevo entrenamiento.
 - [Comparación de pérdidas por fases](../resultados/14_informe_cnn_imagen_20261014/INFORME_RESULTADOS.md).
 - [Piloto anti-sobreajuste](../resultados/16_informe_piloto_antioverfit_20261021/INFORME_RESULTADOS.md).
 - [Selección de cortes](../resultados/19_informe_seleccion_cortes_20261022/INFORME_RESULTADOS.md).
+
+## Cierre de la entrada de un corte: V008 experimental
+
+La misma arquitectura cinética se entrenó con cuatro roles separados y dos
+pérdidas/dos semillas. V008 conserva BCE normal, elegida solo en selección.
+En check interno de 165 pacientes con una tripleta cada una: AUC 0,5598,
+IC95 % [0,4596; 0,6519], sensibilidad 60,42 % y especificidad 46,15 % al umbral
+0,292333096. Calibración y umbral se fijaron con otras 165 pacientes.
+
+Es un candidato funcional para `app_imagen.py`, con resultado insuficiente;
+no una mejora validada sobre V007 ni una nueva evaluación del test. No se
+mezcla esa comprobación de un corte con las cifras anteriores de todos los cortes.
+
+[Informe completo](../resultados/24_cierre_cinetico_un_corte_20261025/INFORME_RESULTADOS.md).

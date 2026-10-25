@@ -1,6 +1,6 @@
 # Historial de versiones de los modelos
 
-**Modelo activo: `v002_multimodal_clinico_20261007`.** Se restaura el 11/10/2026
+**Modelo de la aplicación histórica `app.py`: `v002_multimodal_clinico_20261007`.** Se restaura el 11/10/2026
 por decisión del usuario, tras no demostrar los ensayos posteriores una mejora
 sobre el multimodal original. La aplicación y la CLI cargan sus diez pesos,
 calibración Platt, mediana y umbral 0,3543331693. No hace falta volver a entrenar.
@@ -60,6 +60,23 @@ sin promoción. La política global para una posible prueba futura tiene Platt
 con pendiente 0,0982743656 y umbral 0,3087942921. No se confunde con los umbrales
 internos por fold usados para obtener 74 FP, 281 FN y 41 TP en el informe.
 
+## Cierre de una tripleta del 25/10/2026
+
+`v008_cnn_cinetica_un_corte_20261025` conserva dos pesos de BCE normal y sus
+políticas, con cuatro roles separados por paciente. La comprobación interna
+primaria de un corte obtiene AUC 0,5598, IC95 % [0,4596; 0,6519], 63 FP/19 FN.
+Es experimental e insuficiente. `app_imagen.py` demuestra este contrato de solo
+imagen; `app.py` y su selección V002 siguen intactos. El AUC 0,6084 posterior
+sobre test de V007 corresponde al ensemble original y a todos los cortes.
+
+El manifiesto de cierre usa `schema_version: 2`, dos semillas 42/2026,
+`inference_unit: single_slice` y protocolo `train_only_four_way_single_slice`.
+El campo fold=0 identifica esta única partición fija, no una CV de cinco folds.
+Sus métricas figuran como `metrics_internal_check`, con `metrics_raw_oof` vacío.
+El contrato histórico de diez pesos no se relaja para versiones de esquema 1.
+
+[Informe de V008](../resultados/24_cierre_cinetico_un_corte_20261025/INFORME_RESULTADOS.md).
+
 ## Paquetes congelados
 
 Cada carpeta conserva pesos, manifiesto, preprocesado, calibración, código
@@ -115,7 +132,8 @@ y ejecuta `cancer_mama.inferencia_imagen`, junto con la arquitectura de
 `entrenamiento_imagen.py` o `entrenamiento_cinetico.py`, respectivamente.
 Comprueba la clase, la configuración y, en la cinética, los recortes y mapas
 firmados; no intenta cargarlos como el multimodal.
-La verificación comprueba diez pesos, sus configuraciones y todos los hashes.
+La verificación comprueba diez pesos en las versiones históricas y dos en el
+contrato de cierre de un corte, sus configuraciones y todos los hashes.
 La inferencia usa media de modelos y cortes, conserva exactamente la calibración
 y el umbral archivados y no necesita dataset ni variables clínicas.
 Una calibración constante se identifica expresamente en la salida y se conserva
@@ -127,14 +145,14 @@ Solo después de justificar la selección frente a la referencia adecuada:
 
 ```bash
 .venv/bin/python -B modelos/versionar.py guardar \
-  --id v008_multimodal_clinico_AAAAMMDD \
+  --id v009_modelo_AAAAMMDD \
   --manifest resultados/04_entrenamiento/nueva_ejecucion/comparacion/modelo_desarrollo.json \
   --descripcion "Descripción de la actualización y su evaluación"
 .venv/bin/python -B modelos/versionar.py verificar
 ```
 
 Sustituir las rutas y la fecha del ejemplo por las reales. `--evidencia` añade
-informes. El archivador copia y verifica diez pesos, fuentes y evidencia antes
+informes. El archivador copia y verifica todos los pesos del contrato, fuentes y evidencia antes
 de publicar la carpeta; archivar no cambia automáticamente el modelo activo.
 Los estados de optimizador/RNG y `last.pt` permanecen en las ejecuciones locales;
 no se incluyen en el paquete de inferencia ni se confirman como runs pesados.

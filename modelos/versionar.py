@@ -61,8 +61,16 @@ def check_manifest(path):
         raise ValueError("El checksum del manifiesto de origen no coincide")
     manifest = json.loads(raw)
     models = manifest["models"]
-    if len(models) != 10 or {(m["seed"], m["fold"]) for m in models} != {(s, f) for s in (42, 2026) for f in range(5)}:
-        raise ValueError("Se requieren diez pesos: semillas 42/2026 y folds 0-4")
+    single = manifest.get("schema_version") == 2
+    expected = ({(s, 0) for s in (42, 2026)} if single else
+                {(s, f) for s in (42, 2026) for f in range(5)})
+    if len(models) != len(expected) or {(m["seed"], m["fold"]) for m in models} != expected:
+        raise ValueError("Número de pesos, semillas o folds incompatible")
+    if single and (manifest.get("evaluation_protocol") != "train_only_four_way_single_slice" or
+                   manifest.get("inference_unit") != "single_slice" or
+                   manifest.get("slice_aggregation") != "single" or
+                   manifest.get("model_class") != "CNNMultiescalaCinetica"):
+        raise ValueError("Contrato de cierre de un corte inválido")
     for item in [*models, *manifest.get("provenance_files", [])]:
         if sha256(path.parent / item["path"]) != item["sha256"]:
             raise ValueError(f"Checksum incorrecto en origen: {item['path']}")
@@ -120,8 +128,8 @@ def archive_lock(archive):
 
 
 def overview(info):
-    keys = ("id", "description", "archived_at", "status", "clinical_required", "n_models", "weights_bytes", "metrics_raw_oof")
-    return {key: info[key] for key in keys}
+    keys = ("id", "description", "archived_at", "status", "clinical_required", "n_models", "weights_bytes", "metrics_raw_oof", "metrics_internal_check", "evaluation_scope")
+    return {key: info[key] for key in keys if key in info}
 
 
 def read_versions(archive=ARCHIVE):
@@ -273,6 +281,10 @@ def archive_version(manifest_path, identifier, description, evidence=(), archive
                     "n_models": len(operative["models"]), "weights_bytes": weights_bytes, "metrics_raw_oof": metrics,
                     "runtime_verification": frozen_check,
                     "files_sha256": {p.relative_to(staging).as_posix(): sha256(p) for p in sorted(staging.rglob("*")) if p.is_file()}}
+            internal = source_manifest.get("selection", {}).get("metrics_internal_check")
+            if internal is not None:
+                info["metrics_internal_check"] = internal
+                info["evaluation_scope"] = "train_only_four_way_single_slice_check; not OOF or independent test"
             write_json(staging / "version.json", info)
             (staging / "version.json.sha256").write_text(sha256(staging / "version.json") + "\n")
             # La carpeta definitiva solo aparece cuando todas las copias y verificaciones terminaron.

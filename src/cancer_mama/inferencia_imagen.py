@@ -25,12 +25,18 @@ def cargar_manifest(path):
         raise ValueError('El manifiesto ha cambiado')
     manifest = json.loads(path.read_text())
     models = manifest['models']
-    expected = {(seed, fold) for seed in (42, 2026) for fold in range(5)}
-    if len(models) != 10 or {(m['seed'], m['fold']) for m in models} != expected:
-        raise ValueError('Se requieren diez modelos: dos semillas y cinco folds')
+    single = manifest.get('schema_version') == 2
+    expected = ({(seed, 0) for seed in (42, 2026)} if single else
+                {(seed, fold) for seed in (42, 2026) for fold in range(5)})
+    if len(models) != len(expected) or {(m['seed'], m['fold']) for m in models} != expected:
+        raise ValueError('Número de modelos, semillas o folds incompatible')
+    if single and (manifest.get('evaluation_protocol') != 'train_only_four_way_single_slice' or
+                   manifest.get('inference_unit') != 'single_slice' or
+                   manifest.get('model_class') != 'CNNMultiescalaCinetica'):
+        raise ValueError('Contrato de cierre de un corte inválido')
     prep = manifest['preprocessing']
     if (manifest.get('model_class') not in ARCHITECTURES or
-            manifest.get('slice_aggregation') != 'mean' or
+            manifest.get('slice_aggregation') != ('single' if single else 'mean') or
             prep.get('clinical_required') is not False or
             prep.get('phases') != list(PHASES) or prep.get('shape') != [3, 256, 256]):
         raise ValueError('Contrato incompatible con la CNN solo imagen')
@@ -50,6 +56,8 @@ def cargar_manifest(path):
             not 0 <= manifest['threshold'] <= 1):
         raise ValueError('Calibración o umbral inválidos')
     for item in [*models, *manifest.get('provenance_files', [])]:
+        if not (path.parent / item['path']).resolve().is_relative_to(path.parent):
+            raise ValueError('Ruta de artefacto fuera del paquete')
         if base.sha256(path.parent / item['path']) != item['sha256']:
             raise ValueError(f"Artefacto modificado: {item['path']}")
     return manifest
@@ -79,10 +87,10 @@ def verificar_modelo_final(path):
     counts = {numero_parametros(cargar_modelo(path, item)) for item in manifest['models']}
     if len(counts) != 1:
         raise ValueError('El ensemble contiene arquitecturas diferentes')
-    return {'models': 10, 'model_class': manifest['model_class'],
+    return {'models': len(manifest['models']), 'model_class': manifest['model_class'],
             'parameters_per_model': counts.pop(),
             'checksums_verified': True, 'clinical_required': False,
-            'aggregation': 'mean', 'threshold': manifest['threshold'],
+            'aggregation': manifest['slice_aggregation'], 'threshold': manifest['threshold'],
             'calibration_is_constant': manifest['calibration']['slope'] == 0,
             'test_evaluated_once': manifest['test_evaluated_once'], 'test_repeated': False}
 
@@ -90,6 +98,8 @@ def verificar_modelo_final(path):
 @torch.inference_mode()
 def predecir_cortes(path, triples):
     manifest = cargar_manifest(path)
+    if manifest.get('inference_unit') == 'single_slice' and len(triples) != 1:
+        raise ValueError('Esta versión requiere exactamente un corte alineado')
     samples = []
     for triple in triples:
         if len(triple) != 3:
