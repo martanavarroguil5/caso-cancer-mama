@@ -100,3 +100,6 @@ Thumbs.db
 # Cierre de una tripleta: checkpoints y exportación intermedia locales
 /resultados/24_cierre_cinetico_un_corte_20261025/runs/
 /resultados/24_cierre_cinetico_un_corte_20261025/candidato/
+
+# Piloto de adquisición: checkpoints y pesos de trabajo solo locales
+/resultados/25_robustez_adquisicion_20261025/runs/
