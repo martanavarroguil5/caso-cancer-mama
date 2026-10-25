@@ -1,0 +1,13 @@
+{
+  "pid": 3539781,
+  "started_at": "2026-10-25T18:26:38.897568+01:00",
+  "command": [
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/.venv/bin/python",
+    "-u",
+    "-B",
+    "-m",
+    "cancer_mama.robustez_adquisicion",
+    "entrenar"
+  ],
+  "protocol_sha256": "983d5b38f1aa705b19bfaba6f2ac2b0ed2b2da0fbe784ffae44762af763c126d"
+}

@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-25T18:40:58.653170+01:00",
+  "rank_auc_independently_checked": [
+    {
+      "arm": "control",
+      "fold": 0,
+      "auc_manual": 0.5616935483870967
+    },
+    {
+      "arm": "campo_suave",
+      "fold": 0,
+      "auc_manual": 0.5337701612903226
+    },
+    {
+      "arm": "control",
+      "fold": 3,
+      "auc_manual": 0.5589885057471264
+    },
+    {
+      "arm": "campo_suave",
+      "fold": 3,
+      "auc_manual": 0.5664367816091954
+    }
+  ],
+  "all_versions_unchanged": true,
+  "source_hashes_unchanged_during_training": true,
+  "test_opened": false,
+  "private_validation_opened": false,
+  "runs": 16,
+  "optimizer_steps": 37632,
+  "skipped_steps": 0,
+  "code_commit_initial": "6ff8936",
+  "tests_before_training": 99,
+  "tests_with_report": 101,
+  "source_code_commit": "2c48ab2f533550e62853758dd43ef90af7a673cb",
+  "report_generator_sha256": "bf824e233fb876a359944ae8c53bc65b032624222259b8c53147fbef017862d5",
+  "retired_from_active_code": true,
+  "tests_after_retirement": 93,
+  "archived_sources_recoverable_from_main": true
+}

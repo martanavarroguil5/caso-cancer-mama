@@ -1,0 +1,15 @@
+{
+  "status": "complete",
+  "pid": 3539781,
+  "started_at": "2026-10-25T18:26:40.526519+01:00",
+  "completed": 16,
+  "planned": 16,
+  "test_images_loaded": 0,
+  "private_images_loaded": 0,
+  "fold": 3,
+  "arm": "campo_suave",
+  "loss": "weighted",
+  "seed": 2026,
+  "epoch": 0,
+  "updated_at": "2026-10-25T18:36:26.558280+01:00"
+}

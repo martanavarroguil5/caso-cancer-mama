@@ -1,0 +1,36 @@
+{
+  "created_at": "2026-10-25T18:35:02.504384+01:00",
+  "scope": "Todos los cortes de tres pacientes de train señaladas en auditoría; no se excluyen ni se modifican",
+  "patients": [
+    {
+      "patient_id": "ISPY1_1069",
+      "n_cuts": 10,
+      "fold": 0,
+      "label": 0,
+      "pre_mean": 0.14545363187789917,
+      "early_mean": 0.1338413953781128,
+      "late_mean": 0.18207132816314697,
+      "negative_enhancement_cuts": 10
+    },
+    {
+      "patient_id": "ISPY1_1077",
+      "n_cuts": 10,
+      "fold": 1,
+      "label": 1,
+      "pre_mean": 0.1835361272096634,
+      "early_mean": 0.16260996460914612,
+      "late_mean": 0.19231672585010529,
+      "negative_enhancement_cuts": 10
+    },
+    {
+      "patient_id": "ISPY1_1193",
+      "n_cuts": 10,
+      "fold": 1,
+      "label": 0,
+      "pre_mean": 0.04577293246984482,
+      "early_mean": 0.05902232974767685,
+      "late_mean": 0.9553195834159851,
+      "negative_enhancement_cuts": 0
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "created_at": "2026-10-25T18:25:30.370670+01:00",
+  "scope": "Solo1097 pacientes de train; corte central disponible para inspección, OOF históricas para métricas",
+  "source": "resultados/04_entrenamiento/ajuste_cnn_cinetica_20261021/oof_pacientes_selected.csv",
+  "source_sha256": "e2bc76c10aea80c2e2960e9cc5e17cfb55b8cbe533a1e68c3e29dc747b17d609",
+  "patients": 1097,
+  "slices_metadata": 10945,
+  "oof_pooled_raw_auc": 0.5264035263474254,
+  "oof_mean_fold_auc": 0.5765933368618896,
+  "cohort_only_oof_auc": 0.5225726307353236,
+  "cohort_only_note": "Diagnóstico descriptivo, tasa de cohorte calculada en otros cuatro folds; no modelo principal ni prueba causal de atajos",
+  "cohorts": [
+    {
+      "cohort": "duke",
+      "patients": 209,
+      "pcr": 44,
+      "prevalence": 0.21052631578947367,
+      "oof_raw_auc": 0.46887052341597796,
+      "mean_score": 0.3622690919789025,
+      "early_gt_pre_fraction": 1.0,
+      "median_enhancement": 0.09421959519386292,
+      "median_foreground": 0.610687255859375
+    },
+    {
+      "cohort": "spy1",
+      "patients": 104,
+      "pcr": 26,
+      "prevalence": 0.25,
+      "oof_raw_auc": 0.5838264299802761,
+      "mean_score": 0.3724876441921179,
+      "early_gt_pre_fraction": 0.9807692307692307,
+      "median_enhancement": 0.07711730152368546,
+      "median_foreground": 0.7567291259765625
+    },
+    {
+      "cohort": "spy2",
+      "patients": 784,
+      "pcr": 252,
+      "prevalence": 0.32142857142857145,
+      "oof_raw_auc": 0.5211167800453516,
+      "mean_score": 0.40985156788433696,
+      "early_gt_pre_fraction": 1.0,
+      "median_enhancement": 0.12212678790092468,
+      "median_foreground": 0.5847091674804688
+    }
+  ],
+  "early_gt_pre_fraction": 0.9981768459434822,
+  "washout_fraction": 0.20510483135824978,
+  "test_images_loaded": 0,
+  "private_images_loaded": 0,
+  "limits": [
+    "No hay segmentación tumoral en estos PNG; el foreground no es una máscara de tumor",
+    "La normalización mincrop y las OOF tienen antecedentes adaptativos",
+    "Las imágenes no permiten atribuir por sí solas la causa de un fallo"
+  ],
+  "augmentation_check": {
+    "field_min": 0.8500000238418579,
+    "field_max": 0.9800283908843994,
+    "enhancement_max_error": 1.1920928955078125e-07,
+    "new_saturation": 0
+  }
+}

@@ -1,0 +1,1842 @@
+[
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "control",
+      "loss": "normal",
+      "seed": 42,
+      "fold": 0,
+      "epochs": 13,
+      "selected_epoch": 5,
+      "selected_auc": 0.6503997794320375,
+      "selected_gap": 0.0394491709007837,
+      "final_gap": 0.3337616684390877,
+      "seconds": 35.62883579699701,
+      "optimizer_steps": 2496,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "18ff9aa9620ac77fc09610e31610678e1834a676b8d0fc6f2f2b6708595ce427",
+      "weights_sha256": "b1a9718a450245f050cfb155eb81b309ef2486ab0c136479a62048ebdbbbc7b4",
+      "config_sha256": "d1dbb992f76968b7214e17f2a3b1a36a47d2e2cd36d8623dd8727cbee9955fa9"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "control",
+      "loss": "normal",
+      "seed": 42,
+      "fold": 0,
+      "counts": {
+        "fit_patients": 614,
+        "selection_patients": 132,
+        "fit_slices": 6123
+      },
+      "bias_field": {
+        "enabled": false,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 1.0
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "control",
+      "loss": "normal",
+      "seed": 2026,
+      "fold": 0,
+      "epochs": 9,
+      "selected_epoch": 1,
+      "selected_auc": 0.6131789357595809,
+      "selected_gap": 0.0454488164165584,
+      "final_gap": 0.3242230887392179,
+      "seconds": 24.463846978003858,
+      "optimizer_steps": 1728,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "04e27eed21360a8c188b5f9ef7d749678a6aad03fe821f525e619095a3f155e0",
+      "weights_sha256": "3cd49edee54f004a681aa79f053eb655fd86bd5f54c48441dead286996e87294",
+      "config_sha256": "faa61b774774a4c1c2827b22037a07465d32b1d9d6176712a183353956aebd3b"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "control",
+      "loss": "normal",
+      "seed": 2026,
+      "fold": 0,
+      "counts": {
+        "fit_patients": 614,
+        "selection_patients": 132,
+        "fit_slices": 6123
+      },
+      "bias_field": {
+        "enabled": false,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 1.0
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "control",
+      "loss": "weighted",
+      "seed": 42,
+      "fold": 0,
+      "epochs": 13,
+      "selected_epoch": 5,
+      "selected_auc": 0.6586710780259167,
+      "selected_gap": 0.012463074559848741,
+      "final_gap": 0.23575465752885094,
+      "seconds": 35.55916292700567,
+      "optimizer_steps": 2496,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "18ff9aa9620ac77fc09610e31610678e1834a676b8d0fc6f2f2b6708595ce427",
+      "weights_sha256": "9928195392ad96decbf0142ec508698e33e094f69bdcb41e33a299b4f6fac26a",
+      "config_sha256": "bb9efa1b7d98de0ca35f04b3efd39e3c07faff1e88517412b2cc0a6076471bb0"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "control",
+      "loss": "weighted",
+      "seed": 42,
+      "fold": 0,
+      "counts": {
+        "fit_patients": 614,
+        "selection_patients": 132,
+        "fit_slices": 6123
+      },
+      "bias_field": {
+        "enabled": false,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 2.411111111111111
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "control",
+      "loss": "weighted",
+      "seed": 2026,
+      "fold": 0,
+      "epochs": 9,
+      "selected_epoch": 1,
+      "selected_auc": 0.6288944030879514,
+      "selected_gap": 0.0035556737169640806,
+      "final_gap": 0.23988341407696234,
+      "seconds": 24.638437949986837,
+      "optimizer_steps": 1728,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "04e27eed21360a8c188b5f9ef7d749678a6aad03fe821f525e619095a3f155e0",
+      "weights_sha256": "d9c1f8c820f4e6591e461fd4ed703490122f7e0ffa25e8d799bc6856f290a0b6",
+      "config_sha256": "ef23321867e03c055af3306c1fa4897a7b93fc3e4af90e1bd911bfe3763466db"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "control",
+      "loss": "weighted",
+      "seed": 2026,
+      "fold": 0,
+      "counts": {
+        "fit_patients": 614,
+        "selection_patients": 132,
+        "fit_slices": 6123
+      },
+      "bias_field": {
+        "enabled": false,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 2.411111111111111
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "campo_suave",
+      "loss": "normal",
+      "seed": 42,
+      "fold": 0,
+      "epochs": 13,
+      "selected_epoch": 5,
+      "selected_auc": 0.6503997794320375,
+      "selected_gap": 0.03330477765961637,
+      "final_gap": 0.3133512544802868,
+      "seconds": 37.66590603400982,
+      "optimizer_steps": 2496,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "18ff9aa9620ac77fc09610e31610678e1834a676b8d0fc6f2f2b6708595ce427",
+      "weights_sha256": "031fb45640e724e90c9d71d5a44ddfed29c8bcd7958523a813d3292610ecfe92",
+      "config_sha256": "8997c082d53d065fb19c287707f7aaf66ceb8b800c00e330aeead5a87bda728d"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "campo_suave",
+      "loss": "normal",
+      "seed": 42,
+      "fold": 0,
+      "counts": {
+        "fit_patients": 614,
+        "selection_patients": 132,
+        "fit_slices": 6123
+      },
+      "bias_field": {
+        "enabled": true,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 1.0
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "campo_suave",
+      "loss": "normal",
+      "seed": 2026,
+      "fold": 0,
+      "epochs": 9,
+      "selected_epoch": 1,
+      "selected_auc": 0.6236559139784945,
+      "selected_gap": 0.02457757296466978,
+      "final_gap": 0.2811995352317933,
+      "seconds": 26.083147882993217,
+      "optimizer_steps": 1728,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "04e27eed21360a8c188b5f9ef7d749678a6aad03fe821f525e619095a3f155e0",
+      "weights_sha256": "4aff617a333a6b6fed791710e265db1c5b61485d840a94899d3d49377254e2fa",
+      "config_sha256": "65c281a3801ac04f19ea0362596a0ed131fbe4ba916c3c02dc5b091b4a3710a3"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "campo_suave",
+      "loss": "normal",
+      "seed": 2026,
+      "fold": 0,
+      "counts": {
+        "fit_patients": 614,
+        "selection_patients": 132,
+        "fit_slices": 6123
+      },
+      "bias_field": {
+        "enabled": true,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 1.0
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "campo_suave",
+      "loss": "weighted",
+      "seed": 42,
+      "fold": 0,
+      "epochs": 18,
+      "selected_epoch": 10,
+      "selected_auc": 0.6878963330576233,
+      "selected_gap": 0.08719327267714372,
+      "final_gap": 0.3166026625704046,
+      "seconds": 52.25565097600338,
+      "optimizer_steps": 3456,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "18ff9aa9620ac77fc09610e31610678e1834a676b8d0fc6f2f2b6708595ce427",
+      "weights_sha256": "7b10f2f5b4ab5ec45c6d12d474a8dd24610c471a29ab43136b315a5d64d37415",
+      "config_sha256": "6b242a66eb00f628a066c4e17cbbbabefe7c4321813b6439261fa1d2752ff78f"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "campo_suave",
+      "loss": "weighted",
+      "seed": 42,
+      "fold": 0,
+      "counts": {
+        "fit_patients": 614,
+        "selection_patients": 132,
+        "fit_slices": 6123
+      },
+      "bias_field": {
+        "enabled": true,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 2.411111111111111
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "campo_suave",
+      "loss": "weighted",
+      "seed": 2026,
+      "fold": 0,
+      "epochs": 10,
+      "selected_epoch": 2,
+      "selected_auc": 0.626688723462917,
+      "selected_gap": 0.024719366654850528,
+      "final_gap": 0.21477509945251894,
+      "seconds": 29.001074856998457,
+      "optimizer_steps": 1920,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "04e27eed21360a8c188b5f9ef7d749678a6aad03fe821f525e619095a3f155e0",
+      "weights_sha256": "edc048ef590e33685eff2d6aaf14cd166c4dd708216bdd1f7c4019d25e4564a9",
+      "config_sha256": "a7c1a4c6ac3ee5366aa2c9dd08b22fac8ecde52f9e12c7d24caf9a4dffd13656"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "campo_suave",
+      "loss": "weighted",
+      "seed": 2026,
+      "fold": 0,
+      "counts": {
+        "fit_patients": 614,
+        "selection_patients": 132,
+        "fit_slices": 6123
+      },
+      "bias_field": {
+        "enabled": true,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 2.411111111111111
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "control",
+      "loss": "normal",
+      "seed": 42,
+      "fold": 3,
+      "epochs": 19,
+      "selected_epoch": 11,
+      "selected_auc": 0.6566145092460882,
+      "selected_gap": 0.1469325217575902,
+      "final_gap": 0.3734925164952546,
+      "seconds": 51.97940684000059,
+      "optimizer_steps": 3648,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "18ff9aa9620ac77fc09610e31610678e1834a676b8d0fc6f2f2b6708595ce427",
+      "weights_sha256": "7ea27414f94553750b3f923db7ed91e4496190deaf4c49fe09b18224ef4e9b8c",
+      "config_sha256": "8ea18faf8aaf55fe40875d1b52739d18dcb6355e5b74994f7208574f20dd7a6a"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "control",
+      "loss": "normal",
+      "seed": 42,
+      "fold": 3,
+      "counts": {
+        "fit_patients": 613,
+        "selection_patients": 132,
+        "fit_slices": 6117
+      },
+      "bias_field": {
+        "enabled": false,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 1.0
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "control",
+      "loss": "normal",
+      "seed": 2026,
+      "fold": 3,
+      "epochs": 10,
+      "selected_epoch": 2,
+      "selected_auc": 0.6352773826458038,
+      "selected_gap": -0.008503867143964672,
+      "final_gap": 0.16667536247700532,
+      "seconds": 27.36034526399453,
+      "optimizer_steps": 1920,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "04e27eed21360a8c188b5f9ef7d749678a6aad03fe821f525e619095a3f155e0",
+      "weights_sha256": "2a27d5ca96b51a3a612beeba0638fcc1f69e7c11c90cdf880c34ada8f73c569e",
+      "config_sha256": "83d88646dcff9f6428061f00fa73dd994aa5b7156ea2c40703e99e6ab1a13648"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "control",
+      "loss": "normal",
+      "seed": 2026,
+      "fold": 3,
+      "counts": {
+        "fit_patients": 613,
+        "selection_patients": 132,
+        "fit_slices": 6117
+      },
+      "bias_field": {
+        "enabled": false,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 1.0
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "control",
+      "loss": "weighted",
+      "seed": 42,
+      "fold": 3,
+      "epochs": 12,
+      "selected_epoch": 4,
+      "selected_auc": 0.6201991465149359,
+      "selected_gap": 0.040126654851327714,
+      "final_gap": 0.21426393827519474,
+      "seconds": 32.74135766899417,
+      "optimizer_steps": 2304,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "18ff9aa9620ac77fc09610e31610678e1834a676b8d0fc6f2f2b6708595ce427",
+      "weights_sha256": "07fd2af6b929a7b417b212917e64da6dfffe209ed1bcdc8b3a51709b42b465c4",
+      "config_sha256": "42f1e9f280523b0fa805c52b8c108dd015a0ebdf155616b9bbd2f86a8daff341"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "control",
+      "loss": "weighted",
+      "seed": 42,
+      "fold": 3,
+      "counts": {
+        "fit_patients": 613,
+        "selection_patients": 132,
+        "fit_slices": 6117
+      },
+      "bias_field": {
+        "enabled": false,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 2.5433526011560694
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "control",
+      "loss": "weighted",
+      "seed": 2026,
+      "fold": 3,
+      "epochs": 13,
+      "selected_epoch": 5,
+      "selected_auc": 0.6449502133712659,
+      "selected_gap": 0.013326192303983686,
+      "final_gap": 0.24143911799068474,
+      "seconds": 35.5191010609924,
+      "optimizer_steps": 2496,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "04e27eed21360a8c188b5f9ef7d749678a6aad03fe821f525e619095a3f155e0",
+      "weights_sha256": "27ad47bd3ade1aab04962e53b183a5691e40df8149d5b9c8a0ab1ced3486881f",
+      "config_sha256": "6938b32affd9abe9908dd970a38c59edaf842f4f0a2e596f349409d7a693c1fd"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "control",
+      "loss": "weighted",
+      "seed": 2026,
+      "fold": 3,
+      "counts": {
+        "fit_patients": 613,
+        "selection_patients": 132,
+        "fit_slices": 6117
+      },
+      "bias_field": {
+        "enabled": false,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 2.5433526011560694
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "campo_suave",
+      "loss": "normal",
+      "seed": 42,
+      "fold": 3,
+      "epochs": 12,
+      "selected_epoch": 4,
+      "selected_auc": 0.6344238975817924,
+      "selected_gap": 0.045883511771859675,
+      "final_gap": 0.217507095556989,
+      "seconds": 35.209531651009456,
+      "optimizer_steps": 2304,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "18ff9aa9620ac77fc09610e31610678e1834a676b8d0fc6f2f2b6708595ce427",
+      "weights_sha256": "a5d8f00e5c083acc24c3368288dbfd8cb65f7815efac959de5e1b6c226c1d5ff",
+      "config_sha256": "fb2669fa0aca5e227eda52b6c18f18e95c604fb5a96066368f4d71190f95e9e7"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "campo_suave",
+      "loss": "normal",
+      "seed": 42,
+      "fold": 3,
+      "counts": {
+        "fit_patients": 613,
+        "selection_patients": 132,
+        "fit_slices": 6117
+      },
+      "bias_field": {
+        "enabled": true,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 1.0
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "campo_suave",
+      "loss": "normal",
+      "seed": 2026,
+      "fold": 3,
+      "epochs": 13,
+      "selected_epoch": 5,
+      "selected_auc": 0.6338549075391181,
+      "selected_gap": 0.06358334784711406,
+      "final_gap": 0.2539883309201836,
+      "seconds": 37.79446820500743,
+      "optimizer_steps": 2496,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "04e27eed21360a8c188b5f9ef7d749678a6aad03fe821f525e619095a3f155e0",
+      "weights_sha256": "8f32fadf51f83fc56ca879e560ede6dd9d79a835ee6eb1c65e58ca587daaf17b",
+      "config_sha256": "97504a4f96d9d1d057ae8b99bbdb56fba3b9229d4ab05f56975c43c92d79dd59"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "campo_suave",
+      "loss": "normal",
+      "seed": 2026,
+      "fold": 3,
+      "counts": {
+        "fit_patients": 613,
+        "selection_patients": 132,
+        "fit_slices": 6117
+      },
+      "bias_field": {
+        "enabled": true,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 1.0
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "campo_suave",
+      "loss": "weighted",
+      "seed": 42,
+      "fold": 3,
+      "epochs": 12,
+      "selected_epoch": 4,
+      "selected_auc": 0.6532005689900428,
+      "selected_gap": 0.008544044777692439,
+      "final_gap": 0.24501051719640088,
+      "seconds": 34.80683626600512,
+      "optimizer_steps": 2304,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "18ff9aa9620ac77fc09610e31610678e1834a676b8d0fc6f2f2b6708595ce427",
+      "weights_sha256": "3d9a47bdc0604a21a8a43bea82de97758b328fa5ba8ab7ab77c04d924152697e",
+      "config_sha256": "0f955d9099c17ff5ca67e4e3c8be811a8295847ac87bb20eb9eaca19b8510c34"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "campo_suave",
+      "loss": "weighted",
+      "seed": 42,
+      "fold": 3,
+      "counts": {
+        "fit_patients": 613,
+        "selection_patients": 132,
+        "fit_slices": 6117
+      },
+      "bias_field": {
+        "enabled": true,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 2.5433526011560694
+    }
+  },
+  {
+    "summary": {
+      "status": "complete",
+      "arm": "campo_suave",
+      "loss": "weighted",
+      "seed": 2026,
+      "fold": 3,
+      "epochs": 11,
+      "selected_epoch": 3,
+      "selected_auc": 0.6267425320056899,
+      "selected_gap": 0.01985494566115198,
+      "final_gap": 0.21098826514098812,
+      "seconds": 31.963077722008165,
+      "optimizer_steps": 2112,
+      "skipped": 0,
+      "finite": true,
+      "initial_state_sha256": "04e27eed21360a8c188b5f9ef7d749678a6aad03fe821f525e619095a3f155e0",
+      "weights_sha256": "9dbf6e25177d56ab57e354b19e60668723e7635d53507dadd6dae360bba0574b",
+      "config_sha256": "11a52322594304d31eaa71b39c417bdb9b1edc302c07bf05c47e119458a1afd0"
+    },
+    "config": {
+      "name": "cnn_imagen_cinetica_multiescala",
+      "model": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      },
+      "training": {
+        "epochs": 40,
+        "min_epochs": 8,
+        "patience": 8,
+        "min_delta": 0.001,
+        "batch_size": 32,
+        "lr": 0.0003,
+        "min_lr": 1e-05,
+        "weight_decay": 0.01,
+        "clip_grad_norm": 5.0,
+        "amp": true,
+        "num_workers": 0,
+        "cpu_threads": 4,
+        "deterministic": true
+      },
+      "augmentation": {
+        "hflip": 0.5,
+        "rot90": true
+      },
+      "evaluation": {
+        "unit": "patient",
+        "slice_aggregation": "mean",
+        "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+        "inner_selection_fraction": 0.15,
+        "inner_split_seed": 20261014,
+        "checkpoint_metric": "inner_patient_auc",
+        "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+        "min_specificity": 0.9,
+        "secondary_threshold_strategy": "max_macro_f1",
+        "test_policy": "never_load_during_development"
+      },
+      "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+      "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+      "selection_metric": "patient_mean_raw_auc",
+      "arm": "campo_suave",
+      "loss": "weighted",
+      "seed": 2026,
+      "fold": 3,
+      "counts": {
+        "fit_patients": 613,
+        "selection_patients": 132,
+        "fit_slices": 6117
+      },
+      "bias_field": {
+        "enabled": true,
+        "strength": 0.15,
+        "probability": 0.5,
+        "grid": 4,
+        "patient_shared": true,
+        "at_inference": false
+      },
+      "pos_weight": 2.5433526011560694
+    }
+  }
+]

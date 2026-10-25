@@ -1,0 +1,470 @@
+{
+  "frozen_at": "2026-10-25T18:36:18.451951+01:00",
+  "policies": [
+    {
+      "calibration": {
+        "method": "regularized_platt",
+        "input": "logit_patient_aggregated_probability",
+        "slope": 0.0,
+        "intercept": -0.8690378470236093,
+        "C": 1.0,
+        "clip_epsilon": 1e-07,
+        "scope": "patient",
+        "fit_data": "train_oof",
+        "nonnegative_slope_constraint": true,
+        "boundary_solution": true
+      },
+      "threshold": 1.0,
+      "macro_f1_threshold": 0.5,
+      "min_specificity": 0.95,
+      "fit_data": "calibration_patients_only_after_checkpoint_and_loss_frozen",
+      "calibration_n": 132,
+      "apparent_calibration_metrics": {
+        "n_patients": 132,
+        "n_positive": 39,
+        "prevalence": 0.29545454545454547,
+        "roc_auc": 0.5,
+        "average_precision": 0.29545454545454547,
+        "brier": 0.20816115702479338,
+        "log_loss": 0.6069636115082724,
+        "accuracy": 0.7045454545454546,
+        "balanced_accuracy": 0.5,
+        "precision_no_pcr": 0.7045454545454546,
+        "recall_no_pcr": 1.0,
+        "f1_no_pcr": 0.8266666666666667,
+        "precision_pcr": 0.0,
+        "recall_pcr": 0.0,
+        "f1_pcr": 0.0,
+        "macro_f1": 0.41333333333333333,
+        "weighted_f1": 0.5824242424242424,
+        "threshold": 1.0,
+        "tn": 93,
+        "fp": 0,
+        "fn": 39,
+        "tp": 0,
+        "support_no_pcr": 93,
+        "support_pcr": 39,
+        "confusion_matrix": [
+          [
+            93,
+            0
+          ],
+          [
+            39,
+            0
+          ]
+        ]
+      },
+      "fold": 0,
+      "arm": "control",
+      "loss": "normal"
+    },
+    {
+      "calibration": {
+        "method": "regularized_platt",
+        "input": "logit_patient_aggregated_probability",
+        "slope": 0.0,
+        "intercept": -0.8690378470236093,
+        "C": 1.0,
+        "clip_epsilon": 1e-07,
+        "scope": "patient",
+        "fit_data": "train_oof",
+        "nonnegative_slope_constraint": true,
+        "boundary_solution": true
+      },
+      "threshold": 1.0,
+      "macro_f1_threshold": 0.5,
+      "min_specificity": 0.95,
+      "fit_data": "calibration_patients_only_after_checkpoint_and_loss_frozen",
+      "calibration_n": 132,
+      "apparent_calibration_metrics": {
+        "n_patients": 132,
+        "n_positive": 39,
+        "prevalence": 0.29545454545454547,
+        "roc_auc": 0.5,
+        "average_precision": 0.29545454545454547,
+        "brier": 0.20816115702479338,
+        "log_loss": 0.6069636115082724,
+        "accuracy": 0.7045454545454546,
+        "balanced_accuracy": 0.5,
+        "precision_no_pcr": 0.7045454545454546,
+        "recall_no_pcr": 1.0,
+        "f1_no_pcr": 0.8266666666666667,
+        "precision_pcr": 0.0,
+        "recall_pcr": 0.0,
+        "f1_pcr": 0.0,
+        "macro_f1": 0.41333333333333333,
+        "weighted_f1": 0.5824242424242424,
+        "threshold": 1.0,
+        "tn": 93,
+        "fp": 0,
+        "fn": 39,
+        "tp": 0,
+        "support_no_pcr": 93,
+        "support_pcr": 39,
+        "confusion_matrix": [
+          [
+            93,
+            0
+          ],
+          [
+            39,
+            0
+          ]
+        ]
+      },
+      "fold": 0,
+      "arm": "control",
+      "loss": "weighted"
+    },
+    {
+      "calibration": {
+        "method": "regularized_platt",
+        "input": "logit_patient_aggregated_probability",
+        "slope": 0.0,
+        "intercept": -0.8690378470236093,
+        "C": 1.0,
+        "clip_epsilon": 1e-07,
+        "scope": "patient",
+        "fit_data": "train_oof",
+        "nonnegative_slope_constraint": true,
+        "boundary_solution": true
+      },
+      "threshold": 1.0,
+      "macro_f1_threshold": 0.5,
+      "min_specificity": 0.95,
+      "fit_data": "calibration_patients_only_after_checkpoint_and_loss_frozen",
+      "calibration_n": 132,
+      "apparent_calibration_metrics": {
+        "n_patients": 132,
+        "n_positive": 39,
+        "prevalence": 0.29545454545454547,
+        "roc_auc": 0.5,
+        "average_precision": 0.29545454545454547,
+        "brier": 0.20816115702479338,
+        "log_loss": 0.6069636115082724,
+        "accuracy": 0.7045454545454546,
+        "balanced_accuracy": 0.5,
+        "precision_no_pcr": 0.7045454545454546,
+        "recall_no_pcr": 1.0,
+        "f1_no_pcr": 0.8266666666666667,
+        "precision_pcr": 0.0,
+        "recall_pcr": 0.0,
+        "f1_pcr": 0.0,
+        "macro_f1": 0.41333333333333333,
+        "weighted_f1": 0.5824242424242424,
+        "threshold": 1.0,
+        "tn": 93,
+        "fp": 0,
+        "fn": 39,
+        "tp": 0,
+        "support_no_pcr": 93,
+        "support_pcr": 39,
+        "confusion_matrix": [
+          [
+            93,
+            0
+          ],
+          [
+            39,
+            0
+          ]
+        ]
+      },
+      "fold": 0,
+      "arm": "campo_suave",
+      "loss": "normal"
+    },
+    {
+      "calibration": {
+        "method": "regularized_platt",
+        "input": "logit_patient_aggregated_probability",
+        "slope": 0.0,
+        "intercept": -0.8690378470236093,
+        "C": 1.0,
+        "clip_epsilon": 1e-07,
+        "scope": "patient",
+        "fit_data": "train_oof",
+        "nonnegative_slope_constraint": true,
+        "boundary_solution": true
+      },
+      "threshold": 1.0,
+      "macro_f1_threshold": 0.5,
+      "min_specificity": 0.95,
+      "fit_data": "calibration_patients_only_after_checkpoint_and_loss_frozen",
+      "calibration_n": 132,
+      "apparent_calibration_metrics": {
+        "n_patients": 132,
+        "n_positive": 39,
+        "prevalence": 0.29545454545454547,
+        "roc_auc": 0.5,
+        "average_precision": 0.29545454545454547,
+        "brier": 0.20816115702479338,
+        "log_loss": 0.6069636115082724,
+        "accuracy": 0.7045454545454546,
+        "balanced_accuracy": 0.5,
+        "precision_no_pcr": 0.7045454545454546,
+        "recall_no_pcr": 1.0,
+        "f1_no_pcr": 0.8266666666666667,
+        "precision_pcr": 0.0,
+        "recall_pcr": 0.0,
+        "f1_pcr": 0.0,
+        "macro_f1": 0.41333333333333333,
+        "weighted_f1": 0.5824242424242424,
+        "threshold": 1.0,
+        "tn": 93,
+        "fp": 0,
+        "fn": 39,
+        "tp": 0,
+        "support_no_pcr": 93,
+        "support_pcr": 39,
+        "confusion_matrix": [
+          [
+            93,
+            0
+          ],
+          [
+            39,
+            0
+          ]
+        ]
+      },
+      "fold": 0,
+      "arm": "campo_suave",
+      "loss": "weighted"
+    },
+    {
+      "calibration": {
+        "method": "regularized_platt",
+        "input": "logit_patient_aggregated_probability",
+        "slope": 0.0,
+        "intercept": -0.9429589789563164,
+        "C": 1.0,
+        "clip_epsilon": 1e-07,
+        "scope": "patient",
+        "fit_data": "train_oof",
+        "nonnegative_slope_constraint": true,
+        "boundary_solution": true
+      },
+      "threshold": 1.0,
+      "macro_f1_threshold": 0.5,
+      "min_specificity": 0.95,
+      "fit_data": "calibration_patients_only_after_checkpoint_and_loss_frozen",
+      "calibration_n": 132,
+      "apparent_calibration_metrics": {
+        "n_patients": 132,
+        "n_positive": 37,
+        "prevalence": 0.2803030303030303,
+        "roc_auc": 0.5,
+        "average_precision": 0.2803030303030303,
+        "brier": 0.2017332415059688,
+        "log_loss": 0.5932392902387368,
+        "accuracy": 0.7196969696969697,
+        "balanced_accuracy": 0.5,
+        "precision_no_pcr": 0.7196969696969697,
+        "recall_no_pcr": 1.0,
+        "f1_no_pcr": 0.8370044052863436,
+        "precision_pcr": 0.0,
+        "recall_pcr": 0.0,
+        "f1_pcr": 0.0,
+        "macro_f1": 0.4185022026431718,
+        "weighted_f1": 0.6023895341075958,
+        "threshold": 1.0,
+        "tn": 95,
+        "fp": 0,
+        "fn": 37,
+        "tp": 0,
+        "support_no_pcr": 95,
+        "support_pcr": 37,
+        "confusion_matrix": [
+          [
+            95,
+            0
+          ],
+          [
+            37,
+            0
+          ]
+        ]
+      },
+      "fold": 3,
+      "arm": "control",
+      "loss": "normal"
+    },
+    {
+      "calibration": {
+        "method": "regularized_platt",
+        "input": "logit_patient_aggregated_probability",
+        "slope": 0.0,
+        "intercept": -0.9429589789563164,
+        "C": 1.0,
+        "clip_epsilon": 1e-07,
+        "scope": "patient",
+        "fit_data": "train_oof",
+        "nonnegative_slope_constraint": true,
+        "boundary_solution": true
+      },
+      "threshold": 1.0,
+      "macro_f1_threshold": 0.5,
+      "min_specificity": 0.95,
+      "fit_data": "calibration_patients_only_after_checkpoint_and_loss_frozen",
+      "calibration_n": 132,
+      "apparent_calibration_metrics": {
+        "n_patients": 132,
+        "n_positive": 37,
+        "prevalence": 0.2803030303030303,
+        "roc_auc": 0.5,
+        "average_precision": 0.2803030303030303,
+        "brier": 0.2017332415059688,
+        "log_loss": 0.5932392902387368,
+        "accuracy": 0.7196969696969697,
+        "balanced_accuracy": 0.5,
+        "precision_no_pcr": 0.7196969696969697,
+        "recall_no_pcr": 1.0,
+        "f1_no_pcr": 0.8370044052863436,
+        "precision_pcr": 0.0,
+        "recall_pcr": 0.0,
+        "f1_pcr": 0.0,
+        "macro_f1": 0.4185022026431718,
+        "weighted_f1": 0.6023895341075958,
+        "threshold": 1.0,
+        "tn": 95,
+        "fp": 0,
+        "fn": 37,
+        "tp": 0,
+        "support_no_pcr": 95,
+        "support_pcr": 37,
+        "confusion_matrix": [
+          [
+            95,
+            0
+          ],
+          [
+            37,
+            0
+          ]
+        ]
+      },
+      "fold": 3,
+      "arm": "control",
+      "loss": "weighted"
+    },
+    {
+      "calibration": {
+        "method": "regularized_platt",
+        "input": "logit_patient_aggregated_probability",
+        "slope": 0.20792047955484394,
+        "intercept": -0.7662986437490568,
+        "C": 1.0,
+        "clip_epsilon": 1e-07,
+        "scope": "patient",
+        "fit_data": "train_oof",
+        "nonnegative_slope_constraint": true,
+        "boundary_solution": false
+      },
+      "threshold": 0.3063849650049485,
+      "macro_f1_threshold": 0.29548263639671946,
+      "min_specificity": 0.95,
+      "fit_data": "calibration_patients_only_after_checkpoint_and_loss_frozen",
+      "calibration_n": 132,
+      "apparent_calibration_metrics": {
+        "n_patients": 132,
+        "n_positive": 37,
+        "prevalence": 0.2803030303030303,
+        "roc_auc": 0.5334281650071123,
+        "average_precision": 0.3379469972424458,
+        "brier": 0.20133807633691095,
+        "log_loss": 0.5923034326704101,
+        "accuracy": 0.7121212121212122,
+        "balanced_accuracy": 0.5112375533428165,
+        "precision_no_pcr": 0.7244094488188977,
+        "recall_no_pcr": 0.968421052631579,
+        "f1_no_pcr": 0.8288288288288288,
+        "precision_pcr": 0.4,
+        "recall_pcr": 0.05405405405405406,
+        "f1_pcr": 0.09523809523809523,
+        "macro_f1": 0.462033462033462,
+        "weighted_f1": 0.6232011232011231,
+        "threshold": 0.3063849650049485,
+        "tn": 92,
+        "fp": 3,
+        "fn": 35,
+        "tp": 2,
+        "support_no_pcr": 95,
+        "support_pcr": 37,
+        "confusion_matrix": [
+          [
+            92,
+            3
+          ],
+          [
+            35,
+            2
+          ]
+        ]
+      },
+      "fold": 3,
+      "arm": "campo_suave",
+      "loss": "normal"
+    },
+    {
+      "calibration": {
+        "method": "regularized_platt",
+        "input": "logit_patient_aggregated_probability",
+        "slope": 0.3521582050646608,
+        "intercept": -0.9100893880844453,
+        "C": 1.0,
+        "clip_epsilon": 1e-07,
+        "scope": "patient",
+        "fit_data": "train_oof",
+        "nonnegative_slope_constraint": true,
+        "boundary_solution": false
+      },
+      "threshold": 0.3097433893770413,
+      "macro_f1_threshold": 0.28868344621284486,
+      "min_specificity": 0.95,
+      "fit_data": "calibration_patients_only_after_checkpoint_and_loss_frozen",
+      "calibration_n": 132,
+      "apparent_calibration_metrics": {
+        "n_patients": 132,
+        "n_positive": 37,
+        "prevalence": 0.2803030303030303,
+        "roc_auc": 0.5618776671408251,
+        "average_precision": 0.38730114928768905,
+        "brier": 0.2009056002104987,
+        "log_loss": 0.5914010769267749,
+        "accuracy": 0.7424242424242424,
+        "balanced_accuracy": 0.5570412517780939,
+        "precision_no_pcr": 0.744,
+        "recall_no_pcr": 0.9789473684210527,
+        "f1_no_pcr": 0.8454545454545455,
+        "precision_pcr": 0.7142857142857143,
+        "recall_pcr": 0.13513513513513514,
+        "f1_pcr": 0.22727272727272727,
+        "macro_f1": 0.5363636363636364,
+        "weighted_f1": 0.6721763085399448,
+        "threshold": 0.3097433893770413,
+        "tn": 93,
+        "fp": 2,
+        "fn": 32,
+        "tp": 5,
+        "support_no_pcr": 95,
+        "support_pcr": 37,
+        "confusion_matrix": [
+          [
+            93,
+            2
+          ],
+          [
+            32,
+            5
+          ]
+        ]
+      },
+      "fold": 3,
+      "arm": "campo_suave",
+      "loss": "weighted"
+    }
+  ],
+  "selection_sha256": "c4bca9a7bf67d49947d408c7240a42891636252603ec9133eba2d725f730c72a"
+}

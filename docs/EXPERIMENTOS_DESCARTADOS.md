@@ -733,3 +733,20 @@ la evidencia de la limpieza anterior sigue en `limpieza_20261005/`. El README de
 solo comandos que existen en la versión actual. Para reconstruir los ensayos
 retirados se necesita su código/commit y entorno registrados; no se deben ejecutar
 sus antiguos comandos contra el entrenador actual.
+
+## Campo suave de adquisición: piloto cerrado sin mejora (25/10/2026)
+
+Código revisable en el commit local 2c48ab2f533550e62853758dd43ef90af7a673cb; se retira del código activo y se conserva en la historia de main. Protocolo y [informe completo](../resultados/25_robustez_adquisicion_20261025/INFORME_RESULTADOS.md).
+
+Misma CNNMultiescalaCinetica de593.521 parámetros: control/campo común entre fases, BCE normal/ponderada, semillas42/2026 y folds0/3. Dieciséis entrenamientos;439 pacientes exteriores de train,139 pCR. Fit, selección, calibración y comprobación separados por paciente para cada modelo. Épocas y pérdidas congeladas antes de calibración; umbrales congelados antes de comprobar. Media de todos los cortes por paciente, sin clínica.
+
+| Brazo | AUC fold0 | AUC fold3 | Media | Brecha mediana seleccionada |
+|---|---:|---:|---:|---:|
+| Control |0,5617|0,5590|0,5603|0,0080|
+| Campo común |0,5338|0,5664|0,5501|0,0547|
+
+Δmedia−0,0102, IC95 % pareado[-0,0492;+0,0283],4.000 bootstrap por fold/cohorte/clase. No se demuestra beneficio ni empeoramiento concluyente; no pasa el filtro prefijado y no se amplía a cinco folds. Con ambas BCE fijas tampoco hay mejora media del campo. Una brecha pequeña del control no implica aprendizaje útil.
+
+La política principal, máxima sensibilidad con especificidad≥95 % en calibración, produjo en comprobación: control TN300/FP0/FN139/TP0; campo TN297/FP3/FN135/TP4. El candidato sigue sin sensibilidad útil. No se elige otro umbral con estas pacientes.
+
+Las101 pruebas del piloto/informe pasaron, los37.632 pasos AdamW se verificaron sin omisiones AMP y todos los pesos fueron finitos. Test y validation privada no se cargaron; V001–V008 y las aplicaciones permanecen intactas. Los pesos y checkpoints de trabajo se conservan solo localmente, fuera de Git; configuraciones, historias, hashes, curvas y límites están en el informe. Esta comprobación es desarrollo adaptativo; no es test independiente.
