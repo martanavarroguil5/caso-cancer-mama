@@ -110,3 +110,6 @@ Thumbs.db
 
 # Tanda docente: checkpoints y pesos de trabajo solo locales
 /resultados/27_criterio_docente_20261025/runs/
+
+# CNN espacial por corte: pesos y checkpoints de trabajo locales
+/resultados/28_cnn_espacial_por_corte_20261025/runs/

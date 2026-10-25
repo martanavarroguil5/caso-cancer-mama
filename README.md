@@ -101,3 +101,5 @@ modelo final; no ejecuta entrenamientos. Una salida ya terminada no se sobrescri
 [Auditoría completa y protocolo](docs/AUDITORIA_TRAIN_Y_PROTOCOLO.md).
 
 [Criterio del profesor: curvas y comparación frente a cohorte](docs/CRITERIO_DOCENTE_CURVAS.md).
+
+[CNN espacial compacta por corte y comparación prefijada](docs/CNN_ESPACIAL_POR_CORTE.md).
