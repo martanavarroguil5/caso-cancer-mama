@@ -103,3 +103,7 @@ Thumbs.db
 
 # Piloto de adquisición: checkpoints y pesos de trabajo solo locales
 /resultados/25_robustez_adquisicion_20261025/runs/
+
+# Inventario exhaustivo de datos: se conserva local; Git guarda resumen e incidencias
+/resultados/26_auditoria_train_protocolo_20261025/inventario_png.csv
+/resultados/26_auditoria_train_protocolo_20261025/cortes_auditados.csv

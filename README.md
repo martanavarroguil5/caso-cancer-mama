@@ -85,3 +85,17 @@ El código de entrenamiento y las versiones anteriores se conservan en `main`.
 Dataset BreastDCEDL, Fridman y colaboradores, Scientific Data (2026),
 DOI 10.1038/s41597-026-06589-6 y Zenodo 10.5281/zenodo.18114231.
 Se conserva la licencia CC BY-NC 4.0 y el formato docente original.
+
+## Revisar train y preparar la evaluación por paciente
+
+La auditoría exhaustiva abre únicamente imágenes de train y no modifica datos ni
+modelos. Los avisos de desplazamiento son candidatos a revisión, no correcciones.
+El segundo comando genera los cinco folds internos y la partición del futuro
+modelo final; no ejecuta entrenamientos. Una salida ya terminada no se sobrescribe.
+
+```bash
+.venv/bin/python -B -m cancer_mama.revision_train auditar --output resultados/auditoria_train_nueva
+.venv/bin/python -B -m cancer_mama.revision_train preparar-protocolo --output resultados/auditoria_train_nueva
+```
+
+[Auditoría completa y protocolo](docs/AUDITORIA_TRAIN_Y_PROTOCOLO.md).
