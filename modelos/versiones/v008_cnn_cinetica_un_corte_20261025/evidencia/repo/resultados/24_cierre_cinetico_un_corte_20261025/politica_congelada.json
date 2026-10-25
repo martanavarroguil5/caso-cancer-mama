@@ -1,0 +1,28 @@
+{
+  "calibration": {
+    "method": "regularized_platt",
+    "slope": 0.23823162893611624,
+    "intercept": -0.5832147024476482,
+    "C": 1.0,
+    "clip_epsilon": 1e-07,
+    "scope": "single_slice",
+    "input": "logit_single_slice_ensemble_probability",
+    "fit_data": "calibration_patients_only",
+    "nonnegative_slope_constraint": true,
+    "boundary_solution": false,
+    "sample_weight": "1/n_slices_per_patient"
+  },
+  "threshold": 0.29233309617847214,
+  "threshold_strategy": "max_patient_balanced_accuracy_calibration_only",
+  "fitted_at": "2026-10-25T16:51:22.815081+01:00",
+  "calibration_patients": 165,
+  "selected": {
+    "loss": "normal",
+    "selection_auc": 0.6883671016483482
+  },
+  "weights": {
+    "runs/normal/seed_42/inference.pt": "e149e607a5dc414f3abdad7462fb42b5f97f737a88e72c3a245ecb195f4610e3",
+    "runs/normal/seed_2026/inference.pt": "00e37805b18f6d39753f16abafab75abe19be2a36dcbe6a38cc7b54c89694522"
+  },
+  "protocol_sha256": "49cb805ec2567bad45a45f049bbb6b4441ad1c8f6256f8b028e0a3e0ce87c8c9"
+}

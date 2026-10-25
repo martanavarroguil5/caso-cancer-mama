@@ -1,0 +1,32 @@
+{
+  "created_at": "2026-10-25T17:20:25.993655+01:00",
+  "files_sha256": {
+    "INFORME_RESULTADOS.md": "071e7cb345f5484b41372aafa4b8238c6e4a1a6725b20a4654b64b85cb3773ab",
+    "verificacion_versiones.json": "aad7a67e7dbe5f3f653812125f8f30a34e46002a591d2c660eef41fca611f3e1",
+    "seleccion_congelada.json": "d7b289dfd3d848e122c0b453c25916d69c29c04cb52a5a30c2f824b3a68d1df9",
+    "01_roc_pr_un_corte.png": "42f1140737141a1bfed1f60c15552a83d4283bc6ca58488eb770fbf462cb7b68",
+    "protocolo.json": "49cb805ec2567bad45a45f049bbb6b4441ad1c8f6256f8b028e0a3e0ce87c8c9",
+    "verificacion_paquete_aislado.json": "974baecc728da21e95ef93298997cf37e1124da5ed36d631f1e4ac5a4f19393d",
+    "comprobacion_cortes.csv": "e307f85e969306df705a1bbdd126365324ac27b19892dc1c0ef762b7a2f90fdb",
+    "verificacion_app.json": "66dae560246938189155014b730054d7675d69befc522abb427c2cac22d8ca78",
+    "diagnostico_checkpoints.csv": "1aaa85b6938aca607bf3bf34ad30a54b0242cb7bd962927e71c06f34c6adff79",
+    "03_matrices.png": "8a9d8f18a894b643d46e989fc678ae5a27510de1ee1324055dc8010266844015",
+    "entorno.json": "1ca667ed47c5a2fa83adca1c9afc3525283c87ae16228d79e454c61cdc2bd802",
+    "protocolo.json.sha256": "cc45cfe09812c5f474ca30af610bb7865811bdfd199cf0a2b3e3c6a8327ea723",
+    "02_aprendizaje.png": "c4c8b268bf8bfa3c5b295f63dbc4592967104c357bbbc132b46a3ce523fd2c7f",
+    "estado.json": "d509086b3e7e57d34a88be402ab3503f46d649de9da937e9d4ed6310cb74c1f9",
+    "entrenamiento.log": "22e3e01cfc46e9208fb5fef068380442ca8fb3410453fb428ee3428df0185a05",
+    "calibracion_cortes.csv": "966dfe7a6d9ad27dc594ea154ceabb8da516f061d218b934bafef647320c1a55",
+    "auditoria_v007_por_fold.json": "873bf8d169b35aa9dbcbe6653b5f09afe060d5d6b527372385a8940516a098f3",
+    "auditoria_v007.json": "7d8671d8f32c6304fec4b9fb3703cdc0e0c7c0c8fbc5942644ccb8c11a7553c1",
+    "lanzamiento.json": "e56f80015a23b8afd294f92b55a07a64617f6e9574fb4ffb8bfce90666fee835",
+    "pruebas.log": "9829b9079f7a3eac25a2e852411bda2ca72f9c5ec0448818970224f96185d558",
+    "auditoria_v007_cortes.csv": "8b0a75ee172866069d0546c1321950ce9e30434022a0bdbfb18c420df47212c2",
+    "04_aplicacion.png": "52de2cb3976898638ae8f6ce9a3379dcc7d9c6b785331db41bdf3e2c58c44b51",
+    "particiones.csv": "00d2c56fc8a0562afce1420e4e5c953b9e153f1dbae95cf111414963e6a8391d",
+    "verificacion_final.json": "e8c620efd2c9cb100fe3170fd6cc9a24439394f178f3ba6a39cd2ead4ab591a3",
+    "politica_congelada.json": "08cccf9d072ea5968831dd3a457ad88f742b4e4e20b4f09d406b28e6c9c557f5",
+    "resultado.json": "45209857ba01b4a5d4febdc5e290f3ca4705388d92e7826529bf414197cdc461",
+    "politica_congelada.json.sha256": "5c2506b4b2641b5e5a1cd1fd8004c229eca055a1e501b9a9c559e1db6c27d634"
+  }
+}

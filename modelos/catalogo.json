@@ -286,6 +286,53 @@
           ]
         ]
       }
+    },
+    {
+      "id": "v008_cnn_cinetica_un_corte_20261025",
+      "description": "CNN cinética de una tripleta: BCE normal elegida internamente, cuatro roles separados; check AUC 0,5598, experimental e insuficiente",
+      "archived_at": "2026-10-25T17:03:16.169442+01:00",
+      "status": "candidato_cierre_interno_sin_confirmacion_privada",
+      "clinical_required": false,
+      "n_models": 2,
+      "weights_bytes": 4791542,
+      "metrics_raw_oof": {},
+      "metrics_internal_check": {
+        "n_patients": 165,
+        "n_positive": 48,
+        "prevalence": 0.2909090909090909,
+        "roc_auc": 0.5598290598290598,
+        "average_precision": 0.3537521556344493,
+        "brier": 0.20443607294549387,
+        "log_loss": 0.5986024880689076,
+        "accuracy": 0.503030303030303,
+        "balanced_accuracy": 0.5328525641025641,
+        "precision_no_pcr": 0.7397260273972602,
+        "recall_no_pcr": 0.46153846153846156,
+        "f1_no_pcr": 0.5684210526315789,
+        "precision_pcr": 0.31521739130434784,
+        "recall_pcr": 0.6041666666666666,
+        "f1_pcr": 0.4142857142857143,
+        "macro_f1": 0.49135338345864665,
+        "weighted_f1": 0.5235816814764183,
+        "threshold": 0.29233309617847214,
+        "tn": 54,
+        "fp": 63,
+        "fn": 19,
+        "tp": 29,
+        "support_no_pcr": 117,
+        "support_pcr": 48,
+        "confusion_matrix": [
+          [
+            54,
+            63
+          ],
+          [
+            19,
+            29
+          ]
+        ]
+      },
+      "evaluation_scope": "train_only_four_way_single_slice_check; not OOF or independent test"
     }
   ]
 }

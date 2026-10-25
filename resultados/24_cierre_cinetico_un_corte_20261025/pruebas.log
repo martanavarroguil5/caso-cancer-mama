@@ -1,0 +1,132 @@
+test_arquitectura_fija_en_todos_los_candidatos (test_ajuste_cinetico.TestAjusteCinetico.test_arquitectura_fija_en_todos_los_candidatos) ... ok
+test_entrenamiento_interno_no_carga_outer_y_reanuda_sin_epoca_extra (test_ajuste_cinetico.TestAjusteCinetico.test_entrenamiento_interno_no_carga_outer_y_reanuda_sin_epoca_extra) ... Run /tmp/tmpb3lrjsv_/runs/cnn_imagen_fases/normal/seed_42/fold_0: 343 parámetros; fit=6 pacientes, selección=2, outer=2; test=0
+Epoch 01/4: fitAUC=0.5000 selecciónAUC=0.5000 brecha=+0.0000 selecciónLoss=0.6919
+Epoch 02/4: fitAUC=0.5000 selecciónAUC=0.5000 brecha=+0.0000 selecciónLoss=0.7072
+Reanudando /tmp/tmpb3lrjsv_/runs/cnn_imagen_fases/normal/seed_42/fold_0 en época 3
+Run /tmp/tmpb3lrjsv_/runs/cnn_imagen_fases/normal/seed_42/fold_0: 343 parámetros; fit=6 pacientes, selección=2, outer=2; test=0
+ok
+test_outer_no_se_evalua_sin_elecciones_congeladas (test_ajuste_cinetico.TestAjusteCinetico.test_outer_no_se_evalua_sin_elecciones_congeladas) ... ok
+test_seleccion_usa_solo_probabilidades_internas_y_ambas_semillas (test_ajuste_cinetico.TestAjusteCinetico.test_seleccion_usa_solo_probabilidades_internas_y_ambas_semillas) ... ok
+test_archivo_independiente_con_metricas_internas_sin_llamarlas_oof (test_app_imagen.TestAppImagen.test_archivo_independiente_con_metricas_internas_sin_llamarlas_oof) ... ok
+test_clave_cambia_al_cambiar_una_fase (test_app_imagen.TestAppImagen.test_clave_cambia_al_cambiar_una_fase) ... ok
+test_motor_un_corte_coincide_con_cli_y_no_requiere_clinica (test_app_imagen.TestAppImagen.test_motor_un_corte_coincide_con_cli_y_no_requiere_clinica) ... ok
+test_no_acepta_semillas_duplicadas_ni_pesos_modificados (test_app_imagen.TestAppImagen.test_no_acepta_semillas_duplicadas_ni_pesos_modificados) ... ok
+test_no_relaja_el_contrato_original_de_diez_modelos (test_app_imagen.TestAppImagen.test_no_relaja_el_contrato_original_de_diez_modelos) ... ok
+test_rechaza_multiples_cortes_en_paquete_nuevo (test_app_imagen.TestAppImagen.test_rechaza_multiples_cortes_en_paquete_nuevo) ... ok
+test_changed_images_or_clinical_values_invalidate_saved_prediction (test_app_logic.AppLogicTests.test_changed_images_or_clinical_values_invalidate_saved_prediction) ... ok
+test_clinical_values_and_missing_indicators_input (test_app_logic.AppLogicTests.test_clinical_values_and_missing_indicators_input) ... ok
+test_enhancement_map_is_rgb_and_signed (test_app_logic.AppLogicTests.test_enhancement_map_is_rgb_and_signed) ... ok
+test_model_card_reads_loss_and_identity_calibration_without_changing_legacy (test_app_logic.AppLogicTests.test_model_card_reads_loss_and_identity_calibration_without_changing_legacy) ... ok
+test_rejects_corrupt_payload (test_app_logic.AppLogicTests.test_rejects_corrupt_payload) ... ok
+test_rejects_missing_phase (test_app_logic.AppLogicTests.test_rejects_missing_phase) ... ok
+test_rejects_phase_from_another_slice (test_app_logic.AppLogicTests.test_rejects_phase_from_another_slice) ... ok
+test_rejects_wrong_geometry_and_rgb (test_app_logic.AppLogicTests.test_rejects_wrong_geometry_and_rgb) ... ok
+test_single_slice_averages_models_before_patient_aggregation (test_app_logic.AppLogicTests.test_single_slice_averages_models_before_patient_aggregation) ... ok
+test_validates_aligned_three_phase_sample (test_app_logic.AppLogicTests.test_validates_aligned_three_phase_sample) ... ok
+test_calibracion_no_invierte_una_red_con_ordenacion_inversa (test_cierre_cinetico.TestCierreCinetico.test_calibracion_no_invierte_una_red_con_ordenacion_inversa) ... ok
+test_comprobacion_cuenta_pacientes_no_cortes (test_cierre_cinetico.TestCierreCinetico.test_comprobacion_cuenta_pacientes_no_cortes) ... ok
+test_corte_fijo_no_depende_de_etiquetas_ni_orden (test_cierre_cinetico.TestCierreCinetico.test_corte_fijo_no_depende_de_etiquetas_ni_orden) ... ok
+test_cuatro_roles_sin_solapamiento_y_reproducibles (test_cierre_cinetico.TestCierreCinetico.test_cuatro_roles_sin_solapamiento_y_reproducibles) ... ok
+test_entrena_adam_y_conserva_checkpoint_seguro_sin_optim_en_inferencia (test_cierre_cinetico.TestCierreCinetico.test_entrena_adam_y_conserva_checkpoint_seguro_sin_optim_en_inferencia) ... normal seed=42 época=1: AUC selección=0.3125, brecha=+0.2344, 0.3s
+normal seed=42 época=2: AUC selección=0.3125, brecha=+0.2031, 0.3s
+ok
+test_no_admite_test_en_particiones (test_cierre_cinetico.TestCierreCinetico.test_no_admite_test_en_particiones) ... ok
+test_peso_total_por_paciente_independiente_de_numero_de_cortes (test_cierre_cinetico.TestCierreCinetico.test_peso_total_por_paciente_independiente_de_numero_de_cortes) ... ok
+test_estandarizacion_compartida (test_datos.TestPipelineDatos.test_estandarizacion_compartida) ... ok
+test_flip_conjunto (test_datos.TestPipelineDatos.test_flip_conjunto) ... ok
+test_fold_validation_correcto (test_datos.TestPipelineDatos.test_fold_validation_correcto) ... ok
+test_lectura_imagen (test_datos.TestPipelineDatos.test_lectura_imagen) ... ok
+test_particiones_sin_solape (test_datos.TestPipelineDatos.test_particiones_sin_solape) ... ok
+test_arquitectura_multimodal_y_gradientes (test_entrenamiento.TestEntrenamiento.test_arquitectura_multimodal_y_gradientes) ... ok
+test_aumentos_no_desalinean_canales (test_entrenamiento.TestEntrenamiento.test_aumentos_no_desalinean_canales) ... ok
+test_cache_y_bloques_conservan_pesos_y_presupuesto (test_entrenamiento.TestEntrenamiento.test_cache_y_bloques_conservan_pesos_y_presupuesto) ... /usr/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=3536172) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+Baseline clínico fold-train: valAUC=1.0000
+Run /tmp/tmp5js3q29a/continua/pool_dropout_wd_clinical/weighted/seed_42/fold_0: 371 parámetros; 8 cortes train, 4 validación, pos_weight=1.0000
+Epoch 01/4 loss=0.2048 valAUC=1.0000 best=1.0000 F1=1.0000 AP=1.0000 sens=1.000 spec=1.000 t=0.1s VRAM=0.00GiB
+Epoch 02/4 loss=0.2033 valAUC=1.0000 best=1.0000 F1=1.0000 AP=1.0000 sens=1.000 spec=1.000 t=0.0s VRAM=0.00GiB
+Epoch 03/4 loss=0.2025 valAUC=1.0000 best=1.0000 F1=1.0000 AP=1.0000 sens=1.000 spec=1.000 t=0.1s VRAM=0.00GiB
+Epoch 04/4 loss=0.2016 valAUC=1.0000 best=1.0000 F1=1.0000 AP=1.0000 sens=1.000 spec=1.000 t=0.1s VRAM=0.00GiB
+Baseline clínico fold-train: valAUC=1.0000
+Run /tmp/tmp5js3q29a/bloques/pool_dropout_wd_clinical/weighted/seed_42/fold_0: 371 parámetros; 8 cortes train, 4 validación, pos_weight=1.0000
+Epoch 01/2 loss=0.2048 valAUC=1.0000 best=1.0000 F1=1.0000 AP=1.0000 sens=1.000 spec=1.000 t=0.1s VRAM=0.00GiB
+Epoch 02/2 loss=0.2033 valAUC=1.0000 best=1.0000 F1=1.0000 AP=1.0000 sens=1.000 spec=1.000 t=0.1s VRAM=0.00GiB
+Reanudando /tmp/tmp5js3q29a/bloques/pool_dropout_wd_clinical/weighted/seed_42/fold_0 época 3
+Run /tmp/tmp5js3q29a/bloques/pool_dropout_wd_clinical/weighted/seed_42/fold_0: 371 parámetros; 8 cortes train, 4 validación, pos_weight=1.0000
+Epoch 03/4 loss=0.2025 valAUC=1.0000 best=1.0000 F1=1.0000 AP=1.0000 sens=1.000 spec=1.000 t=0.1s VRAM=0.00GiB
+Epoch 04/4 loss=0.2016 valAUC=1.0000 best=1.0000 F1=1.0000 AP=1.0000 sens=1.000 spec=1.000 t=0.1s VRAM=0.00GiB
+ok
+test_calibracion_y_umbral_del_pdf (test_entrenamiento.TestEntrenamiento.test_calibracion_y_umbral_del_pdf) ... ok
+test_comparacion_completa_y_rechazo_de_fold_ausente (test_entrenamiento.TestEntrenamiento.test_comparacion_completa_y_rechazo_de_fold_ausente) ... ok
+test_f1_se_calcula_por_paciente (test_entrenamiento.TestEntrenamiento.test_f1_se_calcula_por_paciente) ... ok
+test_multimodal_ajusta_clinica_solo_con_train_del_fold (test_entrenamiento.TestEntrenamiento.test_multimodal_ajusta_clinica_solo_con_train_del_fold) ... ok
+test_no_reinterpreta_configuraciones_retiradas (test_entrenamiento.TestEntrenamiento.test_no_reinterpreta_configuraciones_retiradas) ... ok
+test_oof_completo_y_por_paciente (test_entrenamiento.TestEntrenamiento.test_oof_completo_y_por_paciente) ... ok
+test_pipeline_escala_una_vez_y_conserva_fases (test_entrenamiento.TestEntrenamiento.test_pipeline_escala_una_vez_y_conserva_fases) ... ok
+test_reanudacion_real_es_identica (test_entrenamiento.TestEntrenamiento.test_reanudacion_real_es_identica) ... Baseline clínico fold-train: valAUC=1.0000
+Run /tmp/tmp81axofs1/continua/pool_dropout_wd_clinical/weighted/seed_42/fold_0: 371 parámetros; 8 cortes train, 4 validación, pos_weight=1.0000
+Epoch 01/3 loss=0.2048 valAUC=1.0000 best=1.0000 F1=1.0000 AP=1.0000 sens=1.000 spec=1.000 t=0.1s VRAM=0.00GiB
+Epoch 02/3 loss=0.2033 valAUC=1.0000 best=1.0000 F1=1.0000 AP=1.0000 sens=1.000 spec=1.000 t=0.1s VRAM=0.00GiB
+Epoch 03/3 loss=0.2027 valAUC=1.0000 best=1.0000 F1=1.0000 AP=1.0000 sens=1.000 spec=1.000 t=0.1s VRAM=0.00GiB
+Baseline clínico fold-train: valAUC=1.0000
+Run /tmp/tmp81axofs1/reanudada/pool_dropout_wd_clinical/weighted/seed_42/fold_0: 371 parámetros; 8 cortes train, 4 validación, pos_weight=1.0000
+Reanudando /tmp/tmp81axofs1/reanudada/pool_dropout_wd_clinical/weighted/seed_42/fold_0 época 2
+Run /tmp/tmp81axofs1/reanudada/pool_dropout_wd_clinical/weighted/seed_42/fold_0: 371 parámetros; 8 cortes train, 4 validación, pos_weight=1.0000
+Epoch 02/3 loss=0.2033 valAUC=1.0000 best=1.0000 F1=1.0000 AP=1.0000 sens=1.000 spec=1.000 t=0.1s VRAM=0.00GiB
+Epoch 03/3 loss=0.2027 valAUC=1.0000 best=1.0000 F1=1.0000 AP=1.0000 sens=1.000 spec=1.000 t=0.1s VRAM=0.00GiB
+ok
+test_rechaza_paciente_compartida_con_test (test_entrenamiento.TestEntrenamiento.test_rechaza_paciente_compartida_con_test) ... ok
+test_rechaza_variantes_retiradas (test_entrenamiento.TestEntrenamiento.test_rechaza_variantes_retiradas) ... ok
+test_train_no_convierte_etiquetas_test_y_valida_folds (test_entrenamiento.TestEntrenamiento.test_train_no_convierte_etiquetas_test_y_valida_folds) ... ok
+test_aumentos_son_identicos_entre_fases (test_entrenamiento_antioverfit.TestEntrenamientoAntioverfit.test_aumentos_son_identicos_entre_fases) ... ok
+test_brecha_usa_la_epoca_elegida_incluso_si_es_la_ultima (test_entrenamiento_antioverfit.TestEntrenamientoAntioverfit.test_brecha_usa_la_epoca_elegida_incluso_si_es_la_ultima) ... ok
+test_modelo_simple_salida_y_gradiente (test_entrenamiento_antioverfit.TestEntrenamientoAntioverfit.test_modelo_simple_salida_y_gradiente) ... ok
+test_protocolo_difiere_solo_en_paquete_prefijado (test_entrenamiento_antioverfit.TestEntrenamientoAntioverfit.test_protocolo_difiere_solo_en_paquete_prefijado) ... ok
+test_sampler_agrupa_pacientes_y_cubre_cada_corte (test_entrenamiento_antioverfit.TestEntrenamientoAntioverfit.test_sampler_agrupa_pacientes_y_cubre_cada_corte) ... ok
+test_comparacion_pareada_exige_mismos_pacientes (test_entrenamiento_cinetico.TestEntrenamientoCinetico.test_comparacion_pareada_exige_mismos_pacientes) ... ok
+test_fusion_temprana_y_salida_binaria (test_entrenamiento_cinetico.TestEntrenamientoCinetico.test_fusion_temprana_y_salida_binaria) ... ok
+test_mapas_cineticos_explicitos_conservan_signo (test_entrenamiento_cinetico.TestEntrenamientoCinetico.test_mapas_cineticos_explicitos_conservan_signo) ... ok
+test_protocolo_solo_cambia_la_arquitectura (test_entrenamiento_cinetico.TestEntrenamientoCinetico.test_protocolo_solo_cambia_la_arquitectura) ... ok
+test_vistas_multiescala_preservan_contexto_centro_y_nucleo (test_entrenamiento_cinetico.TestEntrenamientoCinetico.test_vistas_multiescala_preservan_contexto_centro_y_nucleo) ... ok
+test_comparador_exige_veinte_runs_y_mantiene_test_cerrado (test_entrenamiento_imagen.TestEntrenamientoImagen.test_comparador_exige_veinte_runs_y_mantiene_test_cerrado) ... ok
+test_encoder_monocanal_compartido_y_fusion_ordenada (test_entrenamiento_imagen.TestEntrenamientoImagen.test_encoder_monocanal_compartido_y_fusion_ordenada) ... ok
+test_particion_interna_no_toca_outer_y_es_fija_entre_semillas (test_entrenamiento_imagen.TestEntrenamientoImagen.test_particion_interna_no_toca_outer_y_es_fija_entre_semillas) ... ok
+test_umbral_conservador_y_metricas_de_ambas_clases (test_entrenamiento_imagen.TestEntrenamientoImagen.test_umbral_conservador_y_metricas_de_ambas_clases) ... ok
+test_bootstrap_distingue_ordenacion_opuesta_y_es_reproducible (test_evaluacion_test_imagen.TestEvaluacionCongelada.test_bootstrap_distingue_ordenacion_opuesta_y_es_reproducible) ... ok
+test_bootstrap_realmente_pareado_para_predicciones_iguales (test_evaluacion_test_imagen.TestEvaluacionCongelada.test_bootstrap_realmente_pareado_para_predicciones_iguales) ... ok
+test_discriminacion_y_matriz_con_valores_conocidos (test_evaluacion_test_imagen.TestEvaluacionCongelada.test_discriminacion_y_matriz_con_valores_conocidos) ... ok
+test_axial_aggregation_receives_gradients (test_imagen_mil.TestImagenMIL.test_axial_aggregation_receives_gradients) ... ok
+test_descriptors_constant_images_are_finite_and_phase_sensitive (test_imagen_mil.TestImagenMIL.test_descriptors_constant_images_are_finite_and_phase_sensitive) ... ok
+test_inference_averages_calibrated_fold_groups (test_imagen_mil.TestImagenMIL.test_inference_averages_calibrated_fold_groups) ... ok
+test_inference_descriptors_match_cached_definition (test_imagen_mil.TestImagenMIL.test_inference_descriptors_match_cached_definition) ... ok
+test_joint_augmentation_preserves_equal_phases_and_slices (test_imagen_mil.TestImagenMIL.test_joint_augmentation_preserves_equal_phases_and_slices) ... ok
+test_linear_branch_is_regularizable_and_trains (test_imagen_mil.TestImagenMIL.test_linear_branch_is_regularizable_and_trains) ... ok
+test_masked_slices_cannot_change_prediction (test_imagen_mil.TestImagenMIL.test_masked_slices_cannot_change_prediction) ... ok
+test_native_two_view_cnn_has_valid_shape_and_mask (test_imagen_mil.TestImagenMIL.test_native_two_view_cnn_has_valid_shape_and_mask) ... ok
+test_patient_pooling_is_invariant_to_slice_order (test_imagen_mil.TestImagenMIL.test_patient_pooling_is_invariant_to_slice_order) ... ok
+test_splits_are_disjoint_and_cover_patients (test_imagen_mil.TestImagenMIL.test_splits_are_disjoint_and_cover_patients) ... ok
+test_texture_on_blank_images_is_finite (test_imagen_mil.TestImagenMIL.test_texture_on_blank_images_is_finite) ... ok
+test_carga_estricta_con_pesos_y_calibracion_constante (test_inferencia_imagen.TestInferenciaImagen.test_carga_estricta_con_pesos_y_calibracion_constante) ... ok
+test_cinetica_carga_sus_pesos_y_rechaza_contrato_de_otra_red (test_inferencia_imagen.TestInferenciaImagen.test_cinetica_carga_sus_pesos_y_rechaza_contrato_de_otra_red) ... ok
+test_detecta_pesos_corruptos_y_no_admite_manifest_multimodal (test_inferencia_imagen.TestInferenciaImagen.test_detecta_pesos_corruptos_y_no_admite_manifest_multimodal) ... ok
+test_media_de_cortes_y_constante_se_conservan_sin_clinica (test_inferencia_imagen.TestInferenciaImagen.test_media_de_cortes_y_constante_se_conservan_sin_clinica) ... ok
+test_diferencias_pareadas_de_predicciones_identicas_son_cero (test_informe_paciente.TestInformePaciente.test_diferencias_pareadas_de_predicciones_identicas_son_cero) ... ok
+test_el_umbral_no_usa_las_etiquetas_del_fold_destinatario (test_informe_paciente.TestInformePaciente.test_el_umbral_no_usa_las_etiquetas_del_fold_destinatario) ... ok
+test_medoid_avoids_single_extreme_outlier (test_seleccion_cortes.TestSeleccionCortes.test_medoid_avoids_single_extreme_outlier) ... ok
+test_short_patient_and_all_arm (test_seleccion_cortes.TestSeleccionCortes.test_short_patient_and_all_arm) ... ok
+test_three_spaced_and_deterministic (test_seleccion_cortes.TestSeleccionCortes.test_three_spaced_and_deterministic) ... ok
+test_training_identical_apart_from_selection (test_seleccion_cortes.TestSeleccionCortes.test_training_identical_apart_from_selection) ... ok
+test_archiva_el_paquete_actual_sin_archivos_antiguos (test_versionar_modelos.TestVersiones.test_archiva_el_paquete_actual_sin_archivos_antiguos) ... ok
+test_detecta_codigo_conservado_modificado (test_versionar_modelos.TestVersiones.test_detecta_codigo_conservado_modificado) ... ok
+test_detecta_pesos_modificados (test_versionar_modelos.TestVersiones.test_detecta_pesos_modificados) ... ok
+test_fallo_no_publica_version_parcial_y_conserva_anteriores (test_versionar_modelos.TestVersiones.test_fallo_no_publica_version_parcial_y_conserva_anteriores) ... ok
+test_guardar_nuevo_rechaza_cambios_en_la_version_anterior (test_versionar_modelos.TestVersiones.test_guardar_nuevo_rechaza_cambios_en_la_version_anterior) ... ok
+test_imagen_usa_su_runtime_congelado_y_no_el_multimodal (test_versionar_modelos.TestVersiones.test_imagen_usa_su_runtime_congelado_y_no_el_multimodal) ... ok
+test_no_admite_rutas_de_version_fuera_del_archivo (test_versionar_modelos.TestVersiones.test_no_admite_rutas_de_version_fuera_del_archivo) ... ok
+test_no_sobrescribe_version_ni_reutiliza_numero (test_versionar_modelos.TestVersiones.test_no_sobrescribe_version_ni_reutiliza_numero) ... ok
+test_paquete_funciona_tras_desaparecer_la_fuente (test_versionar_modelos.TestVersiones.test_paquete_funciona_tras_desaparecer_la_fuente) ... ok
+
+----------------------------------------------------------------------
+Ran 93 tests in 11.319s
+
+OK

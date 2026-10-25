@@ -1,0 +1,21 @@
+{
+  "selected": {
+    "loss": "normal",
+    "selection_auc": 0.6883671016483482
+  },
+  "candidates": [
+    {
+      "loss": "normal",
+      "selection_auc": 0.6883671016483482
+    },
+    {
+      "loss": "weighted",
+      "selection_auc": 0.6630019459706928
+    }
+  ],
+  "frozen_at": "2026-10-25T16:51:21.083729+01:00",
+  "weights": {
+    "runs/normal/seed_42/inference.pt": "e149e607a5dc414f3abdad7462fb42b5f97f737a88e72c3a245ecb195f4610e3",
+    "runs/normal/seed_2026/inference.pt": "00e37805b18f6d39753f16abafab75abe19be2a36dcbe6a38cc7b54c89694522"
+  }
+}

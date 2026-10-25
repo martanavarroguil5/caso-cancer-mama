@@ -1,0 +1,136 @@
+[
+  {
+    "id": "v001_cnn_historica_20260930",
+    "files_verified": 36,
+    "models": 10,
+    "checksums_verified": true,
+    "runtime": {
+      "models": 10,
+      "parameters_per_model": 551913,
+      "checksums_verified": true,
+      "test_evaluated_once": true,
+      "test_repeated": false,
+      "aggregation": "mean",
+      "threshold": 0.2982406880601241,
+      "clinical_required": false
+    }
+  },
+  {
+    "id": "v002_multimodal_clinico_20261007",
+    "files_verified": 64,
+    "models": 10,
+    "checksums_verified": true,
+    "runtime": {
+      "models": 10,
+      "parameters_per_model": 551921,
+      "checksums_verified": true,
+      "test_evaluated_once": false,
+      "test_repeated": false,
+      "aggregation": "median",
+      "threshold": 0.35433316934837994,
+      "clinical_required": true
+    }
+  },
+  {
+    "id": "v003_multimodal_loss_20261010",
+    "files_verified": 91,
+    "models": 10,
+    "checksums_verified": true,
+    "runtime": {
+      "models": 10,
+      "parameters_per_model": 551921,
+      "checksums_verified": true,
+      "test_evaluated_once": false,
+      "test_repeated": false,
+      "aggregation": "median",
+      "threshold": 0.3063397710271307,
+      "clinical_required": true
+    }
+  },
+  {
+    "id": "v004_multimodal_bce_normal_20261011",
+    "files_verified": 91,
+    "models": 10,
+    "checksums_verified": true,
+    "runtime": {
+      "models": 10,
+      "parameters_per_model": 551921,
+      "checksums_verified": true,
+      "test_evaluated_once": false,
+      "test_repeated": false,
+      "aggregation": "median",
+      "threshold": 0.3489952149999999,
+      "clinical_required": true
+    }
+  },
+  {
+    "id": "v005_cnn_imagen_fases_normal_20261014",
+    "files_verified": 80,
+    "models": 10,
+    "checksums_verified": true,
+    "runtime": {
+      "models": 10,
+      "parameters_per_model": 442577,
+      "checksums_verified": true,
+      "clinical_required": false,
+      "aggregation": "mean",
+      "threshold": 0.5,
+      "calibration_is_constant": false,
+      "test_evaluated_once": false,
+      "test_repeated": false
+    }
+  },
+  {
+    "id": "v006_cnn_imagen_fases_ponderada_20261014",
+    "files_verified": 80,
+    "models": 10,
+    "checksums_verified": true,
+    "runtime": {
+      "models": 10,
+      "parameters_per_model": 442577,
+      "checksums_verified": true,
+      "clinical_required": false,
+      "aggregation": "mean",
+      "threshold": 1.0,
+      "calibration_is_constant": true,
+      "test_evaluated_once": false,
+      "test_repeated": false
+    }
+  },
+  {
+    "id": "v007_cnn_cinetica_multiescala_20261021",
+    "files_verified": 89,
+    "models": 10,
+    "checksums_verified": true,
+    "runtime": {
+      "models": 10,
+      "model_class": "CNNMultiescalaCinetica",
+      "parameters_per_model": 593521,
+      "checksums_verified": true,
+      "clinical_required": false,
+      "aggregation": "mean",
+      "threshold": 0.30879429210003834,
+      "calibration_is_constant": false,
+      "test_evaluated_once": false,
+      "test_repeated": false
+    }
+  },
+  {
+    "id": "v008_cnn_cinetica_un_corte_20261025",
+    "files_verified": 73,
+    "models": 2,
+    "checksums_verified": true,
+    "runtime": {
+      "models": 2,
+      "model_class": "CNNMultiescalaCinetica",
+      "parameters_per_model": 593521,
+      "checksums_verified": true,
+      "clinical_required": false,
+      "aggregation": "single",
+      "threshold": 0.29233309617847214,
+      "calibration_is_constant": false,
+      "test_evaluated_once": false,
+      "test_repeated": false
+    }
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "pid": 3535319,
+  "command": [
+    "/home/jorgesrab/Escritorio/caso-cancer-mama/.venv/bin/python",
+    "-u",
+    "-B",
+    "-m",
+    "cancer_mama.cierre_cinetico",
+    "ejecutar"
+  ],
+  "started_at": "2026-10-25T16:48:24.551286+01:00",
+  "planned_runs": 4
+}

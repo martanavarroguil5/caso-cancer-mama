@@ -1,0 +1,230 @@
+{
+  "schema_version": 2,
+  "evaluation_protocol": "train_only_four_way_single_slice",
+  "model_class": "CNNMultiescalaCinetica",
+  "status": "candidato_cierre_interno_sin_confirmacion_privada",
+  "inference_unit": "single_slice",
+  "models": [
+    {
+      "seed": 42,
+      "fold": 0,
+      "path": "seed_42.pt",
+      "sha256": "e149e607a5dc414f3abdad7462fb42b5f97f737a88e72c3a245ecb195f4610e3",
+      "model_config": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      }
+    },
+    {
+      "seed": 2026,
+      "fold": 0,
+      "path": "seed_2026.pt",
+      "sha256": "00e37805b18f6d39753f16abafab75abe19be2a36dcbe6a38cc7b54c89694522",
+      "model_config": {
+        "architecture": "multiscale_early_temporal_kinetic_fusion",
+        "input_phases": [
+          "PRE",
+          "EARLY",
+          "LATE"
+        ],
+        "derived_maps": [
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "temporal_channels": [
+          "PRE",
+          "EARLY",
+          "LATE",
+          "EARLY-PRE",
+          "LATE-PRE",
+          "EARLY-LATE"
+        ],
+        "center_crop_sizes": [
+          256,
+          128,
+          64
+        ],
+        "encoder_input_size": 128,
+        "scale_encoder_shared": true,
+        "backbone_channels": [
+          24,
+          48,
+          96,
+          160
+        ],
+        "hidden": 64,
+        "dropout": 0.35,
+        "spatial_dropout": 0.1,
+        "normalization": "batch",
+        "clinical": null
+      }
+    }
+  ],
+  "ensemble": "mean probabilities of two fixed seeds",
+  "slice_aggregation": "single",
+  "calibration": {
+    "method": "regularized_platt",
+    "slope": 0.23823162893611624,
+    "intercept": -0.5832147024476482,
+    "C": 1.0,
+    "clip_epsilon": 1e-07,
+    "scope": "single_slice",
+    "input": "logit_single_slice_ensemble_probability",
+    "fit_data": "calibration_patients_only",
+    "nonnegative_slope_constraint": true,
+    "boundary_solution": false,
+    "sample_weight": "1/n_slices_per_patient"
+  },
+  "threshold": 0.29233309617847214,
+  "threshold_policy": "max_patient_balanced_accuracy_calibration_only",
+  "test_evaluated_once": false,
+  "preprocessing": {
+    "phases": [
+      "PRE",
+      "EARLY",
+      "LATE"
+    ],
+    "shape": [
+      3,
+      256,
+      256
+    ],
+    "clinical_required": false,
+    "phase_scaling": "uint8/255",
+    "center_crop_sizes": [
+      256,
+      128,
+      64
+    ],
+    "encoder_input_size": [
+      128,
+      128
+    ],
+    "scale_weights_shared": true,
+    "kinetic_maps": [
+      "EARLY-PRE",
+      "LATE-PRE",
+      "EARLY-LATE"
+    ]
+  },
+  "training": {
+    "epochs": 40,
+    "min_epochs": 8,
+    "patience": 8,
+    "min_delta": 0.001,
+    "batch_size": 32,
+    "lr": 0.0003,
+    "min_lr": 1e-05,
+    "weight_decay": 0.01,
+    "clip_grad_norm": 5.0,
+    "amp": true,
+    "num_workers": 0,
+    "cpu_threads": 4,
+    "deterministic": true,
+    "loss": "normal",
+    "patient_balanced_loss": true
+  },
+  "selection": {
+    "loss": "normal",
+    "method": "selection_patients_only",
+    "selection_auc": 0.6883671016483482,
+    "metrics_internal_check": {
+      "n_patients": 165,
+      "n_positive": 48,
+      "prevalence": 0.2909090909090909,
+      "roc_auc": 0.5598290598290598,
+      "average_precision": 0.3537521556344493,
+      "brier": 0.20443607294549387,
+      "log_loss": 0.5986024880689076,
+      "accuracy": 0.503030303030303,
+      "balanced_accuracy": 0.5328525641025641,
+      "precision_no_pcr": 0.7397260273972602,
+      "recall_no_pcr": 0.46153846153846156,
+      "f1_no_pcr": 0.5684210526315789,
+      "precision_pcr": 0.31521739130434784,
+      "recall_pcr": 0.6041666666666666,
+      "f1_pcr": 0.4142857142857143,
+      "macro_f1": 0.49135338345864665,
+      "weighted_f1": 0.5235816814764183,
+      "threshold": 0.29233309617847214,
+      "tn": 54,
+      "fp": 63,
+      "fn": 19,
+      "tp": 29,
+      "support_no_pcr": 117,
+      "support_pcr": 48,
+      "confusion_matrix": [
+        [
+          54,
+          63
+        ],
+        [
+          19,
+          29
+        ]
+      ]
+    },
+    "auc_ci95_internal_check": [
+      0.4595797720797721,
+      0.6518874643874643
+    ]
+  },
+  "provenance_files": [
+    {
+      "path": "protocolo.json",
+      "sha256": "49cb805ec2567bad45a45f049bbb6b4441ad1c8f6256f8b028e0a3e0ce87c8c9"
+    },
+    {
+      "path": "particiones.csv",
+      "sha256": "00d2c56fc8a0562afce1420e4e5c953b9e153f1dbae95cf111414963e6a8391d"
+    },
+    {
+      "path": "seleccion_congelada.json",
+      "sha256": "d7b289dfd3d848e122c0b453c25916d69c29c04cb52a5a30c2f824b3a68d1df9"
+    },
+    {
+      "path": "politica_congelada.json",
+      "sha256": "08cccf9d072ea5968831dd3a457ad88f742b4e4e20b4f09d406b28e6c9c557f5"
+    },
+    {
+      "path": "resultado.json",
+      "sha256": "45209857ba01b4a5d4febdc5e290f3ca4705388d92e7826529bf414197cdc461"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "status": "complete",
+  "epochs": 17,
+  "selected_epoch": 9,
+  "selection_auc": 0.6795610119047588,
+  "optimizer_steps": 3485,
+  "skipped_steps": 0,
+  "seconds": 48.890492341000936,
+  "weights_sha256": "bde0c3f01d8ab159c4cf471bccf8aa9ef50479f86948a045a971ba5aada7cd5c",
+  "config_sha256": "1c246b6c6341e35030534adefa968e277950d88c22255f43aef65590a520dc31"
+}

@@ -1,0 +1,85 @@
+{
+  "name": "cnn_imagen_cinetica_multiescala",
+  "model": {
+    "architecture": "multiscale_early_temporal_kinetic_fusion",
+    "input_phases": [
+      "PRE",
+      "EARLY",
+      "LATE"
+    ],
+    "derived_maps": [
+      "EARLY-PRE",
+      "LATE-PRE",
+      "EARLY-LATE"
+    ],
+    "temporal_channels": [
+      "PRE",
+      "EARLY",
+      "LATE",
+      "EARLY-PRE",
+      "LATE-PRE",
+      "EARLY-LATE"
+    ],
+    "center_crop_sizes": [
+      256,
+      128,
+      64
+    ],
+    "encoder_input_size": 128,
+    "scale_encoder_shared": true,
+    "backbone_channels": [
+      24,
+      48,
+      96,
+      160
+    ],
+    "hidden": 64,
+    "dropout": 0.35,
+    "spatial_dropout": 0.1,
+    "normalization": "batch",
+    "clinical": null
+  },
+  "training": {
+    "epochs": 40,
+    "min_epochs": 8,
+    "patience": 8,
+    "min_delta": 0.001,
+    "batch_size": 32,
+    "lr": 0.0003,
+    "min_lr": 1e-05,
+    "weight_decay": 0.01,
+    "clip_grad_norm": 5.0,
+    "amp": true,
+    "num_workers": 0,
+    "cpu_threads": 4,
+    "deterministic": true
+  },
+  "augmentation": {
+    "hflip": 0.5,
+    "rot90": true
+  },
+  "evaluation": {
+    "unit": "patient",
+    "slice_aggregation": "mean",
+    "outer_protocol": "five_fold_patient_cv_with_inner_selection",
+    "inner_selection_fraction": 0.15,
+    "inner_split_seed": 20261014,
+    "checkpoint_metric": "inner_patient_auc",
+    "primary_threshold_strategy": "max_sensitivity_at_min_specificity",
+    "min_specificity": 0.9,
+    "secondary_threshold_strategy": "max_macro_f1",
+    "test_policy": "never_load_during_development"
+  },
+  "hypothesis": "La fusión temporal temprana conserva el inductive bias del modelo histórico que alcanzó 0.5945 OOF; las vistas centrales reducen el fondo dominante y los mapas firmados hacen explícita la cinética antes de las convoluciones.",
+  "history_plot_title": "CNN cinética multiescala: fit frente a selección; outer no interviene",
+  "loss": "weighted",
+  "seed": 42,
+  "selection_metric": "patient_balanced_single_slice_auc",
+  "counts": {
+    "fit_patients": 657,
+    "fit_slices": 6548,
+    "selection_patients": 110,
+    "selection_slices": 1097
+  },
+  "pos_weight": 2.4041450777202074
+}

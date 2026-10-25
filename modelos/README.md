@@ -16,6 +16,7 @@ calibración Platt, mediana y umbral 0,3543331693. No hace falta volver a entren
 | `v005_cnn_imagen_fases_normal_20261014` | Solo imagen, BCE normal; resultado insuficiente conservado | 0,5087 | 10 archivos |
 | `v006_cnn_imagen_fases_ponderada_20261014` | Solo imagen, BCE ponderada; resultado insuficiente conservado | 0,5246 | 10 archivos |
 | `v007_cnn_cinetica_multiescala_20261021` | Solo imagen, ajuste anidado; resultado insuficiente conservado | 0,5264 | 10 archivos |
+| `v008_cnn_cinetica_un_corte_20261025` | Experimental de un corte; check interno 0,5598 | — (no OOF) | 2 archivos |
 
 Los protocolos de selección difieren: estas AUC describen cada desarrollo y
 no constituyen una comparación independiente entre modelos. El cambio de decisión

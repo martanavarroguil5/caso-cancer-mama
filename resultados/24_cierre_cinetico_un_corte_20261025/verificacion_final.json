@@ -1,0 +1,20 @@
+{
+  "completed_at": "2026-10-25T17:18:06.584315+01:00",
+  "unit_tests": 93,
+  "unit_tests_passed": true,
+  "versions_verified": 8,
+  "previous_versions_unchanged": true,
+  "frozen_training_sources_unchanged": true,
+  "protocol_sha256": "49cb805ec2567bad45a45f049bbb6b4441ad1c8f6256f8b028e0a3e0ce87c8c9",
+  "policy_sha256": "08cccf9d072ea5968831dd3a457ad88f742b4e4e20b4f09d406b28e6c9c557f5",
+  "patient_roles_disjoint": true,
+  "independent_auc_calculation": 0.5598290598290598,
+  "isolated_package_passed": true,
+  "app_integration_passed": true,
+  "test_images_loaded": 0,
+  "private_validation_images_loaded": 0,
+  "extra_training_after_check": false,
+  "public_deployment": false,
+  "push_performed": false,
+  "browser_visual_review_passed": true
+}
