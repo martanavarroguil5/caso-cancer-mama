@@ -1,0 +1,42 @@
+{
+  "at": "2026-10-25T22:20:15.495869+01:00",
+  "files": {
+    "04_revision_avisos_1.png": "0df93b3abd7c9da0e5c2ae11f2f05d42190aad6a32cdeaec3db0112b955fe1fc",
+    "cortes_auditados.csv": "59cd55bbf1aa553b83ba4d86f473d2943bf3974b6d7b8601d71a07d02ea49f7e",
+    "revision_visual.csv": "5c4cd0e73de36ec6a152109c7849d491f1447e848ff1b8f6b1f7bdd3be0acb51",
+    "pacientes_para_revision.csv": "1a3633bfdc30ab13f03c0141c7bfbaca685fef35c2a9bb8c6cb298f2e7f2895e",
+    "diagnostico_movimiento.json": "cd6a1883ca43602a3f996b02dbe691ff199e68bee661d2aa4c5c4d71f02b1d3c",
+    "02_avisos_revision.png": "dfc4b70d1f53ac7f86184a8496e2e8a545938d4d79dad70549d2f70b0468d520",
+    "versiones_antes.json": "169362b2fb454e1c9f1335e1609ef99ab139399fb373dfcc671d3710ed67f655",
+    "duplicados.json": "07c7a0aada2766d29c436c5adfa4b29a22c8db50ee47d8ff9e498c4427059c51",
+    "muestras_revision_visual.csv": "2aa1e1e6b57058cd6a87555f905432af62a8f003d30b5f90258df7023c4fb034",
+    "04_revision_avisos_2.png": "a53df977fa2c270d761da83b9e99e7298872f522abbb8133827a48513b993f44",
+    "inventario_png.csv": "3993f0fc454324ac9a3db06006e25118e8e4c0d37b030acec8a49821a61bedb2",
+    "INFORME_AUDITORIA.md": "f1508a64f423b7d65982b421f6995b6d9c08b4f2eea7289aaeb5545c354a13ae",
+    "estado.json": "545c96d85cddb7ecb6dce6940a15c1ee5d017dba012abb60151c4b3763b1fcc0",
+    "04_revision_avisos_3.png": "1af86232f9ff662a6cde539dcfa17dd9677cc758adf1c9a730dec1cdbded2891",
+    "ejecucion.log": "0113b8d1828379449058e4163b49f7725b1d4cba6b47c8cc699f56b94a699a79",
+    "fases_repetidas_confirmadas.json": "51bcd3cdbb4ac4be798d63f9f3b4682f87f8376691cf74986ac8e5c9b753a07a",
+    "auditoria.json": "0c4f1866ff36f9537c3e9621f1dc3a4366721bf543c59206ae89fe4a43f4e060",
+    "lanzamiento.json": "f0ab14c59a848407cc924c06cb0da310827dae7dee20828c2bfb6998ffcb6ebe",
+    "01_ejemplos_cohortes.png": "9399d2aa96ef73a11f836897c1a747e3fa1469b51d4d64c1cb57dcf1208b4a1a",
+    "pacientes_auditados.csv": "70a9fb16db8df64707dddcaf99da93ceaf912f145f052c18bc196b2a1c6e82ad",
+    "INCIDENCIAS_PARA_PROFESOR.md": "06dbc185da69f8e3d40df5e989e1bbc0e01dfd2b15c68d541873e8252a15945f",
+    "verificacion_final.json": "00b698a8d7a4b565d012b09108a1a2cb7f5f2441319d02455498000381100444",
+    "03_distribuciones.png": "973996debabd85fcb6d2a6a70f79141ea5d47bba64046e2a4530f32d60c30478",
+    "condiciones_para_entrenar.json": "cedce2a9a7cf02b196c62ca731d7d7d1e30d2e0399da2aa27e052cb19e0e387c",
+    "avisos_para_revision.csv": "8da16232aaf108f64fce152f620a7e5e5cd913f3db8bab0fcd545193f1fb68f0",
+    "protocolo_cinco_folds/roles_fold_2.csv": "9db04276b13de5bb09b2da37bfe2f7a88f4296a1886b5420aa8a739813c967b5",
+    "protocolo_cinco_folds/protocolo.json": "854775b99ab1f5ef2085361ea11d5edc29760394f569b080b6094822a17e08d9",
+    "protocolo_cinco_folds/protocolo.json.sha256": "413a61b73698380d9c713e5a9ae50dc9e80283a5854f303fc2d538b268905280",
+    "protocolo_cinco_folds/roles_fold_4.csv": "644fcaa949f481854e1f7afc1c7315611d748ec8a418922bcf4efddb0d65e0ed",
+    "protocolo_cinco_folds/roles_fold_1.csv": "e5a1adf984ebd40e90448c4deace05fb6cc6d2ac8ccd9c492c15028ba1185c2a",
+    "protocolo_cinco_folds/roles_fold_0.csv": "dfd6696e44909e36824c8826635391d6e360f275002fa5e3e6eed2c1931a3f08",
+    "protocolo_cinco_folds/roles_fold_3.csv": "12b63653d94c5e20cb2b1ca7b47c46167bb377415e6c9d2f731a824bcd25901f",
+    "protocolo_cinco_folds/roles_modelo_final.csv": "1fbf7de76a8fc1ad84eebe6da64e1b557838269d4b5b269d303a1898fee6ca89"
+  },
+  "local_only": [
+    "inventario_png.csv",
+    "cortes_auditados.csv"
+  ]
+}

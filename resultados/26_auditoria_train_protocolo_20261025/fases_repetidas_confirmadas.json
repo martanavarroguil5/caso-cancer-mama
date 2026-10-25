@@ -1,0 +1,92 @@
+[
+  {
+    "patient_id": "ISPY1_1139",
+    "sample_id": "ISPY1_1139_z003",
+    "identical_phases": [
+      "EARLY",
+      "LATE"
+    ],
+    "pixel_sha256": "b60ea057cb25808e16cdf700732d6a3b3e7307c9b9e1275825af61aa2a471b8a"
+  },
+  {
+    "patient_id": "ISPY1_1139",
+    "sample_id": "ISPY1_1139_z006",
+    "identical_phases": [
+      "EARLY",
+      "LATE"
+    ],
+    "pixel_sha256": "36e0179695a90eb41c875f869d3396f9a1fb85cea9b53534ce3ad8f354a141e0"
+  },
+  {
+    "patient_id": "ISPY1_1139",
+    "sample_id": "ISPY1_1139_z007",
+    "identical_phases": [
+      "EARLY",
+      "LATE"
+    ],
+    "pixel_sha256": "cc9fb83e0cdf9e573951b1e58bf278fbd0f7ea92d1fca2956250d1a9c6070e78"
+  },
+  {
+    "patient_id": "ISPY1_1139",
+    "sample_id": "ISPY1_1139_z008",
+    "identical_phases": [
+      "EARLY",
+      "LATE"
+    ],
+    "pixel_sha256": "f43ed9e89c8670cbff1002e2f0b77dce8c5d16b5122ba749e50a0a19d26759ae"
+  },
+  {
+    "patient_id": "ISPY1_1139",
+    "sample_id": "ISPY1_1139_z009",
+    "identical_phases": [
+      "EARLY",
+      "LATE"
+    ],
+    "pixel_sha256": "43396e0c536f1fd7450b621ff5e9b620dcc916fc8f01817db04f6b3fb3666964"
+  },
+  {
+    "patient_id": "ISPY1_1139",
+    "sample_id": "ISPY1_1139_z010",
+    "identical_phases": [
+      "EARLY",
+      "LATE"
+    ],
+    "pixel_sha256": "7680c83d22e5e60e13590b1c224f356eef7354127a84f1d987d834f16b665e8c"
+  },
+  {
+    "patient_id": "ISPY1_1139",
+    "sample_id": "ISPY1_1139_z011",
+    "identical_phases": [
+      "EARLY",
+      "LATE"
+    ],
+    "pixel_sha256": "18ff3b8fd58d0b682e89e53491385471921dc805af75e131c45493eba431f8f1"
+  },
+  {
+    "patient_id": "ISPY1_1139",
+    "sample_id": "ISPY1_1139_z012",
+    "identical_phases": [
+      "EARLY",
+      "LATE"
+    ],
+    "pixel_sha256": "5ac8b80492444b950afdd6bba3264b472f0e518346c5dcc0c6f1e3bc78876de3"
+  },
+  {
+    "patient_id": "ISPY1_1139",
+    "sample_id": "ISPY1_1139_z013",
+    "identical_phases": [
+      "EARLY",
+      "LATE"
+    ],
+    "pixel_sha256": "96b4dd0303c7a7ce3045da944a0505174af21809e10dfc226295705f810bd00a"
+  },
+  {
+    "patient_id": "ISPY1_1139",
+    "sample_id": "ISPY1_1139_z014",
+    "identical_phases": [
+      "EARLY",
+      "LATE"
+    ],
+    "pixel_sha256": "fe7c843e22180acf49cdf6846549a36c7d5f77594f2ab802a5877a63a97bdb97"
+  }
+]

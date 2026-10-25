@@ -1,0 +1,13 @@
+{
+  "prepared_at": "2026-10-25T22:20:15.381988+01:00",
+  "training_authorized_this_step": false,
+  "training_started": false,
+  "source_case_requiring_policy": "ISPY1_1139: EARLY y LATE repetidas; sin corrección/exclusión automática",
+  "required": [
+    "Aclarar política de datos",
+    "Elegir hipótesis única y protocolo de comparación",
+    "Autorización posterior para entrenar"
+  ],
+  "audit_sha256": "0c4f1866ff36f9537c3e9621f1dc3a4366721bf543c59206ae89fe4a43f4e060",
+  "protocol_sha256": "854775b99ab1f5ef2085361ea11d5edc29760394f569b080b6094822a17e08d9"
+}
