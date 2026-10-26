@@ -70,7 +70,24 @@ RECETA_MEDIA.update({
     "cortes_por_paciente": 3,
     "lambda_aux": 0.0,
 })
-RECETAS = {"control": RECETA, "lenta": RECETA_LENTA, "media": RECETA_MEDIA}
+# Receta de presupuesto: la media con un calendario que llega a LR 0 en la
+# época 16. En la media, el coseno de 60 épocas mantenía el LR alto cuando la
+# red empezaba a memorizar; aquí converge dentro del presupuesto y el mejor
+# punto debería caer al final, hacia la época 12–16.
+RECETA_PRESUPUESTO = deepcopy(RECETA_MEDIA)
+RECETA_PRESUPUESTO.update({
+    # Pilotos fold 0, semilla 42, normal, solo selección: con 16 épocas la BCE
+    # de selección toca mínimo en la 11 (lineal y coseno) y la AUC tiene su
+    # meseta en la 9–13. Presupuesto 12 y se conserva la última época, sin
+    # depender del ruido de la AUC de 131 pacientes.
+    "epocas_max": 12,
+    "epocas_min": 12,
+    "paciencia": 12,
+    "calendario": "lineal",
+    "checkpoint": "ultima",
+})
+RECETAS = {"control": RECETA, "lenta": RECETA_LENTA, "media": RECETA_MEDIA,
+           "presupuesto": RECETA_PRESUPUESTO}
 
 
 @dataclass
@@ -269,10 +286,15 @@ def entrenar(receta: dict, pixeles: torch.Tensor, indice: pd.DataFrame,
     total = receta["epocas_max"] * pasos_epoca
     calentamiento = receta["warmup_epocas"] * pasos_epoca
 
+    # «lineal»: decaimiento lineal hasta 0 al agotar el presupuesto de épocas
+    # (Li, Yumer y Ramanan, Budgeted Training, ICLR 2020).
+    lineal = receta.get("calendario", "coseno") == "lineal"
+
     def factor(paso: int) -> float:
         if paso < calentamiento:
             return (paso + 1) / calentamiento
-        return 0.5 * (1 + math.cos(math.pi * (paso - calentamiento) / max(1, total - calentamiento)))
+        progreso = (paso - calentamiento) / max(1, total - calentamiento)
+        return max(0.0, 1 - progreso) if lineal else 0.5 * (1 + math.cos(math.pi * progreso))
 
     planificador = torch.optim.lr_scheduler.LambdaLR(optimizador, factor)
     ema = EMA(modelo, receta["ema"])
@@ -357,8 +379,10 @@ def entrenar(receta: dict, pixeles: torch.Tensor, indice: pd.DataFrame,
                 sin_mejora >= receta["paciencia"]:
             break
 
-    if seleccion is None:
-        estado, epoca_elegida = deepcopy(ema.modelo.state_dict()), n_epocas
+    if seleccion is None or receta.get("checkpoint") == "ultima":
+        # «ultima»: con LR que llega a 0 el modelo converge al agotar el
+        # presupuesto; la selección solo se registra para las curvas.
+        estado, epoca_elegida = deepcopy(ema.modelo.state_dict()), len(historia)
     else:
         estado, epoca_elegida = mejor["estado"], mejor["epoca"]
     memoria = torch.cuda.max_memory_allocated(dispositivo) / 2**20 if cuda else 0.0

@@ -101,7 +101,7 @@ def main(argv=None) -> None:
     humo.add_argument("--epocas", type=int, default=2)
 
     piloto = sub.add_parser("piloto", help="Una red en un fold; solo curvas de fit y selección")
-    piloto.add_argument("--receta", default="lenta", choices=["control", "lenta", "media"])
+    piloto.add_argument("--receta", default="lenta", choices=["control", "lenta", "media", "presupuesto"])
     piloto.add_argument("--fold", type=int, default=0)
     piloto.add_argument("--semilla", type=int, default=42)
     piloto.add_argument("--perdida", default="ponderada", choices=["normal", "ponderada"])
@@ -109,7 +109,7 @@ def main(argv=None) -> None:
 
     cv = sub.add_parser("cv", help="Validación cruzada por paciente (5 folds)")
     cv.add_argument("--nombre", default="cv_party")
-    cv.add_argument("--receta", default="control", choices=["control", "lenta", "media"])
+    cv.add_argument("--receta", default="control", choices=["control", "lenta", "media", "presupuesto"])
     cv.add_argument("--ajuste", nargs="*", default=[], help="clave=valor JSON sobre la receta")
     cv.add_argument("--control", default=None, help="CV previa con la que comparar brazo a brazo")
     cv.add_argument("--folds", type=int, nargs="+", default=[0, 1, 2, 3, 4])

@@ -9,7 +9,7 @@ import torch
 from PIL import Image
 
 from pcr_party import datos, metricas
-from pcr_party.entrenar import (RECETA, RECETA_LENTA, aumentar, entrenar, muestrear_cortes,
+from pcr_party.entrenar import (RECETA, RECETA_LENTA, RECETAS, aumentar, entrenar, muestrear_cortes,
                                 objetivos_auxiliares, predecir)
 from pcr_party.modelo import PartyNet, numero_parametros
 
@@ -170,6 +170,20 @@ class TestEntrenamiento(unittest.TestCase):
                      "normal", 0.0, registro=lambda _: None)
         self.assertEqual(len(r.historia), 2)
         self.assertIn("sel_bce_obj", r.historia[0])
+
+    def test_calendario_lineal_llega_a_cero(self):
+        indice = indice_sintetico(8, 2)
+        pixeles = torch.randint(0, 256, (len(indice), 3, 256, 256), dtype=torch.uint8)
+        receta = deepcopy(RECETAS["presupuesto"])
+        receta.update(lote=4, epocas_max=3, epocas_min=3, paciencia=3, warmup_epocas=1,
+                      pacientes_diagnostico_fit=4)
+        receta["modelo"] = dict(receta["modelo"], anchos=[4, 4, 4, 4], oculto=8)
+        r = entrenar(receta, pixeles, indice, np.arange(0, 12), np.arange(12, 16), 1,
+                     "normal", 0.0, registro=lambda _: None)
+        lr = [h["lr_final"] for h in r.historia]
+        self.assertEqual(len(lr), 3)
+        self.assertLess(lr[1], receta["lr"])
+        self.assertAlmostEqual(lr[-1], 0.0, places=12)
 
     def test_final_requiere_epocas(self):
         indice = indice_sintetico(4, 1)
