@@ -1,5 +1,0 @@
-{
-  "brier": 0.20772627198021665,
-  "log_loss": 0.6061469948598616,
-  "scope": "prevalencia por paciente aprendida solo en fit de cada fold; descriptivo añadido al cierre"
-}

@@ -1,8 +1,0 @@
-* text=auto eol=lf
-
-*.pdf binary
-*.png binary
-*.jpg binary
-*.jpeg binary
-*.pt binary
-/modelos/versiones/** -text

@@ -1,5 +1,0 @@
-# Solo los pesos de versiones publicadas entran en Git.
-!versiones/*/pesos/*.pt
-/.versionar.lock
-/.staging-*/
-/.catalogo-*.tmp

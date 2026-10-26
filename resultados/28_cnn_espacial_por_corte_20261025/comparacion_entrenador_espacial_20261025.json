@@ -1,6 +1,0 @@
-{
-  "same_train_run_except_model_factory": true,
-  "control_commit": "db845626bfca69276217074256fc131c0bffbc01",
-  "comparison": "AST sin posiciones; única sustitución CNNMultiescalaCinetica por make_model",
-  "verified_at": "2026-10-25T23:29:42.807498+01:00"
-}

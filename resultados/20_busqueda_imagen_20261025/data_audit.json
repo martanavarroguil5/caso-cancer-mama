@@ -1,7 +1,0 @@
-{
-  "train_patients": 1097,
-  "train_slices": 10945,
-  "cross_patient_duplicate_triplets_at128": [],
-  "test_images_loaded": 0,
-  "cache_sha256": "415fc9b707a3aa30059ded5a1cc8ad212caf47bc87d4635b6a3d4bfa669404ab"
-}

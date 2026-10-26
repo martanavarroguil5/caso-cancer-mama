@@ -1,9 +1,0 @@
-{
-  "app_rendered": true,
-  "example_prediction_passed": true,
-  "result_cleared_after_input_change": true,
-  "version": "v008_cnn_cinetica_un_corte_20261025",
-  "device": "cuda",
-  "single_slice": true,
-  "clinical_inputs": false
-}

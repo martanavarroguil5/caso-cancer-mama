@@ -1,9 +1,0 @@
-{
-  "created_utc": "2026-10-25T01:37:49.772258+00:00",
-  "strategy": "all non-outer patients; exactly source best epoch times original fit batches optimizer steps",
-  "lr": "same source-epoch LR at each optimizer step",
-  "calibration": "unchanged original inner calibration",
-  "selector": "same per-fold family and seeds already chosen by the inner search",
-  "test_images_loaded": 0,
-  "source_sha256": "d379bacbcdd350ce1e2b836db727a64cd9d3d5e6c6e33a5db4e1e641f5bbb537"
-}

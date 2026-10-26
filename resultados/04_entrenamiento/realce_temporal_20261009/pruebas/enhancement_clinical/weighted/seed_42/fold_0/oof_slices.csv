@@ -1,9 +1,0 @@
-sample_id,patient_id,fold,pCR,dataset,prob,split,seed,loss,smoke
-ISPY1_1001_z012,ISPY1_1001,0,0,spy1,0.33370075,train,42,weighted,True
-ISPY1_1001_z013,ISPY1_1001,0,0,spy1,0.33370075,train,42,weighted,True
-ISPY1_1001_z014,ISPY1_1001,0,0,spy1,0.33370075,train,42,weighted,True
-ISPY1_1001_z015,ISPY1_1001,0,0,spy1,0.33370075,train,42,weighted,True
-ISPY1_1075_z010,ISPY1_1075,0,1,spy1,0.678996,train,42,weighted,True
-ISPY1_1075_z011,ISPY1_1075,0,1,spy1,0.678996,train,42,weighted,True
-ISPY1_1075_z013,ISPY1_1075,0,1,spy1,0.678996,train,42,weighted,True
-ISPY1_1075_z014,ISPY1_1075,0,1,spy1,0.678996,train,42,weighted,True
