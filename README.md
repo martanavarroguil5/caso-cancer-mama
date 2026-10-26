@@ -30,8 +30,8 @@ tests/           pruebas unitarias (CPU, datos sintéticos)
 docs/LECCIONES.md
 ```
 
-`breastdcedl` y `.venv` son enlaces simbólicos a la copia de `main`. `cache/`,
-`runs/` y `modelos/` se ignoran en Git.
+`breastdcedl` y `.venv` son enlaces simbólicos a la copia de `main`. `cache/` y
+`runs/` se ignoran en Git; de `modelos/` solo se versiona el paquete final.
 
 ## Cómo entrenar
 

@@ -4,7 +4,10 @@ __pycache__/
 breastdcedl
 cache/
 runs/
-modelos/
+modelos/*
+!modelos/party_final/
 *.pt
 *.npy
 *.log
+!modelos/party_final/pesos/*.pt
+!modelos/party_final/registro.log

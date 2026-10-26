@@ -194,7 +194,7 @@ toca el 0.
   b = −0,100. Umbral Youden 0,297 sobre la probabilidad calibrada. En OOF:
   sensibilidad 55,9 %, especificidad 55,4 %, F1 pCR 0,425 y macro-F1 0,531
   (frente a 0,414 de decir siempre «no pCR»).
-- Los pesos están en `modelos/`, ignorado por Git. Antes de la entrega
-  habría que versionarlos (≈12 MB) o publicarlos como release.
+- El paquete completo (5 pesos, `paquete.json` con SHA-256, historias y
+  registro; ≈12 MB) está versionado en Git.
 - **Test aún no evaluado.** `evaluar-test` se ejecuta una sola vez y escribe la
   marca en el paquete.
