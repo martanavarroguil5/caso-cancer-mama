@@ -56,7 +56,21 @@ RECETA_LENTA.update({
     "cortes_por_paciente": 3,
     "lambda_aux": 0.0,
 })
-RECETAS = {"control": RECETA, "lenta": RECETA_LENTA}
+# Receta media: la regularización del control (que discrimina mejor) con el
+# muestreo de la lenta. La CV lenta mostró curvas sanas pero infraajuste
+# (AUC ≈ cohorte); aquí solo se cambia qué ve cada época, no cuánto se penaliza.
+RECETA_MEDIA = deepcopy(RECETA)
+RECETA_MEDIA.update({
+    "epocas_max": 60,
+    "warmup_epocas": 2,
+    "paciencia": 10,
+    "epocas_min": 14,
+    "ema": 0.98,
+    "afin": {"escala": 0.05, "traslacion": 0.03, "rotacion_grados": 10},
+    "cortes_por_paciente": 3,
+    "lambda_aux": 0.0,
+})
+RECETAS = {"control": RECETA, "lenta": RECETA_LENTA, "media": RECETA_MEDIA}
 
 
 @dataclass
