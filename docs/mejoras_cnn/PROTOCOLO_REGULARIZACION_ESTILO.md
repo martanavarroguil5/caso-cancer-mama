@@ -89,3 +89,12 @@ Comandos:
 .venv/bin/python -B -m cancer_mama.regularizacion_estilo preparar
 .venv/bin/python -u -B -m cancer_mama.regularizacion_estilo entrenar
 ```
+
+
+## Cierre
+
+Completado: mediaAUC0.557581, control0.556270,
+delta+0.001311 con intervalo que incluye cero. No alcanza0,60.
+Código experimental retirado; reproducible en commit local7f9b3f2f96c58e3261f344d25d52f77a6804c199.
+[Informe completo](../../resultados/30_regularizacion_estilo_20261026/INFORME_RESULTADOS.md).
+No se activa un candidato ni se abre otra tanda.

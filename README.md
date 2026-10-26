@@ -105,3 +105,9 @@ modelo final; no ejecuta entrenamientos. Una salida ya terminada no se sobrescri
 [CNN espacial compacta por corte y comparación prefijada](docs/CNN_ESPACIAL_POR_CORTE.md).
 
 [Auditoría de calibración y política de decisión de V007](docs/AUDITORIA_POLITICA_V007.md).
+
+
+La [comparación de regularización de estilo](resultados/30_regularizacion_estilo_20261026/INFORME_RESULTADOS.md)
+(26/10/2026) termina sin mejora convincente: AUC medio0,5576 frente a0,5563 del
+control. No sustituye las versiones conservadas; código experimental en la
+historia de main y descarte registrado en docs/EXPERIMENTOS_DESCARTADOS.md.

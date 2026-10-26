@@ -1,0 +1,1 @@
+{"synthetic_only": true, "patient_images_loaded": 0, "parameters": 593521, "adamw_steps": 4, "changed_parameter_tensors": 28, "base_inference_max_error": 0.0, "bce_final": 0.02200702764093876, "finite": true}

@@ -1,0 +1,22 @@
+{
+  "epochs": 342,
+  "adamw_steps": 79686,
+  "seconds_wall_training_and_evaluation": 1237.530331,
+  "selected_epochs": [
+    10,
+    8,
+    14,
+    21,
+    3,
+    16,
+    8,
+    2,
+    1,
+    1
+  ],
+  "selected_epoch_median": 8.0,
+  "selected_gap_median": 0.0690412484430728,
+  "final_gap_median": 0.2529941265934848,
+  "joint_curves_selected": 4,
+  "joint_curves_all": 8
+}

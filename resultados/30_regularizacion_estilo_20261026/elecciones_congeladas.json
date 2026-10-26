@@ -1,0 +1,550 @@
+{
+  "frozen_at": "2026-10-26T10:46:20.845312+01:00",
+  "folds": [
+    {
+      "fold": 0,
+      "frozen_at": "2026-10-26T10:30:25.364464+01:00",
+      "rules": {
+        "loss": {
+          "selected_loss": "normal",
+          "candidates": [
+            {
+              "loss": "normal",
+              "selection_auc": 0.6658395368072788,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 1.187599990541119,
+                "intercept": -0.05654253650860981,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.48324026269922976,
+              "secondary_threshold": 0.3769000608134129,
+              "weights": {
+                "runs/fold_0/normal/seed_42/loss.pt": "a2e89307864844b6c91ac0ab90edad4e315512a2f9341c0bdac49489f0042532",
+                "runs/fold_0/normal/seed_2026/loss.pt": "ae7da55c7924c06656fa2bb78a58f6dac5101ecb8360cb27eada4c8b045dd8a0"
+              }
+            },
+            {
+              "loss": "weighted",
+              "selection_auc": 0.6324786324786325,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 0.9510470089578158,
+                "intercept": -0.9053455213960491,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.48576626573945886,
+              "secondary_threshold": 0.3372413345230789,
+              "weights": {
+                "runs/fold_0/weighted/seed_42/loss.pt": "edda9b352fe60907da5a484471b32177b25bd3e33cae796f1f7c48673355926a",
+                "runs/fold_0/weighted/seed_2026/loss.pt": "89d02d712227e0d1cb1952f5b20ddc5523f0149f024c99900e6cfa2359210903"
+              }
+            }
+          ]
+        },
+        "auc": {
+          "selected_loss": "normal",
+          "candidates": [
+            {
+              "loss": "normal",
+              "selection_auc": 0.6683209263854425,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 1.150964083192302,
+                "intercept": -0.13401280191488396,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.4615162870475164,
+              "secondary_threshold": 0.38000279991589975,
+              "weights": {
+                "runs/fold_0/normal/seed_42/auc.pt": "dc8b10d0ff03778382c3b5b0c41804823029d926afc07b496377b7e6ddcc9655",
+                "runs/fold_0/normal/seed_2026/auc.pt": "53a79ca4b8b9b0e3d475530b916bc3562052af201a5549fad0a61d152cb7f823"
+              }
+            },
+            {
+              "loss": "weighted",
+              "selection_auc": 0.6385442514474773,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 0.8340638127340811,
+                "intercept": -0.8602622105745997,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.4298219125405292,
+              "secondary_threshold": 0.3548920980002997,
+              "weights": {
+                "runs/fold_0/weighted/seed_42/auc.pt": "b97e2e698933a0d9517364ecf0d9680c7f3183204d17dc8a5c0e402e82b2f78f",
+                "runs/fold_0/weighted/seed_2026/auc.pt": "178c4bbe58e4ab2537333182b77fc268a9263dbe22b69aec525643e458e417b3"
+              }
+            }
+          ]
+        }
+      },
+      "counts": {
+        "fit": 746,
+        "selection": 132,
+        "outer": 219
+      }
+    },
+    {
+      "fold": 1,
+      "frozen_at": "2026-10-26T10:35:36.174103+01:00",
+      "rules": {
+        "loss": {
+          "selected_loss": "normal",
+          "candidates": [
+            {
+              "loss": "normal",
+              "selection_auc": 0.7146401985111663,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 1.2086298894440366,
+                "intercept": 0.10774841647809069,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.536947592706443,
+              "secondary_threshold": 0.3226859190642963,
+              "weights": {
+                "runs/fold_1/normal/seed_42/loss.pt": "a13da617e5170b883eaf924272aa61124c980aa816bc8ac32dea91d181b7cadf",
+                "runs/fold_1/normal/seed_2026/loss.pt": "58ed068f7a5ff0c43e42f44519744d82f248ddc1f52281a31dfb55f9818ebaf2"
+              }
+            },
+            {
+              "loss": "weighted",
+              "selection_auc": 0.6779707747449683,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 1.3180374113256585,
+                "intercept": -0.9887067996282577,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.46164936766536774,
+              "secondary_threshold": 0.4069886272649635,
+              "weights": {
+                "runs/fold_1/weighted/seed_42/loss.pt": "abb76f46850941361cffd69ad37681b85d05ffba3287050d9578fcbc84491d8e",
+                "runs/fold_1/weighted/seed_2026/loss.pt": "304c5c4571118cf89ba1d4f992aff789b7875c85f83136f043e1295b99ad846e"
+              }
+            }
+          ]
+        },
+        "auc": {
+          "selected_loss": "normal",
+          "candidates": [
+            {
+              "loss": "normal",
+              "selection_auc": 0.7099531293079681,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 1.2560404207354583,
+                "intercept": -0.03966111412153232,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.49392683128165815,
+              "secondary_threshold": 0.48862230735339074,
+              "weights": {
+                "runs/fold_1/normal/seed_42/auc.pt": "7a53dabdfbc123f0b505519e9b2c84d147cc89b1e416a275ab8964b050eedc37",
+                "runs/fold_1/normal/seed_2026/auc.pt": "aaa517350003e0191d1bf1a1d6c79a912953a658fadd911260fdb1b650612d57"
+              }
+            },
+            {
+              "loss": "weighted",
+              "selection_auc": 0.6859663633857181,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 1.2594983586650335,
+                "intercept": -1.0018581628340195,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.5082987302116097,
+              "secondary_threshold": 0.35351866973766766,
+              "weights": {
+                "runs/fold_1/weighted/seed_42/auc.pt": "31710936e48f0d48186dd4413de3e1c4268338972717df03f42188317c5a8ea6",
+                "runs/fold_1/weighted/seed_2026/auc.pt": "4c01f1e97c1a333cff501b3cda54269791396e92e1fd1e665a3d9660893fd309"
+              }
+            }
+          ]
+        }
+      },
+      "counts": {
+        "fit": 746,
+        "selection": 132,
+        "outer": 219
+      }
+    },
+    {
+      "fold": 2,
+      "frozen_at": "2026-10-26T10:39:29.932171+01:00",
+      "rules": {
+        "loss": {
+          "selected_loss": "weighted",
+          "candidates": [
+            {
+              "loss": "normal",
+              "selection_auc": 0.5814722911497106,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 0.7313077283151929,
+                "intercept": -0.27103637989512996,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.382714987185226,
+              "secondary_threshold": 0.34060985452012893,
+              "weights": {
+                "runs/fold_2/normal/seed_42/loss.pt": "a6870ad629308731a8d128dc19b23d7a25ff86ebdc02d64b1fa710fd53678055",
+                "runs/fold_2/normal/seed_2026/loss.pt": "70205651909ae57f366eea7b41a8fca9fcdaa7dfc1ec128a1da94c2efc42acc9"
+              }
+            },
+            {
+              "loss": "weighted",
+              "selection_auc": 0.6173145850565206,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 1.0306841041730974,
+                "intercept": -0.8367374953099792,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.4310819598563713,
+              "secondary_threshold": 0.30802737105996253,
+              "weights": {
+                "runs/fold_2/weighted/seed_42/loss.pt": "1ecaadf6b018cb47bbc791dc509a5c46e5a3e2a093a6ef35a2dfa0c4b0d22a80",
+                "runs/fold_2/weighted/seed_2026/loss.pt": "152a8b2b4f62e81694007762c9c159d8bc7fdf9b9218f57365e8d341f2a6a0b2"
+              }
+            }
+          ]
+        },
+        "auc": {
+          "selected_loss": "weighted",
+          "candidates": [
+            {
+              "loss": "normal",
+              "selection_auc": 0.5814722911497106,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 0.7313077283151929,
+                "intercept": -0.27103637989512996,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.382714987185226,
+              "secondary_threshold": 0.34060985452012893,
+              "weights": {
+                "runs/fold_2/normal/seed_42/auc.pt": "05ebbe0fe78511c20b9ff8ccc720a69a166628fde4c58469a65ec30dbee50384",
+                "runs/fold_2/normal/seed_2026/auc.pt": "5c21cbd103ff6cc9a3dc52375bd370414685975b8e25063896e0cf2a8cfe4e76"
+              }
+            },
+            {
+              "loss": "weighted",
+              "selection_auc": 0.6184174248690377,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 0.7909530539654797,
+                "intercept": -0.8035534307103818,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.41802502219357646,
+              "secondary_threshold": 0.35285466196379267,
+              "weights": {
+                "runs/fold_2/weighted/seed_42/auc.pt": "fc4d5510002fb857595eb13870602678c14c0521fc20a31a3c13079d77051f19",
+                "runs/fold_2/weighted/seed_2026/auc.pt": "9486b50211741bc9193a01015c7612d42479a979f64a19170f408d310d35aade"
+              }
+            }
+          ]
+        }
+      },
+      "counts": {
+        "fit": 745,
+        "selection": 132,
+        "outer": 220
+      }
+    },
+    {
+      "fold": 3,
+      "frozen_at": "2026-10-26T10:43:00.377996+01:00",
+      "rules": {
+        "loss": {
+          "selected_loss": "normal",
+          "candidates": [
+            {
+              "loss": "normal",
+              "selection_auc": 0.6369843527738266,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 1.2512367071221002,
+                "intercept": 0.17428834888788336,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.40694275785740414,
+              "secondary_threshold": 0.336692973874414,
+              "weights": {
+                "runs/fold_3/normal/seed_42/loss.pt": "fa6eb8d0537d7fbd7fad341e7697094189ecdc0d0ec994c46a0b1b338d3724c6",
+                "runs/fold_3/normal/seed_2026/loss.pt": "4c17342fd867c848942ab13aa36a9cbdd4724bbdafa827f34b020453ce11ddce"
+              }
+            },
+            {
+              "loss": "weighted",
+              "selection_auc": 0.6256045519203415,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 0.8925350567570007,
+                "intercept": -0.931499781674015,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.41127068538009104,
+              "secondary_threshold": 0.2869666861459701,
+              "weights": {
+                "runs/fold_3/weighted/seed_42/loss.pt": "e73019831b7b2bc9ff7808b6e5f668fc2b0a4510914cd43d1198cbbce249a818",
+                "runs/fold_3/weighted/seed_2026/loss.pt": "646d7d59acc9a99bd4fa3679624eb0065012be2dfe670e54c8aa67b942297c9e"
+              }
+            }
+          ]
+        },
+        "auc": {
+          "selected_loss": "normal",
+          "candidates": [
+            {
+              "loss": "normal",
+              "selection_auc": 0.6623044096728308,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 1.3818533748989832,
+                "intercept": 0.33168072395695075,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 1.0,
+              "secondary_threshold": 0.323548531287856,
+              "weights": {
+                "runs/fold_3/normal/seed_42/auc.pt": "b227bff24950d92688d41ce67c4a1897bf27c8d95c1185ed66503ee0b1802c98",
+                "runs/fold_3/normal/seed_2026/auc.pt": "58c12b1fea38f1d1423fa97ed4e3465e9fbc4e5bf674ac06018a341e7d8e2b7b"
+              }
+            },
+            {
+              "loss": "weighted",
+              "selection_auc": 0.6463726884779517,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 0.5459079166619814,
+                "intercept": -0.9296784057550377,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.2885187064991818,
+              "secondary_threshold": 0.2842524932163989,
+              "weights": {
+                "runs/fold_3/weighted/seed_42/auc.pt": "e70a50d512011d271fc0b8df855c191c577b97b84ddef3bcb35958995d7a1841",
+                "runs/fold_3/weighted/seed_2026/auc.pt": "b35903eba970062f86ebfbb2f141c95ba87181dd3fd70e08d6cdfd9dbc30b6e1"
+              }
+            }
+          ]
+        }
+      },
+      "counts": {
+        "fit": 745,
+        "selection": 132,
+        "outer": 220
+      }
+    },
+    {
+      "fold": 4,
+      "frozen_at": "2026-10-26T10:46:20.844563+01:00",
+      "rules": {
+        "loss": {
+          "selected_loss": "normal",
+          "candidates": [
+            {
+              "loss": "normal",
+              "selection_auc": 0.5092362834298318,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 0.1792649419082877,
+                "intercept": -0.7247674104388593,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.302357780262833,
+              "secondary_threshold": 0.29955053677986804,
+              "weights": {
+                "runs/fold_4/normal/seed_42/loss.pt": "10fd08030a0e116a838e15ff02b87f898c10195aa1a5c82871103563c7350522",
+                "runs/fold_4/normal/seed_2026/loss.pt": "3d66faea7eca7d4e9c0167cac43b4ccbb04b5a374208013e055be652fffe1391"
+              }
+            },
+            {
+              "loss": "weighted",
+              "selection_auc": 0.48855803694513367,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 0.12297443211950057,
+                "intercept": -0.8682043974440786,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.29747755952151417,
+              "secondary_threshold": 0.29584741371766565,
+              "weights": {
+                "runs/fold_4/weighted/seed_42/loss.pt": "4fd073ec02f739f19b74ab6f0cab943fd5fe2a06aabb9c4ec11ca2d2ebfc91f5",
+                "runs/fold_4/weighted/seed_2026/loss.pt": "b34a262bc9dbf6014f496b7aea41edbadfc07b62243b5186d7391d989da4f978"
+              }
+            }
+          ]
+        },
+        "auc": {
+          "selected_loss": "normal",
+          "candidates": [
+            {
+              "loss": "normal",
+              "selection_auc": 0.5679625034463743,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 0.2995007781931059,
+                "intercept": -0.5829187581481432,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.35935971690571533,
+              "secondary_threshold": 0.3177529850968384,
+              "weights": {
+                "runs/fold_4/normal/seed_42/auc.pt": "391c7ca8e3bde53063e23b6b61e337c60065feb5b2f39297ea3b4fb308f8f829",
+                "runs/fold_4/normal/seed_2026/auc.pt": "16d4a54c819f54083805c87d252ae35de31c926b4ef202253ebeb0473697f36d"
+              }
+            },
+            {
+              "loss": "weighted",
+              "selection_auc": 0.5191618417424869,
+              "calibration": {
+                "method": "regularized_platt",
+                "input": "logit_patient_aggregated_probability",
+                "slope": 0.16667229880806367,
+                "intercept": -0.8692929618323889,
+                "C": 1.0,
+                "clip_epsilon": 1e-07,
+                "scope": "patient",
+                "fit_data": "inner_selection_same_pair_same_patient_means",
+                "nonnegative_slope_constraint": true,
+                "boundary_solution": false
+              },
+              "threshold": 0.3168491721453914,
+              "secondary_threshold": 0.3051789275007719,
+              "weights": {
+                "runs/fold_4/weighted/seed_42/auc.pt": "59c2d5c55745a59eb97894f36f5e315b81a23bbd1287ff6597f4ad68e117f0c7",
+                "runs/fold_4/weighted/seed_2026/auc.pt": "737f9846ac2c5960185c1097d9f266e40ac0b0a1038c15c089eafa0c660b575d"
+              }
+            }
+          ]
+        }
+      },
+      "counts": {
+        "fit": 746,
+        "selection": 132,
+        "outer": 219
+      }
+    }
+  ]
+}

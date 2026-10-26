@@ -801,3 +801,46 @@ externa. Test/privada cerrados; datos, versiones y control sin cambios.
 ea01a35ba68f396870973225733fd927ea89ab40. Pesos/checkpoints de trabajo
 locales e ignorados; no versión productiva ni push ni entrenamiento adicional.
 [Informe completo](../resultados/28_cnn_espacial_por_corte_20261025/INFORME_RESULTADOS.md).
+
+
+## MixStyle en CNN cinética: sin mejora convincente (26/10/2026)
+
+Investigación de [MixStyle, Zhou et al., ICLR2021](https://arxiv.org/html/2104.02008v1)
+y contraste único con el control cerrado del ensayo27. CNN propia desde cero,
+593.521 parámetros, PRE/EARLY/LATE PNG/255, diferencias firmadas, mismo entrenamiento
+y media de probabilidades de todos los cortes por paciente. Solo se añaden durante
+fit interpolaciones de estadísticas tras los dos primeros bloques: p0,5,
+alpha0,1, epsilon1e-6, pareja/coeficiente compartidos entre tres vistas y escala
+emparejada. Sin parámetros adicionales, pesos preentrenados ni datos externos.
+Identidad en inferencia. No confundir MixStyle con mixup de imágenes/etiquetas.
+
+20/20 ejecuciones (cinco folds, dos semillas, normal/ponderada), 342 épocas,
+79,686 pasos AdamW sin omisiones; 20.6 minutos.
+Checkpoint por mínima BCE interna por paciente; pérdida por AUC de pareja en
+selección; cinco elecciones congeladas antes de inferir exterior.
+
+| Métrica de desarrollo | Control equiparado | MixStyle |
+|---|---:|---:|
+| Media AUC por fold | 0.556270 | 0.557581 |
+| AUC agrupada cruda | 0,512731 | 0.528888 |
+
+Delta medio +0.001311, IC95% pareado
+[-0.031875976136917616, 0.033473692147917664]; mejora puntual en3/5 folds.
+No supera el gate de réplica (media≥0,60, delta≥0,01, límite inferiorIC>0, mejora3/5).
+No se demuestra superioridad ni equivalencia; configuración descartada como
+candidata. El comparador de cohorte tiene media0,549012 y su delta también incluye0.
+V007 histórica sigue en0,576593 de media con otra selección interna; comparación
+descriptiva. No se reabre su test histórico0,608376.
+
+Mediana de checkpoint época8.0; brecha AUC fit−selección
+0.0690 en los elegidos frente0.2530 al final.
+4/10 elegidos cumplen tendencia conjunta1–14; mejores curvas
+parciales no eliminan sobreajuste ni garantizan AUC. Las reglas secundarias por
+AUC y BCE fija tampoco alcanzan0,60; no se cambia ganador después de ver exterior.
+
+[Informe, métricas, curvas y verificaciones](../resultados/30_regularizacion_estilo_20261026/INFORME_RESULTADOS.md).
+[Protocolo](mejoras_cnn/PROTOCOLO_REGULARIZACION_ESTILO.md).
+Código/pruebas en commit local7f9b3f2f96c58e3261f344d25d52f77a6804c199, retirados del árbol activo sin nuevas ramas.
+Pesos de trabajo solo locales, sin versión productiva. Archivos históricos intactos,
+no se usan test/privada, no se activa modelo, no se publica ni se lanza otra tanda.
+La CV es desarrollo adaptativo y no una nueva validación externa.
