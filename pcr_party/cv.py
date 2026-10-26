@@ -243,10 +243,12 @@ def diagnostico_curvas(salida: Path, brazo: str, hasta: int = 14) -> dict:
         brecha_elegida.append(fila["fit_auc"] - fila["sel_auc"])
         brecha_final.append(historia["fit_auc"].iloc[-1] - historia["sel_auc"].iloc[-1])
         columnas = [c for c in ("fit_bce_obj", "sel_bce_obj") if c in historia]
-        if len(historia) >= hasta and len(columnas) == 2:
+        # Con presupuestos más cortos que ``hasta`` se evalúan todas las épocas.
+        n = min(hasta, len(historia))
+        if n >= 8 and len(columnas) == 2:
             evaluables += 1
-            tramo = historia.iloc[:hasta]
-            epocas = np.arange(1, hasta + 1)
+            tramo = historia.iloc[:n]
+            epocas = np.arange(1, n + 1)
             cumple += all(np.polyfit(epocas, tramo[c], 1)[0] < 0 and
                           tramo[c].iloc[-3:].mean() < tramo[c].iloc[:3].mean() for c in columnas)
     return {"epoca_pico_sel_mediana": float(np.median(picos)),
