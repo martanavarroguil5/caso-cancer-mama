@@ -48,11 +48,12 @@ class Registro:
 
 def validacion_cruzada(nombre: str, folds: list[int], semillas: list[int],
                        perdidas: list[str], lambdas: list[float],
-                       receta: dict = RECETA) -> Path:
+                       receta: dict = RECETA, control: str | None = None) -> Path:
+    """``control``: otra CV con los mismos roles y semillas para comparar brazo a brazo."""
     salida = RUNS / nombre
     salida.mkdir(parents=True, exist_ok=True)
     plan = {"receta": receta, "folds": folds, "semillas": semillas, "perdidas": perdidas,
-            "lambdas": lambdas, "entorno": entorno()}
+            "lambdas": lambdas, "control": control, "entorno": entorno()}
     ruta_plan = salida / "plan.json"
     if ruta_plan.exists():
         previo = json.loads(ruta_plan.read_text())
@@ -163,6 +164,7 @@ def resumir(salida: Path) -> dict:
             media, de, por_fold = metricas.auc_media_folds(oof, "p")
             epocas = [json.loads(r.read_text())["epoca_elegida"]
                       for r in (salida).glob(f"fold*/{brazo}/semilla*/hecho.json")]
+            curvas = diagnostico_curvas(salida, brazo)
             hechos = [json.loads(r.read_text())
                       for r in (salida).glob(f"fold*/{brazo}/semilla*/hecho.json")]
             dentro = {c: metricas.auc(g["pCR"], g["p"]) for c, g in oof.groupby("cohorte")}
@@ -187,6 +189,7 @@ def resumir(salida: Path) -> dict:
                 "segundos_por_epoca_mediana": float(np.median([h["segundos_por_epoca"] for h in hechos])),
                 "memoria_max_mb": float(max(h["memoria_max_mb"] for h in hechos)),
                 "frente_a_cohorte": metricas.bootstrap_delta(oof, "p", "p_cohorte"),
+                **curvas,
             }
     if not columnas:
         return {}
@@ -208,6 +211,14 @@ def resumir(salida: Path) -> dict:
         if a in columnas and b in columnas:
             tabla = base.join(columnas[a].rename("a")).join(columnas[b].rename("b")).dropna()
             comparaciones[f"{a} − {b}"] = metricas.bootstrap_delta(tabla, "a", "b")
+    if plan.get("control"):
+        for brazo in columnas:
+            ruta = RUNS / plan["control"] / f"oof_{brazo}.csv"
+            if ruta.exists():
+                control = pd.read_csv(ruta).set_index("patient_id")["p"]
+                tabla = base.join(columnas[brazo].rename("a")).join(control.rename("b")).dropna()
+                comparaciones[f"{brazo} − control {plan['control']}"] = \
+                    metricas.bootstrap_delta(tabla, "a", "b")
     resumen["comparaciones"] = comparaciones
     (salida / "resumen.json").write_text(json.dumps(resumen, indent=2, ensure_ascii=False))
     (salida / "RESUMEN.md").write_text(_markdown(resumen), encoding="utf-8")
@@ -216,19 +227,50 @@ def resumir(salida: Path) -> dict:
     return resumen
 
 
+def diagnostico_curvas(salida: Path, brazo: str, hasta: int = 14) -> dict:
+    """Época del pico de AUC de selección, brechas y tendencia conjunta 1–14.
+
+    Tendencia conjunta (criterio del profesor, ensayo 27): pendiente negativa de
+    la BCE con el pos_weight de entrenamiento en fit y en selección entre las
+    épocas 1 y ``hasta``, y media de las tres últimas menor que la de 1–3.
+    """
+    picos, brecha_elegida, brecha_final, cumple, evaluables = [], [], [], 0, 0
+    for ruta in sorted(salida.glob(f"fold*/{brazo}/semilla*/historia.csv")):
+        historia = pd.read_csv(ruta)
+        elegida = json.loads((ruta.parent / "hecho.json").read_text())["epoca_elegida"]
+        picos.append(int(historia["sel_auc"].idxmax()) + 1)
+        fila = historia.iloc[elegida - 1]
+        brecha_elegida.append(fila["fit_auc"] - fila["sel_auc"])
+        brecha_final.append(historia["fit_auc"].iloc[-1] - historia["sel_auc"].iloc[-1])
+        columnas = [c for c in ("fit_bce_obj", "sel_bce_obj") if c in historia]
+        if len(historia) >= hasta and len(columnas) == 2:
+            evaluables += 1
+            tramo = historia.iloc[:hasta]
+            epocas = np.arange(1, hasta + 1)
+            cumple += all(np.polyfit(epocas, tramo[c], 1)[0] < 0 and
+                          tramo[c].iloc[-3:].mean() < tramo[c].iloc[:3].mean() for c in columnas)
+    return {"epoca_pico_sel_mediana": float(np.median(picos)),
+            "brecha_auc_elegida_mediana": float(np.median(brecha_elegida)),
+            "brecha_auc_final_mediana": float(np.median(brecha_final)),
+            "tendencia_conjunta_1_14": f"{cumple}/{evaluables}"}
+
+
 def _markdown(resumen: dict) -> str:
     lineas = ["# Resumen de la validación cruzada de PartyNet", "",
               "AUC por paciente (media de probabilidades de cortes y de semillas). "
               "El exterior de cada fold no se usó para entrenar ni para parar.", "",
               "| Brazo | Media AUC ± DE (5 folds) | AUC agrupada | AUC dentro de cohorte | "
-              "AUC HR / HER2 aux | Época mediana | Semillas |",
-              "|---|---:|---:|---:|---:|---:|---:|"]
+              "AUC HR / HER2 aux | Época elegida | Pico sel. | Brecha elegida / final | "
+              "Tendencia 1–14 | Semillas |",
+              "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
     for brazo, r in resumen["brazos"].items():
         lineas.append(
             f"| {brazo} | {r['auc_media_folds']:.4f} ± {r['auc_de_folds']:.4f} | "
             f"{r['auc_agrupada']:.4f} | {r['auc_dentro_cohorte_media']:.4f} | "
             f"{r['aux_auc_hr']:.3f} / {r['aux_auc_her2']:.3f} | "
-            f"{r['epoca_elegida_mediana']:g} | {r['semillas_por_fold']} |")
+            f"{r['epoca_elegida_mediana']:g} | {r['epoca_pico_sel_mediana']:g} | "
+            f"{r['brecha_auc_elegida_mediana']:.3f} / {r['brecha_auc_final_mediana']:.3f} | "
+            f"{r['tendencia_conjunta_1_14']} | {r['semillas_por_fold']} |")
     ref = resumen.get("referencia_cohorte", {})
     if ref:
         lineas += ["", f"Referencia solo cohorte: {ref['auc_media_folds']:.4f} ± {ref['auc_de_folds']:.4f}. "

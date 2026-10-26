@@ -35,6 +35,29 @@ RECETA = {
     "pacientes_diagnostico_fit": 150,
 }
 
+# Receta lenta: retrasa la memorización. Una época ve unos pocos cortes
+# aleatorios de cada paciente (no los ~10 casi idénticos), con LR menor y
+# regularización más fuerte. Las claves nuevas tienen valor neutro en RECETA.
+RECETA_LENTA = deepcopy(RECETA)
+RECETA_LENTA.update({
+    "modelo": dict(RECETA["modelo"], dropout=0.5),
+    # Piloto fold 0, semilla 42, solo selección: 1e-4 → pico en la época 21;
+    # 2e-4 → pico en la 11, dentro del objetivo 10–15.
+    "lr": 2e-4,
+    "weight_decay": 0.05,
+    "epocas_max": 60,
+    "warmup_epocas": 2,
+    "paciencia": 10,
+    "epocas_min": 14,
+    "ema": 0.98,
+    "afin": {"escala": 0.10, "traslacion": 0.08, "rotacion_grados": 15},
+    "cutout": {"probabilidad": 0.5, "lado": 0.25},
+    "label_smoothing": 0.1,
+    "cortes_por_paciente": 3,
+    "lambda_aux": 0.0,
+})
+RECETAS = {"control": RECETA, "lenta": RECETA_LENTA}
+
 
 @dataclass
 class Resultado:
@@ -66,8 +89,9 @@ class EMA:
                 media.copy_(actual)
 
 
-def aumentar(x: torch.Tensor, generador: torch.Generator, afin: dict | None) -> torch.Tensor:
-    """Grupo diédrico (rot90 × flip) y afín suave, idénticos para las tres fases."""
+def aumentar(x: torch.Tensor, generador: torch.Generator, afin: dict | None,
+             cutout: dict | None = None) -> torch.Tensor:
+    """Grupo diédrico, afín (escala, traslación, giro) y cutout, idénticos en las tres fases."""
     n, dispositivo = len(x), x.device
     giro = torch.randint(0, 4, (n,), generator=generador, device=dispositivo)
     volteo = torch.rand(n, generator=generador, device=dispositivo) < 0.5
@@ -82,13 +106,41 @@ def aumentar(x: torch.Tensor, generador: torch.Generator, afin: dict | None) -> 
         escala = 1 + (torch.rand(n, generator=generador, device=dispositivo) * 2 - 1) * afin["escala"]
         desplazamiento = (torch.rand(n, 2, generator=generador, device=dispositivo) * 2 - 1) \
             * afin["traslacion"] * 2
+        angulo = torch.zeros(n, device=dispositivo)
+        if afin.get("rotacion_grados", 0):
+            # Solo se consume azar si hay giro: el control conserva su secuencia exacta.
+            angulo = (torch.rand(n, generator=generador, device=dispositivo) * 2 - 1) \
+                * math.radians(afin["rotacion_grados"])
+        coseno, seno = torch.cos(angulo) / escala, torch.sin(angulo) / escala
         theta = torch.zeros(n, 2, 3, device=dispositivo)
-        theta[:, 0, 0] = 1 / escala
-        theta[:, 1, 1] = 1 / escala
+        theta[:, 0, 0], theta[:, 0, 1] = coseno, -seno
+        theta[:, 1, 0], theta[:, 1, 1] = seno, coseno
         theta[:, :, 2] = desplazamiento
         malla = F.affine_grid(theta, list(x.shape), align_corners=False)
         x = F.grid_sample(x, malla, mode="bilinear", padding_mode="border", align_corners=False)
+    if cutout:
+        alto, ancho = x.shape[-2:]
+        lado = int(round(cutout["lado"] * alto))
+        activo = torch.rand(n, generator=generador, device=dispositivo) < cutout["probabilidad"]
+        fila = torch.randint(0, alto - lado + 1, (n,), generator=generador, device=dispositivo)
+        columna = torch.randint(0, ancho - lado + 1, (n,), generator=generador, device=dispositivo)
+        filas = torch.arange(alto, device=dispositivo)[None, :]
+        columnas = torch.arange(ancho, device=dispositivo)[None, :]
+        dentro_fila = (filas >= fila[:, None]) & (filas < fila[:, None] + lado)
+        dentro_columna = (columnas >= columna[:, None]) & (columnas < columna[:, None] + lado)
+        parche = dentro_fila[:, :, None] & dentro_columna[:, None, :] & activo[:, None, None]
+        x = x.masked_fill(parche[:, None], 0.0)
     return x
+
+
+def muestrear_cortes(filas_fit: np.ndarray, pacientes: np.ndarray, k: int | None,
+                     rng: np.random.Generator) -> np.ndarray:
+    """Hasta ``k`` cortes aleatorios distintos por paciente; ``None`` = todos."""
+    if k is None:
+        return filas_fit
+    tabla = pd.DataFrame({"paciente": pacientes, "fila": filas_fit,
+                          "azar": rng.random(len(filas_fit))})
+    return tabla.sort_values(["paciente", "azar"]).groupby("paciente").head(k)["fila"].to_numpy(copy=True)
 
 
 def objetivos_auxiliares(indice: pd.DataFrame, fit_pacientes: set[str]) -> np.ndarray:
@@ -125,7 +177,7 @@ def predecir(modelo: PartyNet, pixeles: torch.Tensor, filas: np.ndarray,
     return torch.cat(probabilidades).numpy(), torch.cat(auxiliares).numpy()
 
 
-def _evaluar(modelo, pixeles, indice, filas, prefijo: str) -> dict:
+def _evaluar(modelo, pixeles, indice, filas, prefijo: str, pos_weight: float = 1.0) -> dict:
     p, aux = predecir(modelo, pixeles, filas, tta=False)
     cortes = indice.iloc[filas][["patient_id", "pCR", "HR", "HER2", "tum_vol"]].copy()
     cortes["p"] = p
@@ -136,8 +188,13 @@ def _evaluar(modelo, pixeles, indice, filas, prefijo: str) -> dict:
         a_her2=("a_her2", "mean"), a_vol=("a_vol", "mean"))
     hr = pac["HR"].notna()
     her2 = pac["HER2"].notna()
+    probabilidad = np.clip(pac["p"].to_numpy(), metricas.EPS, 1 - metricas.EPS)
+    objetivo = pac["pCR"].to_numpy()
     return {
         f"{prefijo}_bce": metricas.bce(pac["pCR"], pac["p"]),
+        # BCE con el mismo pos_weight que optimiza el entrenamiento (diagnóstico de curvas).
+        f"{prefijo}_bce_obj": float(-np.mean(pos_weight * objetivo * np.log(probabilidad)
+                                             + (1 - objetivo) * np.log(1 - probabilidad))),
         f"{prefijo}_auc": metricas.auc(pac["pCR"], pac["p"]),
         f"{prefijo}_auc_hr": metricas.auc(pac.loc[hr, "HR"], pac.loc[hr, "a_hr"]),
         f"{prefijo}_auc_her2": metricas.auc(pac.loc[her2, "HER2"], pac.loc[her2, "a_her2"]),
@@ -180,13 +237,21 @@ def entrenar(receta: dict, pixeles: torch.Tensor, indice: pd.DataFrame,
 
     y = torch.tensor(indice["pCR"].to_numpy(np.float32), device=dispositivo)
     aux = torch.tensor(objetivos_auxiliares(indice, fit_pacientes), device=dispositivo)
+    k = receta.get("cortes_por_paciente")
     n_cortes = indice.groupby("patient_id")["patient_id"].transform("size").to_numpy()
+    if k is not None:
+        n_cortes = np.minimum(n_cortes, k)
     peso = torch.tensor((1.0 / n_cortes).astype(np.float32), device=dispositivo)
+    suavizado = receta.get("label_smoothing", 0.0)
+    y_objetivo = y * (1 - suavizado) + suavizado / 2
     peso_positivo = torch.tensor(pos_weight, device=dispositivo)
 
     optimizador = torch.optim.AdamW(modelo.parameters(), lr=receta["lr"],
                                     weight_decay=receta["weight_decay"])
-    pasos_epoca = math.ceil(len(fit) / receta["lote"])
+    pacientes_fit = indice["patient_id"].to_numpy()[fit]
+    rng_muestreo = np.random.default_rng(semilla + 7)
+    cortes_por_epoca = len(muestrear_cortes(fit, pacientes_fit, k, np.random.default_rng(0)))
+    pasos_epoca = math.ceil(cortes_por_epoca / receta["lote"])
     total = receta["epocas_max"] * pasos_epoca
     calentamiento = receta["warmup_epocas"] * pasos_epoca
 
@@ -199,7 +264,6 @@ def entrenar(receta: dict, pixeles: torch.Tensor, indice: pd.DataFrame,
     ema = EMA(modelo, receta["ema"])
     generador = torch.Generator(device=dispositivo)
     generador.manual_seed(semilla)
-    filas_fit = torch.as_tensor(fit, device=dispositivo)
 
     # Subconjunto fijo de fit, sin aumentos, para medir la brecha de sobreajuste.
     rng = np.random.default_rng(semilla)
@@ -215,18 +279,21 @@ def entrenar(receta: dict, pixeles: torch.Tensor, indice: pd.DataFrame,
         modelo.train()
         inicio = time.time()
         acumulada, vistos = 0.0, 0
-        orden = filas_fit[torch.randperm(len(filas_fit), generator=generador, device=dispositivo)]
+        filas_epoca = torch.as_tensor(muestrear_cortes(fit, pacientes_fit, k, rng_muestreo),
+                                      device=dispositivo)
+        orden = filas_epoca[torch.randperm(len(filas_epoca), generator=generador, device=dispositivo)]
         for i in range(0, len(orden), receta["lote"]):
             lote = orden[i:i + receta["lote"]]
             if len(lote) < 2:
                 continue
-            x = aumentar(pixeles[lote].float().div_(255), generador, receta["afin"])
+            x = aumentar(pixeles[lote].float().div_(255), generador, receta["afin"],
+                         receta.get("cutout"))
             with torch.autocast(dispositivo.type, dtype=torch.bfloat16, enabled=cuda):
                 logit, salida_aux = modelo.forward_todo(x)
             logit, salida_aux = logit.float().squeeze(1), salida_aux.float()
             w = peso[lote] / peso[lote].mean()
             perdida_pcr = (F.binary_cross_entropy_with_logits(
-                logit, y[lote], pos_weight=peso_positivo, reduction="none") * w).mean()
+                logit, y_objetivo[lote], pos_weight=peso_positivo, reduction="none") * w).mean()
             total_lote = perdida_pcr
             if lambda_aux > 0:
                 objetivo = aux[lote]
@@ -256,9 +323,9 @@ def entrenar(receta: dict, pixeles: torch.Tensor, indice: pd.DataFrame,
         fila = {"epoca": epoca, "bce_pcr_fit_aumentada": acumulada / max(1, vistos),
                 "lr_final": planificador.get_last_lr()[0],
                 "segundos_entrenamiento": time.time() - inicio}
-        fila.update(_evaluar(ema.modelo, pixeles, indice, diag, "fit"))
+        fila.update(_evaluar(ema.modelo, pixeles, indice, diag, "fit", pos_weight))
         if seleccion is not None:
-            fila.update(_evaluar(ema.modelo, pixeles, indice, seleccion, "sel"))
+            fila.update(_evaluar(ema.modelo, pixeles, indice, seleccion, "sel", pos_weight))
             recientes = [h["sel_auc"] for h in historia[-(receta["ventana_auc"] - 1):]] + [fila["sel_auc"]]
             fila["sel_auc_suavizada"] = float(np.mean(recientes))
             candidata = epoca >= min(receta["ventana_auc"], n_epocas)

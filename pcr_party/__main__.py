@@ -1,4 +1,4 @@
-"""CLI: python -m pcr_party {cache,humo,cv,resumen,final,predecir,evaluar-test}."""
+"""CLI: python -m pcr_party {cache,humo,piloto,cv,resumen,final,predecir,evaluar-test}."""
 from __future__ import annotations
 
 import argparse
@@ -45,6 +45,51 @@ def _humo(args) -> None:
               f"época elegida {resultado.epoca}, p exterior ∈ [{p.min():.3f}, {p.max():.3f}]")
 
 
+def _receta(nombre: str, ajustes: list[str]) -> dict:
+    """Receta con nombre y ajustes ``clave=valor`` (valor JSON); ``modelo.x`` anida."""
+    from .entrenar import RECETAS
+
+    receta = deepcopy(RECETAS[nombre])
+    for ajuste in ajustes:
+        clave, valor = ajuste.split("=", 1)
+        destino = receta
+        *ruta, final = clave.split(".")
+        for parte in ruta:
+            destino = destino[parte]
+        destino[final] = json.loads(valor)
+    return receta
+
+
+def _piloto(args) -> None:
+    """Una red en un fold, mirando solo fit y selección: el exterior ni se predice."""
+    import torch
+
+    from . import datos
+    from .cv import pixeles_en_dispositivo
+
+    from .entrenar import entrenar
+    receta = _receta(args.receta, args.ajuste)
+    dispositivo = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    indice = datos.cargar_indice("train")
+    roles = datos.roles_fold(datos.tabla_pacientes(indice), args.fold, receta["fraccion_seleccion"])
+    rol = indice["patient_id"].map(roles.set_index("patient_id")["rol"]).to_numpy()
+    pixeles = pixeles_en_dispositivo(indice, dispositivo)
+    claves = ["epoca", "lr_final", "fit_auc", "sel_auc", "sel_auc_suavizada",
+              "fit_bce_obj", "sel_bce_obj", "segundos_epoca"]
+
+    def registro(mensaje: str) -> None:
+        campos = dict(par.split("=", 1) for par in mensaje.split())
+        print(" ".join(f"{k}={campos[k][:7]}" for k in claves if k in campos), flush=True)
+
+    resultado = entrenar(receta, pixeles, indice, np.flatnonzero(rol == "fit"),
+                         np.flatnonzero(rol == "seleccion"), args.semilla, args.perdida,
+                         receta["lambda_aux"], registro=registro)
+    historia = resultado.historia
+    pico = max(historia, key=lambda h: h["sel_auc"])
+    print(f"elegida {resultado.epoca}; pico AUC sel {pico['sel_auc']:.4f} en época {pico['epoca']}; "
+          f"{resultado.segundos / 60:.1f} min", flush=True)
+
+
 def main(argv=None) -> None:
     analizador = argparse.ArgumentParser(prog="python -m pcr_party")
     sub = analizador.add_subparsers(dest="orden", required=True)
@@ -55,8 +100,18 @@ def main(argv=None) -> None:
     humo.add_argument("--pacientes", type=int, default=40, help="Pacientes por rol")
     humo.add_argument("--epocas", type=int, default=2)
 
+    piloto = sub.add_parser("piloto", help="Una red en un fold; solo curvas de fit y selección")
+    piloto.add_argument("--receta", default="lenta", choices=["control", "lenta"])
+    piloto.add_argument("--fold", type=int, default=0)
+    piloto.add_argument("--semilla", type=int, default=42)
+    piloto.add_argument("--perdida", default="ponderada", choices=["normal", "ponderada"])
+    piloto.add_argument("--ajuste", nargs="*", default=[], help="clave=valor JSON, p. ej. lr=5e-5")
+
     cv = sub.add_parser("cv", help="Validación cruzada por paciente (5 folds)")
     cv.add_argument("--nombre", default="cv_party")
+    cv.add_argument("--receta", default="control", choices=["control", "lenta"])
+    cv.add_argument("--ajuste", nargs="*", default=[], help="clave=valor JSON sobre la receta")
+    cv.add_argument("--control", default=None, help="CV previa con la que comparar brazo a brazo")
     cv.add_argument("--folds", type=int, nargs="+", default=[0, 1, 2, 3, 4])
     cv.add_argument("--semillas", type=int, nargs="+", default=[42, 2026, 7])
     cv.add_argument("--perdidas", nargs="+", default=["normal", "ponderada"],
@@ -96,9 +151,12 @@ def main(argv=None) -> None:
         print(f"{pixeles.shape} uint8 en {time.time() - inicio:.1f} s")
     elif args.orden == "humo":
         _humo(args)
+    elif args.orden == "piloto":
+        _piloto(args)
     elif args.orden == "cv":
         from .cv import validacion_cruzada
-        validacion_cruzada(args.nombre, args.folds, args.semillas, args.perdidas, args.lambdas)
+        validacion_cruzada(args.nombre, args.folds, args.semillas, args.perdidas, args.lambdas,
+                           _receta(args.receta, args.ajuste), args.control)
     elif args.orden == "resumen":
         from .cv import RUNS, resumir
         resumir(RUNS / args.nombre)

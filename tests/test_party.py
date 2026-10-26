@@ -9,7 +9,8 @@ import torch
 from PIL import Image
 
 from pcr_party import datos, metricas
-from pcr_party.entrenar import RECETA, aumentar, entrenar, objetivos_auxiliares, predecir
+from pcr_party.entrenar import (RECETA, RECETA_LENTA, aumentar, entrenar, muestrear_cortes,
+                                objetivos_auxiliares, predecir)
 from pcr_party.modelo import PartyNet, numero_parametros
 
 
@@ -54,6 +55,22 @@ class TestAumentos(unittest.TestCase):
         x = aumentar(base.repeat(1, 3, 1, 1), g, RECETA["afin"])
         self.assertTrue(torch.equal(x[:, 0], x[:, 1]))
         self.assertTrue(torch.equal(x[:, 1], x[:, 2]))
+
+    def test_receta_lenta_mantiene_fases_alineadas(self):
+        g = torch.Generator().manual_seed(2)
+        base = torch.rand(16, 1, 256, 256) + 0.1
+        x = aumentar(base.repeat(1, 3, 1, 1), g, RECETA_LENTA["afin"], RECETA_LENTA["cutout"])
+        self.assertTrue(torch.equal(x[:, 0], x[:, 2]))
+        self.assertTrue((x == 0).any())
+
+    def test_muestreo_k_cortes_por_paciente(self):
+        pacientes = np.repeat(["a", "b", "c"], [10, 2, 5])
+        filas = np.arange(len(pacientes))
+        elegidas = muestrear_cortes(filas, pacientes, 3, np.random.default_rng(0))
+        conteo = pd.Series(pacientes[elegidas]).value_counts()
+        self.assertEqual(conteo.to_dict(), {"a": 3, "c": 3, "b": 2})
+        self.assertEqual(len(set(elegidas)), len(elegidas))
+        self.assertTrue(np.array_equal(muestrear_cortes(filas, pacientes, None, None), filas))
 
     def test_sin_afin_es_permutacion_de_pixeles(self):
         g = torch.Generator().manual_seed(1)
@@ -142,6 +159,17 @@ class TestEntrenamiento(unittest.TestCase):
         modelo.load_state_dict(a.estado)
         p, aux = predecir(modelo, pixeles, np.arange(len(indice)))
         self.assertTrue(np.isfinite(p).all() and np.isfinite(aux).all())
+
+    def test_receta_lenta_entrena_en_cpu(self):
+        indice = indice_sintetico(8, 4)
+        pixeles = torch.randint(0, 256, (len(indice), 3, 256, 256), dtype=torch.uint8)
+        receta = deepcopy(RECETA_LENTA)
+        receta.update(lote=4, epocas_max=2, epocas_min=1, pacientes_diagnostico_fit=4)
+        receta["modelo"] = dict(receta["modelo"], anchos=[4, 4, 4, 4], oculto=8)
+        r = entrenar(receta, pixeles, indice, np.arange(0, 24), np.arange(24, 32), 5,
+                     "normal", 0.0, registro=lambda _: None)
+        self.assertEqual(len(r.historia), 2)
+        self.assertIn("sel_bce_obj", r.historia[0])
 
     def test_final_requiere_epocas(self):
         indice = indice_sintetico(4, 1)
