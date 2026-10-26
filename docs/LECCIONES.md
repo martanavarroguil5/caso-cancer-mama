@@ -130,9 +130,9 @@ aplicación solo recibe PNG.
 - El subtipo en el mundo real no se conoce al leer la imagen. Aquí solo se usa
   para entrenar; en inferencia no hace falta.
 
-## 6. Resultados de la rama (26/10/2026)
+## 6. Resultados de la rama (26–27/10/2026)
 
-Tres CV de 5 folds por paciente con los mismos roles y semillas (42, 2026, 7).
+Cinco CV de 5 folds por paciente con los mismos roles y semillas (42, 2026, 7).
 Por eso las comparaciones entre recetas son pareadas. AUC exterior por
 paciente: media de cortes, de semillas y de 4 reflexiones (TTA). Todo es
 desarrollo dentro de train; test y validación privada siguen cerrados.
@@ -147,6 +147,17 @@ desarrollo dentro de train; test y validación privada siguen cerrados.
 | Lenta ponderada | 0,5505 ± 0,038 | −0,031 [−0,060; +0,000] | 12 | 10 | 0,015 / 0,071 | 14/15 |
 | **Media normal** | **0,5842 ± 0,036** | **+0,004 [−0,015; +0,022]** | **8** | 6 | 0,064 / 0,144 | 7/15 |
 | Media ponderada | 0,5734 ± 0,027 | −0,008 [−0,025; +0,009] | 12 | 11 | 0,067 / 0,162 | 4/15 |
+| Presupuesto lineal, normal | 0,5718 ± 0,013 | −0,008 | 12 (fija) | 7 | 0,083 | 10/15 (1–12) |
+| **Presupuesto lineal, ponderada** | **0,5814 ± 0,018** | **0,000** | **12 (fija)** | 7 | **0,094** | 8/15 (1–12) |
+| Presupuesto coseno, normal | 0,5718 ± 0,015 | −0,008 | 12 (fija) | 7 | 0,039 | 11/15 (1–12) |
+| Presupuesto coseno, ponderada | 0,5802 ± 0,028 | −0,001 | 12 (fija) | 6 | 0,070 | 10/15 (1–12) |
+
+En las recetas de presupuesto, la época elegida es la última del presupuesto,
+así que la brecha elegida coincide con la final. Su Δ frente al control es
+descriptivo (diferencia de medias del mismo brazo). La comparación pareada que
+decide es con el mejor modelo anterior: **presupuesto lineal ponderada − media
+normal = −0,003, IC95 % [−0,019; +0,014]**, prácticamente un empate. Frente a
+la media del mismo brazo (ponderada): +0,008 [−0,011; +0,028].
 
 Referencia solo cohorte: 0,549 ± 0,027. La media normal la supera en +0,035
 [−0,002; +0,071], con P(Δ ≤ 0) = 0,03. Es lo más cerca que ha estado el
@@ -154,6 +165,8 @@ proyecto de demostrar señal por encima de la cohorte, aunque el IC todavía
 toca el 0.
 
 ![Pérdida y AUC por época, control frente a receta media](img/perdidas_vs_control.png)
+
+![Pérdida y AUC por época, control, media y presupuesto lineal](img/perdidas_tres_recetas.png)
 
 ### Qué se aprendió
 
@@ -177,11 +190,46 @@ toca el 0.
 5. **Normal frente a ponderada:** sin diferencia relevante en ninguna receta
    (|Δ| ≤ 0,014, todos los IC incluyen 0). Cumple la comparación del PDF.
 6. **Criterios fijados antes de la CV media:** pico entre 10 y 15, tendencia en
-   ≥ 50 % de las redes y Δ ≥ −0,01. Ningún brazo cumple los tres. Se toman como
-   orientativos y se elige el de mejor AUC media, la regla prefijada desde el
-   inicio.
+   ≥ 50 % de las redes y Δ ≥ −0,01. Ningún brazo de la receta media cumple los
+   tres; se toman como orientativos.
+7. **El calendario de LR era la pieza que faltaba.** Con la receta media, el
+   coseno de 60 épocas seguía con el LR alto cuando la red empezaba a
+   memorizar. [Budgeted Training (Li et al., ICLR 2020)](https://arxiv.org/pdf/1905.04753)
+   recomienda ajustar el calendario al presupuesto y decaer hasta 0. En pilotos
+   del fold 0 con 16 épocas, la BCE de selección tocaba mínimo en la época 11
+   sin perder AUC. Con presupuesto de 12 épocas y la última época como
+   checkpoint, desaparece la elección ruidosa de época con 131 pacientes.
+8. **Resultado: época 12 con la misma calidad.** La ponderada con presupuesto
+   lineal empata con la mejor AUC (0,581 frente a 0,584), reduce a la mitad la
+   variación entre folds (DE 0,018; ningún fold < 0,558) y baja la brecha final
+   de 0,144 a 0,094. Lineal y coseno quedan igual; se elige la lineal por ser
+   la recomendada y la de menor dispersión. Con este calendario, la ponderada
+   gana a la normal (+0,010 [−0,002; +0,022]).
+9. **Descartado en los pilotos:** 2 cortes por paciente y época (AUC de
+   selección ≈ 0,56). SWA no se probó: con pocos datos promedia soluciones ya
+   sobreajustadas ([SWAD, Cha et al. 2021](https://arxiv.org/pdf/2102.08604)), y
+   la EMA ya promedia pesos.
 
-## 7. Modelo final: `modelos/party_final/`
+## 7. Modelos finales
+
+### `modelos/party_final_v2/` — vigente (27/10/2026)
+
+- **Receta de presupuesto, LR lineal hasta 0, pérdida ponderada**
+  (`pos_weight` = N0/N1 de train), sin tareas auxiliares. 12 épocas fijas,
+  5 semillas (42, 2026, 7, 1234, 31415), todas las 1.097 pacientes de train.
+  Unos 38 s por red, con 7,3 GB de memoria máxima. En la época 12, la AUC de
+  fit de cada red es 0,61–0,65.
+- **Política, ajustada solo con las OOF de la CV:** Platt a = 0,666,
+  b = −0,843. Umbral Youden 0,288 sobre la probabilidad calibrada: en OOF,
+  sensibilidad 77,6 %, especificidad 36,3 %, F1 pCR 0,469 y macro-F1 0,484.
+  El paquete guarda también el umbral alternativo de máximo macro-F1 (0,303):
+  sensibilidad 46,6 %, especificidad 64,3 % y macro-F1 0,545. La regla
+  prefijada es Youden; cambiarla es una decisión de uso (más o menos falsos
+  pCR), no se toma mirando test.
+- GPU y CPU coinciden con una diferencia de unas 2 cienmilésimas en la
+  probabilidad.
+
+### `modelos/party_final/` — anterior (26/10/2026), conservado
 
 - **Receta media, pérdida normal, sin tareas auxiliares.** 8 épocas (mediana
   de las elegidas en la CV), 5 semillas (42, 2026, 7, 1234, 31415), todas las

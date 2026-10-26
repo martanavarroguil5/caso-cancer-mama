@@ -11,10 +11,13 @@ es la media de las de sus cortes. El código permite además tareas auxiliares
 de entrenamiento (HR, HER2 y volumen), que nunca son entrada del modelo; se
 probaron y se descartaron.
 
-**Estado (26/10/2026):** modelo final `modelos/party_final/` con la receta
-`media` y pérdida normal: AUC media de CV 0,584 ± 0,036, frente a 0,549 de la
-referencia de solo cohorte. Test aún sin evaluar. Resultados, curvas y
-decisiones en [docs/LECCIONES.md](docs/LECCIONES.md) §6–7.
+**Estado (27/10/2026):** modelo final vigente `modelos/party_final_v2/`,
+receta `presupuesto` (LR lineal hasta 0 en la época 12) con pérdida ponderada.
+AUC media de CV 0,581 ± 0,018, empatada con el anterior `party_final` (0,584 ±
+0,036; Δ −0,003 [−0,019; +0,014]) pero con la época 12, la mitad de variación
+entre folds y menos brecha fit−selección. La referencia de solo cohorte da
+0,549. Test aún sin evaluar. Resultados, curvas y decisiones en
+[docs/LECCIONES.md](docs/LECCIONES.md) §6–7.
 
 ## Estructura
 
@@ -46,17 +49,19 @@ Todo se ejecuta desde la raíz de esta carpeta
 
 ### 1. Validación cruzada
 
-Hay tres recetas en `pcr_party/entrenar.py`: `control` (todos los cortes en
-cada época), `lenta` y `media` (3 cortes al azar por paciente y época). La
-elegida es `media`.
+Hay cuatro recetas en `pcr_party/entrenar.py`: `control` (todos los cortes
+en cada época), `lenta`, `media` (3 cortes al azar por paciente y época) y
+`presupuesto` (la media con 12 épocas, LR lineal hasta 0 y la última época
+como checkpoint). La elegida es `presupuesto`.
 
 ```bash
-nohup .venv/bin/python -m pcr_party cv --nombre cv_media --receta media --lambdas 0 \
-    --control cv_party > runs/cv_media.out 2>&1 &
-tail -f runs/cv_media.out
+nohup .venv/bin/python -m pcr_party cv --nombre cv_presupuesto --receta presupuesto \
+    --lambdas 0 --control cv_media > runs/cv_presupuesto.out 2>&1 &
+tail -f runs/cv_presupuesto.out
 ```
 
-Con 5 folds × 3 semillas × 2 pérdidas son 30 redes, ≈35 min. `--control`
+Con 5 folds × 3 semillas × 2 pérdidas son 30 redes, ≈17 min (la `media`,
+≈35 min). La variante coseno se lanzó con `--ajuste 'calendario="coseno"'`. `--control`
 añade la comparación pareada con otra CV hecha con los mismos roles y semillas.
 Antes de una CV se puede calibrar una receta con una sola red, mirando solo
 fit y selección:
@@ -90,19 +95,23 @@ Cómo leer el resumen:
 - **`<brazo> − control <cv>`**: comparación pareada con la CV de control.
 - **Pico sel., brecha elegida / final y tendencia 1–14**: diagnóstico de
   sobreajuste. Tendencia = las pérdidas de fit y selección bajan juntas entre
-  las épocas 1 y 14 (indicación del profesor).
+  las épocas 1 y 14 (indicación del profesor), o en todas las épocas si el
+  presupuesto es menor.
 
 ### 2. Modelo final (≈3 min)
 
 Elige el brazo con mejor media de AUC en la CV, sin mirar test, y entrena con
-el 100 % de train. Es el comando con el que se creó `modelos/party_final/`:
+el 100 % de train. Comandos con los que se crearon los dos paquetes:
 
 ```bash
-.venv/bin/python -m pcr_party final --cv cv_media --perdida normal --lambda-aux 0
+.venv/bin/python -m pcr_party final --cv cv_presupuesto --perdida ponderada \
+    --lambda-aux 0 --nombre party_final_v2
+.venv/bin/python -m pcr_party final --cv cv_media --perdida normal --lambda-aux 0 \
+    --nombre party_final
 ```
 
 Las épocas son la mediana de las elegidas en la CV de ese brazo; se pueden
-fijar con `--epocas N`. Usa 5 semillas. Escribe `modelos/party_final/` con los
+fijar con `--epocas N`. Usa 5 semillas. Escribe `modelos/<nombre>/` con los
 pesos, `paquete.json` (receta, Platt, umbral Youden, métricas OOF, entorno y
 SHA-256) e historias.
 
@@ -113,6 +122,7 @@ SHA-256) e historias.
 .venv/bin/python -m pcr_party evaluar-test --confirmo-modelo-congelado
 ```
 
+Por defecto usan `modelos/party_final_v2`; `--modelo` elige otro paquete.
 `evaluar-test` se ejecuta **una sola vez**, con el paquete ya congelado:
 escribe `evaluacion_test.json` y se niega a repetirse. Nada del test vuelve a
 la elección de brazo, épocas, calibración ni umbral.

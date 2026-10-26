@@ -1,0 +1,231 @@
+{
+  "nombre": "party_final_v2",
+  "arquitectura": "PartyNet",
+  "config_modelo": {
+    "anchos": [
+      24,
+      48,
+      96,
+      160
+    ],
+    "oculto": 64,
+    "dropout": 0.35,
+    "dropout_espacial": 0.1,
+    "escalas": [
+      256,
+      128,
+      64
+    ],
+    "lado": 128
+  },
+  "parametros_entrenables": 593716,
+  "entrada": "PNG gris uint8 256×256 por fase, apilado PRE/EARLY/LATE y dividido entre 255",
+  "salida": "un logit de pCR por corte; paciente = media de probabilidades de sus cortes",
+  "tta": "media de probabilidades de 4 reflexiones",
+  "ensemble": "media de probabilidades de todas las semillas",
+  "perdida": "ponderada",
+  "pos_weight": "N0/N1 de pacientes de train",
+  "lambda_aux": 0.0,
+  "auxiliares_solo_entrenamiento": [
+    "HR",
+    "HER2",
+    "log_volumen"
+  ],
+  "epocas": 12,
+  "semillas": [
+    42,
+    2026,
+    7,
+    1234,
+    31415
+  ],
+  "receta": {
+    "modelo": {
+      "anchos": [
+        24,
+        48,
+        96,
+        160
+      ],
+      "oculto": 64,
+      "dropout": 0.35,
+      "dropout_espacial": 0.1,
+      "escalas": [
+        256,
+        128,
+        64
+      ],
+      "lado": 128
+    },
+    "optimizador": "AdamW",
+    "lr": 0.0003,
+    "weight_decay": 0.01,
+    "lote": 64,
+    "epocas_max": 12,
+    "warmup_epocas": 2,
+    "paciencia": 12,
+    "epocas_min": 12,
+    "ventana_auc": 3,
+    "ema": 0.98,
+    "clip_grad": 1.0,
+    "afin": {
+      "escala": 0.05,
+      "traslacion": 0.03,
+      "rotacion_grados": 10
+    },
+    "fraccion_seleccion": 0.15,
+    "lambda_aux": 0.0,
+    "tta": true,
+    "pacientes_diagnostico_fit": 150,
+    "cortes_por_paciente": 3,
+    "calendario": "lineal",
+    "checkpoint": "ultima"
+  },
+  "politica": {
+    "calibracion_platt": {
+      "a": 0.6659742004372989,
+      "b": -0.8427420858543907
+    },
+    "umbral": 0.28781074429583536,
+    "regla_umbral": "Youden máximo sobre OOF calibradas de la CV (solo train)",
+    "umbral_macro_f1_alternativo": 0.3027971963366742,
+    "oof_con_umbral": {
+      "umbral": 0.28781074429583536,
+      "TP": 250,
+      "TN": 281,
+      "FP": 494,
+      "FN": 72,
+      "sensibilidad": 0.7763975155279503,
+      "especificidad": 0.36258064516129035,
+      "precision_pcr": 0.33602150537634407,
+      "exactitud": 0.4840474020054695,
+      "f1_pcr": 0.46904315196998125,
+      "macro_f1": 0.4836350511622956
+    },
+    "oof_con_umbral_macro_f1": {
+      "umbral": 0.3027971963366742,
+      "TP": 150,
+      "TN": 498,
+      "FP": 277,
+      "FN": 172,
+      "sensibilidad": 0.4658385093167702,
+      "especificidad": 0.6425806451612903,
+      "precision_pcr": 0.351288056206089,
+      "exactitud": 0.5907019143117593,
+      "f1_pcr": 0.40053404539385845,
+      "macro_f1": 0.5449037008976213
+    },
+    "oof_probabilidades_calibradas": {
+      "auc": 0.5722019635343618,
+      "ap": 0.3425816064736994,
+      "bce": 0.6025987495557232,
+      "brier": 0.20612942014738606
+    }
+  },
+  "cv_origen": "runs/cv_presupuesto",
+  "cv_brazo": {
+    "auc_media_folds": 0.5814169869369044,
+    "auc_de_folds": 0.01827512735035504,
+    "auc_por_fold": [
+      0.5889112903225806,
+      0.5655434559276762,
+      0.5964838404042531,
+      0.5583448275862068,
+      0.5978015204438052
+    ],
+    "auc_agrupada": 0.5722019635343618,
+    "auc_dentro_cohorte": {
+      "duke": 0.5384297520661157,
+      "spy1": 0.6094674556213018,
+      "spy2": 0.5527882205513784
+    },
+    "auc_dentro_cohorte_media": 0.5668951427462653,
+    "auc_por_subtipo": {
+      "HER2+": 0.6129288122149514,
+      "HR+/HER2-": 0.534142030848329,
+      "TN": 0.5735753052917232,
+      "desconocido": 0.5
+    },
+    "aux_auc_hr": 0.519981819175985,
+    "aux_auc_her2": 0.529590819009624,
+    "aux_rho_volumen": -0.08317390685726322,
+    "epoca_elegida_mediana": 12.0,
+    "epocas_elegidas": [
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12
+    ],
+    "semillas_por_fold": 3,
+    "minutos_totales": 7.992364597320557,
+    "segundos_por_epoca_mediana": 2.6645911733309426,
+    "memoria_max_mb": 7364.71533203125,
+    "frente_a_cohorte": {
+      "delta": 0.03240537185504633,
+      "ic95": [
+        -0.004545971843988744,
+        0.06927508722195205
+      ],
+      "p_delta_menor_igual_0": 0.0425,
+      "remuestreos": 2000
+    },
+    "epoca_pico_sel_mediana": 7.0,
+    "brecha_auc_elegida_mediana": 0.09355018735549714,
+    "brecha_auc_final_mediana": 0.09355018735549714,
+    "tendencia_conjunta_1_14": "8/15"
+  },
+  "entrenamiento": [
+    {
+      "semilla": 42,
+      "segundos": 37.73966121673584,
+      "memoria_max_mb": 7332.40478515625
+    },
+    {
+      "semilla": 2026,
+      "segundos": 37.62181615829468,
+      "memoria_max_mb": 7332.40478515625
+    },
+    {
+      "semilla": 7,
+      "segundos": 37.6301748752594,
+      "memoria_max_mb": 7332.40478515625
+    },
+    {
+      "semilla": 1234,
+      "segundos": 37.64007353782654,
+      "memoria_max_mb": 7332.40478515625
+    },
+    {
+      "semilla": 31415,
+      "segundos": 37.64023280143738,
+      "memoria_max_mb": 7332.40478515625
+    }
+  ],
+  "entorno": {
+    "python": "3.12.3",
+    "torch": "2.14.0+cu130",
+    "cuda": "13.0",
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "host": "Linux-PC-Jorge"
+  },
+  "n_pacientes_train": 1097,
+  "test_evaluado": false,
+  "sha256": {
+    "pesos/semilla1234.pt": "b11310a17eeb5e0da7553a4f80aa7edc9397b59602c0db2e685b75930b31b31b",
+    "pesos/semilla2026.pt": "500e4d1210c17355272b22d72d731c341765fc2d17035f31c824adcfb945185a",
+    "pesos/semilla31415.pt": "9e50cf9161b1032781231af01ed40108ebc0882be8e11271b1a50836614af9a4",
+    "pesos/semilla42.pt": "ee83e25d1c2927e9290a7b867f4f24d11201297e36cce6ca1bf09c8a05025e84",
+    "pesos/semilla7.pt": "8eaf4b3134275fe3fa7f18edb0e64610fa033bb2135bdd5afe33c3f16c340c33"
+  }
+}

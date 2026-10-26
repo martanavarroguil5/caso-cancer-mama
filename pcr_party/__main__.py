@@ -127,18 +127,18 @@ def main(argv=None) -> None:
     final.add_argument("--perdida", required=True, choices=["normal", "ponderada"])
     final.add_argument("--lambda-aux", type=float, required=True)
     final.add_argument("--semillas", type=int, nargs="+", default=[42, 2026, 7, 1234, 31415])
-    final.add_argument("--nombre", default="party_final")
+    final.add_argument("--nombre", required=True, help="Carpeta nueva en modelos/")
     final.add_argument("--epocas", type=int, default=None,
                        help="Por defecto, mediana de épocas elegidas en la CV del brazo")
 
     pred = sub.add_parser("predecir", help="Predice una tripleta PRE/EARLY/LATE")
-    pred.add_argument("--modelo", default="modelos/party_final")
+    pred.add_argument("--modelo", default="modelos/party_final_v2")
     pred.add_argument("--pre", required=True)
     pred.add_argument("--early", required=True)
     pred.add_argument("--late", required=True)
 
     test = sub.add_parser("evaluar-test", help="Evaluación final ÚNICA de un paquete congelado")
-    test.add_argument("--modelo", default="modelos/party_final")
+    test.add_argument("--modelo", default="modelos/party_final_v2")
     test.add_argument("--confirmo-modelo-congelado", action="store_true", required=True)
     test.add_argument("--forzar", action="store_true")
 
