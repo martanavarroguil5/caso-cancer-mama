@@ -111,3 +111,9 @@ La [comparación de regularización de estilo](resultados/30_regularizacion_esti
 (26/10/2026) termina sin mejora convincente: AUC medio0,5576 frente a0,5563 del
 control. No sustituye las versiones conservadas; código experimental en la
 historia de main y descarte registrado en docs/EXPERIMENTOS_DESCARTADOS.md.
+
+
+La [familia de preservación espacial y atención por corte](resultados/31_preservacion_espacial_20261026/INFORME_RESULTADOS.md)
+(26/10/2026) completa40 entrenamientos sin superar el gate de réplica:
+mediaAUC0.5349 (uniforme) y0.5403 (atención).
+No sustituye versiones conservadas; informe y descartes documentados en main.

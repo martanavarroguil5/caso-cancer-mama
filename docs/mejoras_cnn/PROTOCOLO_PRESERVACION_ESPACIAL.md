@@ -146,3 +146,12 @@ familia. No hay promesa de alcanzar0,60.
 .venv/bin/python -B -m cancer_mama.preservacion_espacial preparar
 .venv/bin/python -u -B -m cancer_mama.preservacion_espacial entrenar
 ```
+
+
+## Cierre de la familia
+
+uniforme: mediaAUC0.534928, delta-0.021342, IC97,5%[-0.06724893294933039, 0.024754175000915358].
+
+atencion: mediaAUC0.540346, delta-0.015924, IC97,5%[-0.059928815505844654, 0.03091979203366532].
+
+Ninguna receta supera el gate prefijado. Configuraciones no promocionadas; código en commit localf30a6dbaa71ceec3bb76ad337de0ecd9560a9963, retirado del árbol actual. [Informe completo](../../resultados/31_preservacion_espacial_20261026/INFORME_RESULTADOS.md). No se inicia réplica ni otra variante contra este exterior.

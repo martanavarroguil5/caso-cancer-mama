@@ -1,0 +1,60 @@
+{
+  "created_at": "2026-10-26T11:15:09.266892+01:00",
+  "runs": 40,
+  "profiles": {
+    "uniforme": {
+      "protocol_sha256": "1861ad830362e7c92cefa98df964699b6721b22fb750653272f767c9865e2c01",
+      "parameters_trainable": 214497
+    },
+    "atencion": {
+      "protocol_sha256": "0c75e99bf5d2c2036dce9e850d6a60ca0be431ff2b964a952713a38a5ba0a747",
+      "parameters_trainable": 214593
+    }
+  },
+  "test_images_loaded": 0,
+  "research": [
+    {
+      "url": "https://proceedings.mlr.press/v97/zhang19a.html",
+      "use": "Filtro fijo previo a submuestreo; evidencia natural, no pCR"
+    },
+    {
+      "url": "https://www.ecva.net/papers/eccv_2018/papers_ECCV/html/Sanghyun_Woo_Convolutional_Block_Attention_ECCV_2018_paper.php",
+      "use": "Motiva atención espacial; no implementamos CBAM ni importamos su red"
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8804673/",
+      "use": "Estudio propio de pooling en otras tareas médicas; no evidencia directa en pCR"
+    }
+  ],
+  "primary": "Dos contrastes, media AUC cruda de cada receta menos control27, mismas pacientes y roles; CI97.5 Bonferroni2",
+  "secondary": "Atención menos uniforme pareado; cohortes, AUC agrupada cruda/calibrada, BCE fijas, checkpoint AUC y políticas",
+  "freeze": "Entrenar las dos recetas y congelar diez elecciones antes de inferir cualquier exterior de esta familia",
+  "bootstrap": {
+    "replicates": 4000,
+    "seed": 20261026,
+    "stratification": "patient paired within fold x class",
+    "family_hypotheses": 2
+  },
+  "replication_gate": {
+    "mean_auc": 0.6,
+    "pooled_pair_calibrated_auc": 0.6,
+    "delta_control": 0.01,
+    "delta_ci97_5_lower_positive": true,
+    "folds_improved": 3,
+    "interpretation": "Solo motiva réplica interna prefijada; no éxito clínico ni test automático"
+  },
+  "next_step_if_gate": "Una réplica registrada con nuevas semillas y roles internos prefijados, control reentrenado y mismas recetas. No ajustar mirando test",
+  "next_step_if_no_gate": "Cerrar familia y documentar; no buscar variantes contra este mismo exterior ni activar un candidato",
+  "limits": [
+    "Desarrollo adaptativo con antecedentes; no nueva validación independiente",
+    "La nueva arquitectura cambia capacidad, resolución y reducciones; no atribuir causalmente todo a un factor",
+    "Atención frente a uniforme comparte arquitectura/inicialización y aísla este componente dentro de la nueva receta",
+    "La atención no es una segmentación ni una explicación clínica validada",
+    "Selección comparte checkpoint/BCE/calibración/umbral; políticas de parejas, no despliegue ensemble10",
+    "No nuevos datos, preentrenados, clínica, test, privada, push ni ramas; versiones anteriores inmutables"
+  ],
+  "other_source_hashes": {
+    "tests/test_preservacion_espacial.py": "7c9e8f09781edf1a0ed3838e569b9c5f3d81dc70784670a63ece03d98b95dda6",
+    "docs/mejoras_cnn/PROTOCOLO_PRESERVACION_ESPACIAL.md": "649cac08b9767952889741d84535a8f4134efebbcc04d8f0016aeb05bd246a31"
+  }
+}

@@ -1,6 +1,6 @@
 # Experimentos cerrados y retirados del entrenador
 
-Actualizado el 21/10/2026. Estos ensayos no forman parte del código activo de
+Actualizado el 26/10/2026. Estos ensayos no forman parte del código activo de
 `src/cancer_mama/entrenamiento.py` y sus comandos de comparación se han eliminado. No se
 vuelven a ejecutar automáticamente. Se conservan sus informes, predicciones,
 curvas, configuraciones y evidencia histórica en `resultados/04_entrenamiento/`.
@@ -844,3 +844,27 @@ Código/pruebas en commit local7f9b3f2f96c58e3261f344d25d52f77a6804c199, retirad
 Pesos de trabajo solo locales, sin versión productiva. Archivos históricos intactos,
 no se usan test/privada, no se activa modelo, no se publica ni se lanza otra tanda.
 La CV es desarrollo adaptativo y no una nueva validación externa.
+
+
+## CNN nativa256 con reducciones suaves y atención espacial: familia insuficiente (26/10/2026)
+
+Se comparan dos CNN propias desde cero, sin clínica ni pesos externos. Entrada completa PRE/EARLY/LATE PNG/255 y diferencias firmadas; cuatro bloques16/32/64/96 de dos convoluciones, máximo denso seguido de filtro binomial fijo y submuestreo, mapa16×16 y cabeza96→32→1. Una receta usa media espacial (214.497 pesos entrenables); otra aprende una puerta1×1 acotada dentro del corte (214.593). La paciente mantiene media de probabilidades de todos sus cortes. No es atención entre cortes ni una segmentación clínica.
+
+Mismos roles y entrenamiento que el control cerrado27, cinco folds, BCE normal/ponderada y semillas42/2026 por receta. Las diez elecciones de ambas recetas se congelaron antes de inferir cualquier exterior de esta familia.
+
+40/40 ejecuciones, 615 épocas, 143,295 pasos AdamW sin omisiones; 91.9 minutos.
+
+| Receta | Media AUC±DE | AUC agrupada cruda | Δmedio frentecontrol27 | IC97,5% deΔ |
+|---|---:|---:|---:|---|
+| uniforme | 0.534928 ± 0.045817 | 0.503827 | -0.021342 | [-0.06724893294933039, 0.024754175000915358] |
+| atencion | 0.540346 ± 0.051806 | 0.500649 | -0.015924 | [-0.059928815505844654, 0.03091979203366532] |
+
+Bootstrap4000 pareado por paciente y fold/clase, Bonferroni para dos contrastes principales. No se alcanza el gate prefijado de réplica (media≥0,60, agrupada calibrada≥0,60, delta≥0,01, límite inferiorIC97,5%>0 y mejora3/5 folds). Las recetas quedan no promocionadas; esto no demuestra que todo antialiasing o atención falle. Comparaciones con V007 histórica (media0,576593 y test0,608376) son descriptivas por otro protocolo. No se reabre ese test.
+
+**uniforme:** mediana de época elegida3.0; brecha AUC fit−selección0.0890 en elegidos y0.2153 al final; tendencia conjunta1–14 en1/10 elegidos.
+
+**atencion:** mediana de época elegida4.0; brecha AUC fit−selección0.0677 en elegidos y0.2542 al final; tendencia conjunta1–14 en1/10 elegidos.
+
+[Informe, curvas, OOF y verificaciones](../resultados/31_preservacion_espacial_20261026/INFORME_RESULTADOS.md). [Protocolo](mejoras_cnn/PROTOCOLO_PRESERVACION_ESPACIAL.md).
+
+Código/pruebas retirados del árbol activo conforme CONTRIBUTING.md y conservados en el commit local **f30a6dbaa71ceec3bb76ad337de0ecd9560a9963** de main. Pesos de trabajo solo locales en runs/, sin optimizer/RNG en Git. Versiones V001–V008 y apps intactas; test/privada cerrados. Sin push, nuevas ramas, activación ni otra búsqueda contra este exterior. Es desarrollo adaptativo, no confirmación externa.

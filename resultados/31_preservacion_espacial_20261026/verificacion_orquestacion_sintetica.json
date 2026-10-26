@@ -1,0 +1,13 @@
+{
+  "synthetic_only": true,
+  "patient_images_loaded": 0,
+  "mock_training_calls": 40,
+  "all40_before_outer": true,
+  "ten_fold_choices_frozen_before_outer": true,
+  "two_profiles_evaluated": [
+    "uniforme",
+    "atencion"
+  ],
+  "cache_calls_fit_selection_only": 10,
+  "passed": true
+}

@@ -1,0 +1,109 @@
+{
+  "fold": 4,
+  "frozen_at": "2026-10-26T12:45:50.875335+01:00",
+  "rules": {
+    "loss": {
+      "selected_loss": "weighted",
+      "candidates": [
+        {
+          "loss": "normal",
+          "selection_auc": 0.4651226909291425,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.0,
+            "intercept": -0.8690378470236093,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "inner_selection_same_pair_same_patient_means",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": true
+          },
+          "threshold": 1.0,
+          "secondary_threshold": 0.5,
+          "weights": {
+            "runs/fold_4/normal/seed_42/loss.pt": "c6d9eb21b6a7a38def6ccc3acb1cae4580cd0325b1a744ddb06ad9cfc96fbd44",
+            "runs/fold_4/normal/seed_2026/loss.pt": "1f3932df1b6d0f6ddeb8b434356eb8e087ffaac5bc2179e57dba16b69c2194e4"
+          }
+        },
+        {
+          "loss": "weighted",
+          "selection_auc": 0.543424317617866,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.08604242098566514,
+            "intercept": -0.874948834383953,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "inner_selection_same_pair_same_patient_means",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          },
+          "threshold": 0.30045790783653553,
+          "secondary_threshold": 0.2991159433157128,
+          "weights": {
+            "runs/fold_4/weighted/seed_42/loss.pt": "1bb8f4b0c3d1eb72c740c386b70107fe3edb9bec4eded6c73734b674241a1e4b",
+            "runs/fold_4/weighted/seed_2026/loss.pt": "e72813f9cf1b138a33d892d970bfd0a98f036618dbb581d1b5cfbb6806d06662"
+          }
+        }
+      ]
+    },
+    "auc": {
+      "selected_loss": "weighted",
+      "candidates": [
+        {
+          "loss": "normal",
+          "selection_auc": 0.5629997242900469,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.0,
+            "intercept": -0.8690378470236093,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "inner_selection_same_pair_same_patient_means",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": true
+          },
+          "threshold": 1.0,
+          "secondary_threshold": 0.5,
+          "weights": {
+            "runs/fold_4/normal/seed_42/auc.pt": "2b50d03d54365c512d0c94a3bdba7aeeff4741357f84e4dd9e3c6d2bc124afdf",
+            "runs/fold_4/normal/seed_2026/auc.pt": "3195d596e14a39f672f96f713ef0633442966442bafb8046e7b1e958a09d3315"
+          }
+        },
+        {
+          "loss": "weighted",
+          "selection_auc": 0.5635511441963055,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.0,
+            "intercept": -0.8690378470236093,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "inner_selection_same_pair_same_patient_means",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": true
+          },
+          "threshold": 1.0,
+          "secondary_threshold": 0.5,
+          "weights": {
+            "runs/fold_4/weighted/seed_42/auc.pt": "3e3b2b9cea56052d2c6022a185b3abf6d3f6be83e10c5faaf7696ae9033a95ed",
+            "runs/fold_4/weighted/seed_2026/auc.pt": "33421a626d3947410592cb7df81e50190ecc329cdb20977ec2d28782ea7f8147"
+          }
+        }
+      ]
+    }
+  },
+  "counts": {
+    "fit": 746,
+    "selection": 132,
+    "outer": 219
+  }
+}

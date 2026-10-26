@@ -1,0 +1,188 @@
+{
+  "Control27_prediction": {
+    "n_patients": 1097,
+    "n_positive": 322,
+    "prevalence": 0.2935278030993619,
+    "accuracy": 0.6937101185050136,
+    "balanced_accuracy": 0.5109356842316168,
+    "precision_no_pcr": 0.7112608277189605,
+    "recall_no_pcr": 0.9535483870967741,
+    "f1_no_pcr": 0.814773980154355,
+    "precision_pcr": 0.3793103448275862,
+    "recall_pcr": 0.06832298136645963,
+    "f1_pcr": 0.11578947368421053,
+    "macro_f1": 0.46528172691928277,
+    "weighted_f1": 0.6096025935696817,
+    "tn": 739,
+    "fp": 36,
+    "fn": 300,
+    "tp": 22,
+    "support_no_pcr": 775,
+    "support_pcr": 322,
+    "confusion_matrix": [
+      [
+        739,
+        36
+      ],
+      [
+        300,
+        22
+      ]
+    ]
+  },
+  "Control27_secondary_prediction": {
+    "n_patients": 1097,
+    "n_positive": 322,
+    "prevalence": 0.2935278030993619,
+    "accuracy": 0.5797629899726527,
+    "balanced_accuracy": 0.528314966940493,
+    "precision_no_pcr": 0.7249283667621776,
+    "recall_no_pcr": 0.6529032258064517,
+    "f1_no_pcr": 0.6870332654446707,
+    "precision_pcr": 0.3258145363408521,
+    "recall_pcr": 0.40372670807453415,
+    "f1_pcr": 0.3606102635228849,
+    "macro_f1": 0.5238217644837778,
+    "weighted_f1": 0.5912190388094701,
+    "tn": 506,
+    "fp": 269,
+    "fn": 192,
+    "tp": 130,
+    "support_no_pcr": 775,
+    "support_pcr": 322,
+    "confusion_matrix": [
+      [
+        506,
+        269
+      ],
+      [
+        192,
+        130
+      ]
+    ]
+  },
+  "uniforme_prediction": {
+    "n_patients": 1097,
+    "n_positive": 322,
+    "prevalence": 0.2935278030993619,
+    "accuracy": 0.6964448495897904,
+    "balanced_accuracy": 0.5010719294730516,
+    "precision_no_pcr": 0.7069288389513109,
+    "recall_no_pcr": 0.9741935483870968,
+    "f1_no_pcr": 0.8193163320672816,
+    "precision_pcr": 0.3103448275862069,
+    "recall_pcr": 0.027950310559006212,
+    "f1_pcr": 0.05128205128205128,
+    "macro_f1": 0.43529919167466646,
+    "weighted_f1": 0.5938769169233945,
+    "tn": 755,
+    "fp": 20,
+    "fn": 313,
+    "tp": 9,
+    "support_no_pcr": 775,
+    "support_pcr": 322,
+    "confusion_matrix": [
+      [
+        755,
+        20
+      ],
+      [
+        313,
+        9
+      ]
+    ]
+  },
+  "uniforme_secondary_prediction": {
+    "n_patients": 1097,
+    "n_positive": 322,
+    "prevalence": 0.2935278030993619,
+    "accuracy": 0.6362807657247037,
+    "balanced_accuracy": 0.514764576237227,
+    "precision_no_pcr": 0.714123006833713,
+    "recall_no_pcr": 0.8090322580645162,
+    "f1_no_pcr": 0.7586206896551724,
+    "precision_pcr": 0.3242009132420091,
+    "recall_pcr": 0.2204968944099379,
+    "f1_pcr": 0.26247689463955637,
+    "macro_f1": 0.5105487921473644,
+    "weighted_f1": 0.6129886914828585,
+    "tn": 627,
+    "fp": 148,
+    "fn": 251,
+    "tp": 71,
+    "support_no_pcr": 775,
+    "support_pcr": 322,
+    "confusion_matrix": [
+      [
+        627,
+        148
+      ],
+      [
+        251,
+        71
+      ]
+    ]
+  },
+  "atencion_prediction": {
+    "n_patients": 1097,
+    "n_positive": 322,
+    "prevalence": 0.2935278030993619,
+    "accuracy": 0.690975387420237,
+    "balanced_accuracy": 0.5090002003606492,
+    "precision_no_pcr": 0.7104247104247104,
+    "recall_no_pcr": 0.9496774193548387,
+    "f1_no_pcr": 0.8128106018774158,
+    "precision_pcr": 0.36065573770491804,
+    "recall_pcr": 0.06832298136645963,
+    "f1_pcr": 0.11488250652741515,
+    "macro_f1": 0.4638465542024155,
+    "weighted_f1": 0.6079493013280082,
+    "tn": 736,
+    "fp": 39,
+    "fn": 300,
+    "tp": 22,
+    "support_no_pcr": 775,
+    "support_pcr": 322,
+    "confusion_matrix": [
+      [
+        736,
+        39
+      ],
+      [
+        300,
+        22
+      ]
+    ]
+  },
+  "atencion_secondary_prediction": {
+    "n_patients": 1097,
+    "n_positive": 322,
+    "prevalence": 0.2935278030993619,
+    "accuracy": 0.6563354603463992,
+    "balanced_accuracy": 0.5207894209577238,
+    "precision_no_pcr": 0.7167755991285403,
+    "recall_no_pcr": 0.8490322580645161,
+    "f1_no_pcr": 0.7773183697578263,
+    "precision_pcr": 0.3463687150837989,
+    "recall_pcr": 0.19254658385093168,
+    "f1_pcr": 0.24750499001996007,
+    "macro_f1": 0.5124116798888931,
+    "weighted_f1": 0.6218034123507223,
+    "tn": 658,
+    "fp": 117,
+    "fn": 260,
+    "tp": 62,
+    "support_no_pcr": 775,
+    "support_pcr": 322,
+    "confusion_matrix": [
+      [
+        658,
+        117
+      ],
+      [
+        260,
+        62
+      ]
+    ]
+  }
+}

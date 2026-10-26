@@ -1,0 +1,109 @@
+{
+  "fold": 0,
+  "frozen_at": "2026-10-26T11:24:08.112690+01:00",
+  "rules": {
+    "loss": {
+      "selected_loss": "weighted",
+      "candidates": [
+        {
+          "loss": "normal",
+          "selection_auc": 0.6404742211193823,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.9426655583933854,
+            "intercept": -0.11695376153936646,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "inner_selection_same_pair_same_patient_means",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          },
+          "threshold": 0.3720916310520128,
+          "secondary_threshold": 0.34826820706727113,
+          "weights": {
+            "runs/fold_0/normal/seed_42/loss.pt": "0e3043a16b6a2d6c3ece05dcf4fc60f310995a3bf34f4e0241e7f946b2adb116",
+            "runs/fold_0/normal/seed_2026/loss.pt": "1955b455994db161b25d0ff355dfecdadd0fc95e520e86bbb68f79c31ee7bfe5"
+          }
+        },
+        {
+          "loss": "weighted",
+          "selection_auc": 0.6575682382133995,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.9230293639205743,
+            "intercept": -0.9577665978803925,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "inner_selection_same_pair_same_patient_means",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          },
+          "threshold": 0.38834024255902894,
+          "secondary_threshold": 0.31220294537843823,
+          "weights": {
+            "runs/fold_0/weighted/seed_42/loss.pt": "96c1111a195a86066ed9c2f48b8534a0a31976736f5b0b20e0c154766526db41",
+            "runs/fold_0/weighted/seed_2026/loss.pt": "577615984167041663f8b0f4c374f0bc17692230792fdcaa8a356cd0a11d3de3"
+          }
+        }
+      ]
+    },
+    "auc": {
+      "selected_loss": "normal",
+      "candidates": [
+        {
+          "loss": "normal",
+          "selection_auc": 0.6470912599944858,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.6530837873767615,
+            "intercept": -0.4934799749343081,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "inner_selection_same_pair_same_patient_means",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          },
+          "threshold": 0.38351192906882436,
+          "secondary_threshold": 0.3051918544209405,
+          "weights": {
+            "runs/fold_0/normal/seed_42/auc.pt": "39a4a181ba406ecca656ae505e8b9057a38689664c45653178c915f51ca52a3c",
+            "runs/fold_0/normal/seed_2026/auc.pt": "6e3004a076ec190f97e3521d699518e26ecaaa4f2efb6d883e53d48e8f2b5996"
+          }
+        },
+        {
+          "loss": "weighted",
+          "selection_auc": 0.6443341604631927,
+          "calibration": {
+            "method": "regularized_platt",
+            "input": "logit_patient_aggregated_probability",
+            "slope": 0.7172350287869088,
+            "intercept": -0.9405243370623773,
+            "C": 1.0,
+            "clip_epsilon": 1e-07,
+            "scope": "patient",
+            "fit_data": "inner_selection_same_pair_same_patient_means",
+            "nonnegative_slope_constraint": true,
+            "boundary_solution": false
+          },
+          "threshold": 0.40075458635103023,
+          "secondary_threshold": 0.3437182254178425,
+          "weights": {
+            "runs/fold_0/weighted/seed_42/auc.pt": "f4e7e5d2c70b89a7e0070ed7af1678cd3430c9b1f685255d1fccdc7f203563f9",
+            "runs/fold_0/weighted/seed_2026/auc.pt": "f1e2647efe198d548f071c990eed8798f4e2836849668ecd556314d39d6c4927"
+          }
+        }
+      ]
+    }
+  },
+  "counts": {
+    "fit": 746,
+    "selection": 132,
+    "outer": 219
+  }
+}
