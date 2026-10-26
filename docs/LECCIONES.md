@@ -81,6 +81,9 @@ tabla es descriptiva.
 
 ## 5. Hipótesis de PartyNet
 
+**Resultado: rechazada** (§6). El modelo final usa el mismo tronco sin tareas
+auxiliares y con la receta media.
+
 > Si la representación por corte se obliga a predecir también **HR, HER2 y
 > log-volumen tumoral** (objetivos de entrenamiento, nunca entradas), aprende
 > rasgos de biología tumoral asociados a pCR en lugar de memorizar cortes o
@@ -126,3 +129,72 @@ aplicación solo recibe PNG.
   que la AUC no cambia, pero el punto operativo puede desplazarse.
 - El subtipo en el mundo real no se conoce al leer la imagen. Aquí solo se usa
   para entrenar; en inferencia no hace falta.
+
+## 6. Resultados de la rama (26/10/2026)
+
+Tres CV de 5 folds por paciente con los mismos roles y semillas (42, 2026, 7).
+Por eso las comparaciones entre recetas son pareadas. AUC exterior por
+paciente: media de cortes, de semillas y de 4 reflexiones (TTA). Todo es
+desarrollo dentro de train; test y validación privada siguen cerrados.
+
+| Receta y pérdida | Media AUC ± DE | Δ frente al control [IC95 %] | Época elegida | Pico selección | Brecha AUC elegida / final | Tendencia 1–14 |
+|---|---:|---|---:|---:|---:|---:|
+| Control normal | 0,5802 ± 0,025 | — | 5 | 3 | 0,099 / 0,263 | no medida |
+| Control ponderada | 0,5814 ± 0,029 | — | 4 | 2 | 0,083 / 0,264 | no medida |
+| Control + aux, normal | 0,5622 ± 0,058 | −0,018 [−0,042; +0,005] | 10 | — | — | — |
+| Control + aux, ponderada | 0,5671 ± 0,038 | −0,014 [−0,036; +0,008] | 8 | — | — | — |
+| Lenta normal | 0,5494 ± 0,021 | −0,031 [−0,060; −0,002] | 12 | 7 | 0,001 / 0,079 | 14/15 |
+| Lenta ponderada | 0,5505 ± 0,038 | −0,031 [−0,060; +0,000] | 12 | 10 | 0,015 / 0,071 | 14/15 |
+| **Media normal** | **0,5842 ± 0,036** | **+0,004 [−0,015; +0,022]** | **8** | 6 | 0,064 / 0,144 | 7/15 |
+| Media ponderada | 0,5734 ± 0,027 | −0,008 [−0,025; +0,009] | 12 | 11 | 0,067 / 0,162 | 4/15 |
+
+Referencia solo cohorte: 0,549 ± 0,027. La media normal la supera en +0,035
+[−0,002; +0,071], con P(Δ ≤ 0) = 0,03. Es lo más cerca que ha estado el
+proyecto de demostrar señal por encima de la cohorte, aunque el IC todavía
+toca el 0.
+
+![Pérdida y AUC por época, control frente a receta media](img/perdidas_vs_control.png)
+
+### Qué se aprendió
+
+1. **Multitarea (HR, HER2, volumen): rechazada.** La red aprende el volumen
+   (ρ ≈ 0,7) pero no el subtipo (AUC HR ≈ 0,53, HER2 ≈ 0,49). El volumen se
+   lleva capacidad y la AUC baja, sobre todo dentro de Duke.
+2. **El pico temprano venía de cómo se define una época.** Con los ~10 cortes
+   casi idénticos de cada paciente, la época 3 equivale a ~30 pasadas por
+   paciente. El control memorizaba: la BCE de selección sube desde la época 3
+   y la brecha final es 0,26.
+3. **Regularizar fuerte estira las curvas, pero quita señal.** La receta lenta
+   (LR 2e-4, WD 0,05, dropout 0,5, giro ±15°, cutout, label smoothing) cumple
+   la tendencia 1–14 en 14/15 redes, pero su AUC cae al nivel de la cohorte:
+   infraajuste.
+4. **Basta con cambiar el muestreo.** La receta media conserva la
+   regularización del control y solo ve 3 cortes al azar por paciente y época
+   (más un giro de ±10° y EMA 0,98). Elige el doble de tarde (8 frente a 4),
+   reduce la brecha final de 0,26 a 0,14 y discrimina igual o algo mejor. La
+   BCE de selección deja de divergir, aunque sigue sin bajar: lo que aprende
+   generaliza poco.
+5. **Normal frente a ponderada:** sin diferencia relevante en ninguna receta
+   (|Δ| ≤ 0,014, todos los IC incluyen 0). Cumple la comparación del PDF.
+6. **Criterios fijados antes de la CV media:** pico entre 10 y 15, tendencia en
+   ≥ 50 % de las redes y Δ ≥ −0,01. Ningún brazo cumple los tres. Se toman como
+   orientativos y se elige el de mejor AUC media, la regla prefijada desde el
+   inicio.
+
+## 7. Modelo final: `modelos/party_final/`
+
+- **Receta media, pérdida normal, sin tareas auxiliares.** 8 épocas (mediana
+  de las elegidas en la CV), 5 semillas (42, 2026, 7, 1234, 31415), todas las
+  1.097 pacientes de train. 593.716 parámetros por red; unos 25 s por red en
+  la RTX 3090, con 7,3 GB de memoria máxima.
+- **Inferencia:** PNG/255, TTA con 4 reflexiones, media de las 5 redes; para
+  cada paciente, media de sus cortes. GPU y CPU coinciden con una diferencia
+  de unas 6 millonésimas.
+- **Política, ajustada solo con las OOF de la CV:** Platt a = 0,849,
+  b = −0,100. Umbral Youden 0,297 sobre la probabilidad calibrada. En OOF:
+  sensibilidad 55,9 %, especificidad 55,4 %, F1 pCR 0,425 y macro-F1 0,531
+  (frente a 0,414 de decir siempre «no pCR»).
+- Los pesos están en `modelos/`, ignorado por Git. Antes de la entrega
+  habría que versionarlos (≈12 MB) o publicarlos como release.
+- **Test aún no evaluado.** `evaluar-test` se ejecuta una sola vez y escribe la
+  marca en el paquete.

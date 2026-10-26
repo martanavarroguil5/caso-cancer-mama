@@ -7,10 +7,14 @@ historial anterior (V001–V008, aplicaciones, informes 01–31) sigue intacto e
 **PartyNet** es una CNN 2D propia entrenada desde cero, sin pesos
 preentrenados. Recibe PRE/EARLY/LATE, deriva internamente los realces firmados
 y devuelve **un único logit de pCR por corte**. La probabilidad de una paciente
-es la media de las de sus cortes. Durante el entrenamiento, la misma
-representación aprende además HR, HER2 y volumen tumoral como tareas auxiliares.
-Esas variables nunca son entrada del modelo. El porqué de cada decisión está en
-[docs/LECCIONES.md](docs/LECCIONES.md).
+es la media de las de sus cortes. El código permite además tareas auxiliares
+de entrenamiento (HR, HER2 y volumen), que nunca son entrada del modelo; se
+probaron y se descartaron.
+
+**Estado (26/10/2026):** modelo final `modelos/party_final/` con la receta
+`media` y pérdida normal: AUC media de CV 0,584 ± 0,036, frente a 0,549 de la
+referencia de solo cohorte. Test aún sin evaluar. Resultados, curvas y
+decisiones en [docs/LECCIONES.md](docs/LECCIONES.md) §6–7.
 
 ## Estructura
 
@@ -40,20 +44,35 @@ Todo se ejecuta desde la raíz de esta carpeta
 .venv/bin/python -m pcr_party humo
 ```
 
-### 1. Validación cruzada (≈2–3 h en la RTX 3090, ~7 s por época)
+### 1. Validación cruzada
+
+Hay tres recetas en `pcr_party/entrenar.py`: `control` (todos los cortes en
+cada época), `lenta` y `media` (3 cortes al azar por paciente y época). La
+elegida es `media`.
 
 ```bash
-nohup .venv/bin/python -m pcr_party cv > runs/cv_party.out 2>&1 &
-tail -f runs/cv_party.out
+nohup .venv/bin/python -m pcr_party cv --nombre cv_media --receta media --lambdas 0 \
+    --control cv_party > runs/cv_media.out 2>&1 &
+tail -f runs/cv_media.out
 ```
 
-Por defecto lanza 5 folds × 3 semillas × {normal, ponderada} × {λ=0, λ=1}:
-60 redes. El bucle va semilla a semilla, así que al terminar la primera semilla
-(≈⅓ del tiempo) ya hay un `runs/cv_party/RESUMEN.md` con los cinco folds, y se
-actualiza tras cada semilla. Si se corta, relanzar la misma orden continúa
+Con 5 folds × 3 semillas × 2 pérdidas son 30 redes, ≈35 min. `--control`
+añade la comparación pareada con otra CV hecha con los mismos roles y semillas.
+Antes de una CV se puede calibrar una receta con una sola red, mirando solo
+fit y selección:
+
+```bash
+.venv/bin/python -m pcr_party piloto --receta media --fold 0 --ajuste lr=2e-4
+```
+
+La CV original del control con tareas auxiliares (60 redes, ≈2 h) se lanzó con
+`cv` sin opciones.
+
+El bucle va semilla a semilla, así que al terminar la primera semilla ya hay
+un `RESUMEN.md` con los cinco folds, y se actualiza tras cada semilla. Si se corta, relanzar la misma orden continúa
 donde se quedó: las redes con `hecho.json` no se repiten.
 
-Salidas en `runs/cv_party/`: `RESUMEN.md`, `resumen.json`, `curvas.png`
+Salidas en `runs/<nombre>/`: `RESUMEN.md`, `resumen.json`, `curvas.png`
 (fit frente a selección), `oof_<brazo>.csv`, y por cada red su historia,
 predicciones y pesos.
 
@@ -68,14 +87,18 @@ Cómo leer el resumen:
   aprendiendo sobre todo la cohorte.
 - **AUC HR / HER2 aux**: si en los brazos aux1 salen ≈0,5, las cabezas
   auxiliares no aprendieron.
+- **`<brazo> − control <cv>`**: comparación pareada con la CV de control.
+- **Pico sel., brecha elegida / final y tendencia 1–14**: diagnóstico de
+  sobreajuste. Tendencia = las pérdidas de fit y selección bajan juntas entre
+  las épocas 1 y 14 (indicación del profesor).
 
-### 2. Modelo final (≈10–15 min)
+### 2. Modelo final (≈3 min)
 
 Elige el brazo con mejor media de AUC en la CV, sin mirar test, y entrena con
-el 100 % de train:
+el 100 % de train. Es el comando con el que se creó `modelos/party_final/`:
 
 ```bash
-.venv/bin/python -m pcr_party final --perdida ponderada --lambda-aux 1
+.venv/bin/python -m pcr_party final --cv cv_media --perdida normal --lambda-aux 0
 ```
 
 Las épocas son la mediana de las elegidas en la CV de ese brazo; se pueden
