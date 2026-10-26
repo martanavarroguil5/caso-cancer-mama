@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv
+breastdcedl
+cache/
+runs/
+modelos/
+*.pt
+*.npy
+*.log
