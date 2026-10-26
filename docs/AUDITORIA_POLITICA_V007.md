@@ -71,3 +71,25 @@ selección, OOF, roles, políticas y versiones protegidos mediante SHA256.
 
 [Umbral y validación](https://scikit-learn.org/stable/modules/classification_threshold.html).
 [Calibración y ensembles](https://scikit-learn.org/stable/modules/calibration.html).
+
+## Resultado comprobado
+
+En1097 pacientes de desarrollo, macroF1 de selección mejora sensibilidad
+12,73%→35,40%, F1pCR0,1876→0,3695 y macroF10,4928→0,5614 frente a la
+política histórica por pareja de especificidad90%. FP74→181; FN281→208.
+Delta macroF1+0,0686, IC95% pareado[+0,0409;+0,0966]. Es otro punto
+operativo y tiene un coste de falsos positivos; no es una validación clínica.
+
+El AUC permanece: media de folds0,576593±0,030063 y agrupada cruda0,526404.
+No hay entrenamiento ni nuevo test. La inferencia/normalización/medias se
+reproducen con PNG sintéticos. El umbral global archivado equivale a0,568922
+crudo y se reconstruye como especificidad90% ajustada sobre OOF agrupadas.
+La diferencia de escalas entre parejas y ensemble10 queda confirmada, sin
+atribuirle causalmente todos los errores históricos.
+
+Solo una paciente quedó fuera de fit por todas las redes; ninguna quedó fuera
+de fit y selección. No hay reserva común suficiente para validar una nueva
+política del ensemble completo. politicas_congeladas.json es solo CV de parejas
+y deployable=False. V007/app/versiones no cambian; sin push ni otro entrenamiento.
+
+[Informe, figuras, políticas y verificación](../resultados/29_auditoria_politica_v007_20261026/INFORME_AUDITORIA.md).

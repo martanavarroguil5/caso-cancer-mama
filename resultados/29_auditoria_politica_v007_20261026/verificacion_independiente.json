@@ -1,0 +1,42 @@
+{
+  "verified_at": "2026-10-26T10:04:40.451861+01:00",
+  "method": "sklearn confusion_matrix y F1 frente al cálculo por conteos; AUC por todos los pares positivo-negativo",
+  "policies": {
+    "macro_f1": {
+      "confusion_verified": true,
+      "macro_and_positive_f1_verified": true
+    },
+    "specificity_90": {
+      "confusion_verified": true,
+      "macro_and_positive_f1_verified": true
+    },
+    "specificity_95": {
+      "confusion_verified": true,
+      "macro_and_positive_f1_verified": true
+    },
+    "raw_050": {
+      "confusion_verified": true,
+      "macro_and_positive_f1_verified": true
+    },
+    "calibrated_050": {
+      "confusion_verified": true,
+      "macro_and_positive_f1_verified": true
+    },
+    "always_no_pcr": {
+      "confusion_verified": true,
+      "macro_and_positive_f1_verified": true
+    }
+  },
+  "raw_auc_pairwise": 0.5264035263474254,
+  "fit_prior_probability_baseline": {
+    "brier": 0.20772627198021668,
+    "logloss": 0.6061469948598616,
+    "fit_data": "prevalencia por pacientes de fit de cada fold",
+    "scope": "diagnóstico probabilístico descriptivo añadido al cierre; no política elegida"
+  },
+  "all_sources_versions_verified_unchanged": true,
+  "tests": 104,
+  "no_training": true,
+  "test_images_loaded": 0,
+  "private_images_loaded": 0
+}
