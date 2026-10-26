@@ -116,3 +116,6 @@ Thumbs.db
 
 # Regularización de estilo: pesos y checkpoints de trabajo locales
 /resultados/30_regularizacion_estilo_20261026/runs/
+
+/resultados/31_preservacion_espacial_20261026/uniforme/runs/
+/resultados/31_preservacion_espacial_20261026/atencion/runs/
