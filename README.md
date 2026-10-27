@@ -1,8 +1,11 @@
-# Rama `party`: PartyNet, pCR solo con imágenes
+# PartyNet: predicción de pCR en cáncer de mama a partir de DCE-MRI
 
-Rama limpia para construir el mejor modelo de solo imagen posible. Todo el
-historial anterior (V001–V008, aplicaciones, informes 01–31) sigue intacto en
-`main`, y aquí se puede consultar con `git show main:<ruta>`.
+Predicción de la respuesta patológica completa (pCR) tras quimioterapia
+neoadyuvante a partir de la resonancia con contraste previa al tratamiento
+(BreastDCEDL), con una CNN propia entrenada desde cero y, opcionalmente,
+cuatro datos clínicos. El trabajo de la etapa anterior (V001–V008,
+aplicaciones e informes 01–31) se conserva en el historial con la etiqueta
+`main-anterior`: `git show main-anterior:<ruta>`.
 
 **PartyNet** es una CNN 2D propia entrenada desde cero, sin pesos
 preentrenados. Recibe PRE/EARLY/LATE, deriva internamente los realces firmados
@@ -13,7 +16,7 @@ probaron y se descartaron.
 
 **Estado (27/10/2026):** dos modelos vigentes. Solo imagen: `modelos/party_final_v2/`,
 receta `presupuesto` (LR lineal hasta 0 en la época 12) con pérdida ponderada.
-AUC media de CV 0,581 ± 0,018, empatada con el anterior `party_final` (0,584 ±
+AUC media de CV 0,581 ± 0,018, empatada con el paquete anterior `party_final` (0,584 ±
 0,036; Δ −0,003 [−0,019; +0,014]) pero con la época 12, la mitad de variación
 entre folds y menos brecha fit−selección. La referencia de solo cohorte da
 0,549. Imagen + datos clínicos (permitidos desde el 27/10): `modelos/party_fusion_v1/`,
@@ -34,19 +37,22 @@ pcr_party/
   final.py       paquete final con todo train, Platt y umbral desde las OOF
   inferencia.py  carga del paquete, predicción y evaluación única de test
   fusion.py      imagen + clínica: CV interna, evaluación anidada y paquete
+  offset.py      piloto de CNN entrenada sobre el offset clínico (descartado)
   recursos_app.py resúmenes JSON para la web
-app/             web Streamlit (inicio.py, paginas/, componentes, motor, recursos/)
+app/             web Streamlit (inicio.py, paginas/, componentes, motor, estado, recursos/)
+modelos/         paquetes vigentes: party_final_v2 (imagen) y party_fusion_v1 (imagen + clínica)
 tests/           pruebas unitarias (CPU, datos sintéticos) y carga de las páginas
-docs/LECCIONES.md, docs/PROTOCOLO_FUSION.md
+docs/            LECCIONES, PROTOCOLO_FUSION, PROTOCOLO_OFFSET, PENDIENTES
 ```
 
-`breastdcedl` y `.venv` son enlaces simbólicos a la copia de `main`. `cache/` y
-`runs/` se ignoran en Git; de `modelos/` solo se versiona el paquete final.
+Los datos (`breastdcedl/`), el entorno (`.venv/`), la caché (`cache/`) y las
+salidas de los experimentos (`runs/`) no se versionan; de `modelos/` solo se
+versionan los paquetes vigentes.
 
 ## Cómo entrenar
 
-Todo se ejecuta desde la raíz de esta carpeta
-(`/home/jorgesrab/Escritorio/caso-cancer-mama-party`), en el equipo con la GPU.
+Todo se ejecuta desde la raíz del repositorio
+(`/home/jorgesrab/Escritorio/caso-cancer-mama`), en el equipo con la GPU.
 
 ```bash
 .venv/bin/python -m unittest discover -s tests
@@ -108,13 +114,11 @@ Cómo leer el resumen:
 ### 2. Modelo final (≈3 min)
 
 Elige el brazo con mejor media de AUC en la CV, sin mirar test, y entrena con
-el 100 % de train. Comandos con los que se crearon los dos paquetes:
+el 100 % de train. Comando con el que se creó el paquete vigente:
 
 ```bash
 .venv/bin/python -m pcr_party final --cv cv_presupuesto --perdida ponderada \
     --lambda-aux 0 --nombre party_final_v2
-.venv/bin/python -m pcr_party final --cv cv_media --perdida normal --lambda-aux 0 \
-    --nombre party_final
 ```
 
 Las épocas son la mediana de las elegidas en la CV de ese brazo; se pueden
@@ -132,6 +136,10 @@ nohup .venv/bin/python -m pcr_party fusion-interna > runs/fusion_interna.out 2>&
 
 `fusion-interna` entrena las 60 redes de la CV interna (reanudable);
 `fusion-evaluar` escribe `runs/cv_interna_fusion/evaluacion/RESUMEN.md`.
+
+El piloto de CNN entrenada sobre el offset clínico (`docs/PROTOCOLO_OFFSET.md`)
+se reproduce con `offset-cv` (30 redes, ≈15 min) y `offset-evaluar`. No cumplió
+el criterio de adopción y la fusión v1 sigue vigente.
 
 ### 4. Web
 
@@ -161,7 +169,7 @@ Por defecto usan `modelos/party_final_v2`; `--modelo` elige otro paquete. Con
 escribe `evaluacion_test.json` y se niega a repetirse. Nada del test vuelve a
 la elección de brazo, épocas, calibración ni umbral.
 
-## Reglas de la rama
+## Reglas del proyecto
 
 - La CNN recibe solo píxeles. Los datos clínicos (edad, volumen, HR, HER2) solo
   entran después, en la fusión tardía; nunca la cohorte ni datos del escáner.

@@ -5,13 +5,10 @@ breastdcedl
 cache/
 runs/
 modelos/*
-!modelos/party_final/
 !modelos/party_final_v2/
 !modelos/party_fusion_v1/
 *.pt
 *.npy
 *.log
-!modelos/party_final/pesos/*.pt
-!modelos/party_final/registro.log
 !modelos/party_final_v2/pesos/*.pt
 !modelos/party_final_v2/registro.log

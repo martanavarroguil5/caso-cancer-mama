@@ -1,9 +1,10 @@
 # Lecciones de todo el proyecto y diseño de PartyNet
 
-26/10/2026. Síntesis de los ~30 informes de `main` (resultados 01–31,
-`docs/EXPERIMENTOS_DESCARTADOS.md`, auditorías) y de la literatura. Los
-informes originales siguen en `main`:
-`git show main:docs/EXPERIMENTOS_DESCARTADOS.md`.
+26/10/2026. Síntesis de los ~30 informes de la etapa anterior del proyecto
+(resultados 01–31, `docs/EXPERIMENTOS_DESCARTADOS.md`, auditorías) y de la
+literatura. Los informes originales se conservan en el historial con la
+etiqueta `main-anterior`:
+`git show main-anterior:docs/EXPERIMENTOS_DESCARTADOS.md`.
 
 ## 1. Datos
 
@@ -130,7 +131,7 @@ aplicación solo recibe PNG.
 - El subtipo en el mundo real no se conoce al leer la imagen. Aquí solo se usa
   para entrenar; en inferencia no hace falta.
 
-## 6. Resultados de la rama (26–27/10/2026)
+## 6. Resultados de PartyNet (26–27/10/2026)
 
 Cinco CV de 5 folds por paciente con los mismos roles y semillas (42, 2026, 7).
 Por eso las comparaciones entre recetas son pareadas. AUC exterior por
@@ -229,7 +230,7 @@ toca el 0.
 - GPU y CPU coinciden con una diferencia de unas 2 cienmilésimas en la
   probabilidad.
 
-### `modelos/party_final/` — anterior (26/10/2026), conservado
+### `modelos/party_final/` — anterior (26/10/2026), retirado del árbol
 
 - **Receta media, pérdida normal, sin tareas auxiliares.** 8 épocas (mediana
   de las elegidas en la CV), 5 semillas (42, 2026, 7, 1234, 31415), todas las
@@ -243,7 +244,8 @@ toca el 0.
   sensibilidad 55,9 %, especificidad 55,4 %, F1 pCR 0,425 y macro-F1 0,531
   (frente a 0,414 de decir siempre «no pCR»).
 - El paquete completo (5 pesos, `paquete.json` con SHA-256, historias y
-  registro; ≈12 MB) está versionado en Git.
+  registro; ≈12 MB) se retiró del árbol el 27/10/2026 al quedar superado por
+  `party_final_v2`. Se recupera con `git checkout bc75669 -- modelos/party_final`.
 - **Test aún no evaluado.** `evaluar-test` se ejecuta una sola vez y escribe la
   marca en el paquete.
 
