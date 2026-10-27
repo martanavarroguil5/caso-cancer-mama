@@ -2,13 +2,13 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from componentes import (AMBAR, CIAN, GRIS, NARANJA, TINTA2, _base, aviso, bandas_grafica, cabecera, grafica, mancuernas,
+from componentes import (ACERO, COBRE, GRIS, OCRE, TINTA2, _base, aviso, bandas_grafica, cabecera, grafica, mancuernas,
                          num, pasos, pie, recurso, roc, seccion, tabla, tarjetas)
 
 fus = recurso("modelo_fusion")
 img = recurso("modelo_imagen")
 
-cabecera("Modelo 2 · imagen + datos clínicos", "La CNN más <em>cuatro datos</em> clínicos",
+cabecera("Modelo 2 · imagen + datos clínicos", "Fusión de imagen y <em>datos clínicos</em>",
          "La CNN de imagen no cambia. Su probabilidad entra como una variable más en una regresión logística junto "
          "con la edad, el volumen tumoral, HR y HER2. Así el peso de la imagen es visible y medible.",
          meta=[("fusión", "tardía"), ("variables", "imagen + 4"), ("submodelos", "por patrón"), ("evaluación", "CV anidada")])
@@ -41,7 +41,7 @@ b = lambda n: r["brazos"][a[n]]
 comp = r["comparaciones"]
 principal = comp["principal: completa+imagen − completa"]
 
-seccion("2", "Resultados de la <em>CV anidada</em>", "Mismas 1.097 pacientes y mismos folds para todos los modelos.")
+seccion("2", "Resultados de la validación cruzada anidada", "Mismas 1.097 pacientes y mismos folds para todos los modelos.")
 escala = lambda auc: (auc - 0.5) / 0.5
 tarjetas([
     {"t": "Imagen + clínica", "v": num(b("completa+imagen")["auc_media_folds"]), "acento": True,
@@ -58,7 +58,7 @@ tarjetas([
 ])
 c1, c2 = st.columns([1.1, 1], gap="large")
 with c1:
-    grafica(roc(fus["roc"], {"completa+imagen": NARANJA, "completa": CIAN, "subtipo": AMBAR, "imagen": GRIS},
+    grafica(roc(fus["roc"], {"completa+imagen": COBRE, "completa": ACERO, "subtipo": OCRE, "imagen": GRIS},
                 "ROC fuera de fold (anidada)"))
 with c2:
     filas = [{"Comparación": n.replace("principal: ", "★ "), "Δ AUC": f"{c['delta']:+.4f}",
@@ -68,7 +68,7 @@ with c2:
     tabla(pd.DataFrame(filas))
     st.caption("★ comparación principal. Un IC que no cruza el 0 indica una diferencia que no se explica por azar.")
 
-seccion("3", "Cuánto pesa <em>cada variable</em>", "Coeficientes estandarizados del modelo completo en cada fold: "
+seccion("3", "Peso de cada variable", "Coeficientes estandarizados del modelo completo en cada fold: "
         "cuánto cambia el logit de pCR por cada desviación típica de la variable.")
 coef = pd.DataFrame(fus["coeficientes_por_fold"]).melt(id_vars="fold", var_name="variable", value_name="coeficiente")
 nombres = {"HR": "HR positivo", "HER2": "HER2 positivo", "edad": "Edad", "log_volumen": "Volumen (log)", "imagen": "Imagen (CNN)"}
@@ -76,15 +76,15 @@ coef["variable"] = coef["variable"].map(nombres)
 y = alt.Y("variable:N", title=None, sort=list(nombres.values()), axis=alt.Axis(labelFont="Geist", labelFontSize=12))
 rango = alt.Chart(coef).mark_rule(strokeWidth=6, opacity=0.25, strokeCap="round").encode(
     y=y, x="min(coeficiente):Q", x2="max(coeficiente):Q",
-    color=alt.condition(alt.datum.variable == "Imagen (CNN)", alt.value(NARANJA), alt.value(GRIS)))
+    color=alt.condition(alt.datum.variable == "Imagen (CNN)", alt.value(COBRE), alt.value(GRIS)))
 puntos = alt.Chart(coef).mark_circle(size=90, opacity=0.95, stroke="#0d1116", strokeWidth=1.5).encode(
     y=y, x=alt.X("coeficiente:Q", title="Coeficiente estandarizado (un punto por fold)"),
-    color=alt.condition(alt.datum.variable == "Imagen (CNN)", alt.value(NARANJA), alt.value(TINTA2)),
+    color=alt.condition(alt.datum.variable == "Imagen (CNN)", alt.value(COBRE), alt.value(TINTA2)),
     tooltip=["variable:N", "fold:Q", alt.Tooltip("coeficiente:Q", format="+.3f")])
 cero = alt.Chart(pd.DataFrame({"x": [0]})).mark_rule(color="#6b7480", strokeDash=[2, 3]).encode(x="x:Q")
 grafica(_base(alt.layer(cero, rango, puntos), 250))
 
-seccion("4", "Todas las <em>combinaciones</em> de datos", "AUC media de cada submodelo sin imagen (gris) y con "
+seccion("4", "Combinaciones de variables clínicas", "AUC media de cada submodelo sin imagen (gris) y con "
         "imagen (naranja). La línea es lo que añade la imagen.")
 filas = []
 for clave, v in r["brazos"].items():
@@ -102,7 +102,7 @@ with st.expander("Tabla", icon=":material/table_rows:"):
                         "Con imagen": combos["con"].map(num),
                         "Δ": (combos["con"] - combos["sin"]).map(lambda d: f"{d:+.3f}".replace(".", ","))}))
 
-seccion("5", "Bandas de <em>probabilidad</em>")
+seccion("5", "Bandas de probabilidad")
 c1, c2 = st.columns(2, gap="large")
 with c1:
     grafica(bandas_grafica(img["bandas"], "Solo imagen"))

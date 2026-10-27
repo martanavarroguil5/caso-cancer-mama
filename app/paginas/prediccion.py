@@ -7,9 +7,9 @@ import motor
 from componentes import (COHORTES, aviso, cabecera, escapar, lectura, lectura_vacia, num, pct, pie, recurso,
                          red_neuronal, seccion, visor)
 
-cabecera("Predicción", "Predecir <em>una paciente</em>",
-         "Sube las tres fases de uno o varios cortes de la misma paciente, o elige un ejemplo. Los datos clínicos "
-         "son opcionales: si los añades, aparece también la estimación combinada.")
+cabecera("Predicción", "Predicción individual",
+         "Carga las tres fases de uno o varios cortes de la misma paciente o selecciona un caso de ejemplo. Los datos "
+         "clínicos son opcionales; si se introducen, se muestra también la estimación combinada.")
 
 img_info = recurso("modelo_imagen")
 fus_info = recurso("modelo_fusion")
@@ -114,9 +114,9 @@ if etiqueta_real is not None:
     st.caption(f"Resultado real de esta paciente de entrenamiento: {'pCR' if etiqueta_real else 'no pCR'}.")
 
 # ---------------------------------------------------------------- 4. dentro de la red
-seccion("4", "Dentro de la <em>red</em>",
-        "El corte elegido recorre una de las cinco redes. Cada miniatura es un mapa de activación real; las líneas "
-        "son los pesos efectivos entre los filtros que más pesan en la salida. Pasa el ratón por cualquier nodo.")
+seccion("4", "Recorrido del corte por la red",
+        "El corte seleccionado se propaga por una de las cinco redes. Cada miniatura es un mapa de activación real; "
+        "las líneas representan los pesos efectivos entre los filtros con mayor contribución a la salida.")
 k = st.select_slider("Corte que se propaga", options=list(range(len(nombres))), format_func=lambda i: (
     f"{nombres[i]} · p {pct(p_cortes[i], 1)}"), value=int(np.argsort(p_cortes)[len(p_cortes) // 2])) \
     if len(nombres) > 1 else 0

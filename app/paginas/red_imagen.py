@@ -2,9 +2,9 @@ import pandas as pd
 import streamlit as st
 
 import estado
-from componentes import (COHORTES, GRIS, NARANJA, aviso, bandas_grafica, cabecera, calibracion,
-                         curvas_comparadas, curvas_epoca, grafica, matriz, num, pct, pie, pr, recurso, red_neuronal, roc,
-                         seccion, tabla, tarjetas)
+from componentes import (COBRE, COHORTES, GRIS, aviso, bandas_grafica, bloques_3d, cabecera, calibracion,
+                         curvas_comparadas, curvas_epoca, grafica, matriz, num, pct, pie, pr, recurso, red_neuronal,
+                         roc, seccion, tabla, tarjetas)
 
 img = recurso("modelo_imagen")
 m = img["metricas"]
@@ -14,7 +14,7 @@ sel_min = min(curvas, key=lambda c: c["sel_bce_obj"])
 # Meseta: primera época a menos de 0,001 de la mejor AUC media de validación.
 auc_pico = next(c for c in curvas if c["sel_auc"] >= max(x["sel_auc"] for x in curvas) - 0.001)
 
-cabecera("Modelo 1 · solo imagen", "PartyNet, <em>neurona a neurona</em>",
+cabecera("Modelo 1 · solo imagen", "CNN de imagen: <em>PartyNet</em>",
          "Una CNN 2D propia, sin pesos preentrenados ni datos clínicos de entrada. Su capacidad de discriminación "
          "es modesta, pero está bien medida, es estable entre folds y no memoriza.",
          meta=[("parámetros", f"{img['parametros']:,}".replace(",", ".")), ("redes", "5 × semilla"),
@@ -33,10 +33,10 @@ tarjetas([
 ])
 
 # ---------------------------------------------------------------- arquitectura
-seccion("1", "La red por <em>dentro</em>",
-        "Un corte real recorre la red de izquierda a derecha. Cada miniatura es lo que ve un filtro (mapa de "
-        "activación); las líneas son pesos efectivos, de los filtros que más pesan en la salida. Cambia de vista "
-        "para ver el mismo filtro sobre el recorte de 256, 128 o 64 px.")
+seccion("1", "Recorrido de un corte por la red",
+        "Un corte real se propaga por la red de izquierda a derecha. Cada miniatura es el mapa de activación de un "
+        "filtro; las líneas representan los pesos efectivos entre los filtros con mayor contribución a la salida. "
+        "El selector de vista muestra el mismo filtro sobre el recorte de 256, 128 o 64 px.")
 ej = estado.ejemplos()
 c1, c2 = st.columns([3, 2])
 pid = c1.selectbox("Paciente de ejemplo (train)", ej.index, index=3, format_func=lambda p: (
@@ -45,6 +45,12 @@ pixeles, nombres = estado.cortes_ejemplo(pid)
 k = c2.select_slider("Corte", options=list(range(len(nombres))), value=len(nombres) // 2,
                      format_func=lambda i: nombres[i]) if len(nombres) > 1 else 0
 red_neuronal(estado.recorrido(pixeles[k]), alto=620)
+
+seccion("2", "Arquitectura en bloques",
+        "La misma red como volúmenes: la altura de cada bloque es proporcional a la resolución espacial y su "
+        "profundidad, al número de canales. Dentro de cada bloque se muestran mapas reales del corte seleccionado "
+        "y los conos indican el campo receptivo de la convolución entre etapas.")
+bloques_3d(estado.bloques(pixeles[k]))
 with st.expander("Tabla de capas", icon=":material/table_rows:"):
     tabla(pd.DataFrame([{"Etapa": c["nombre"], "Salida": c["forma"], "Qué hace": c["detalle"],
                          "Parámetros": c["params"] or "—"} for c in estado.capas_red()]))
@@ -55,7 +61,7 @@ with st.expander("Tabla de capas", icon=":material/table_rows:"):
                "su BatchNorm y por la activación del filtro de origen.")
 
 # ---------------------------------------------------------------- entrenamiento
-seccion("2", "Entrenamiento <em>época a época</em>",
+seccion("3", "Entrenamiento por épocas",
         "Media de las 15 redes de la validación cruzada (5 folds × 3 semillas); la sombra es el rango "
         "intercuartílico. «Validación» es un 15 % de pacientes que la red no ve al entrenar.")
 c1, c2 = st.columns(2, gap="large")
@@ -76,12 +82,12 @@ with st.expander("¿Cómo era antes? Comparación con la receta antigua", icon="
                "y un presupuesto fijo de 12 épocas.")
 
 # ---------------------------------------------------------------- discriminación
-seccion("3", "Capacidad de <em>discriminación</em>",
+seccion("4", "Capacidad de discriminación",
         "Predicciones fuera de fold de las 1.097 pacientes de desarrollo. El test público no se ha usado.")
 c1, c2 = st.columns(2, gap="large")
 with c1:
     grafica(roc({"CNN de imagen": img["roc"], "Solo cohorte": img["roc_cohorte"]},
-                {"CNN de imagen": NARANJA, "Solo cohorte": GRIS}))
+                {"CNN de imagen": COBRE, "Solo cohorte": GRIS}))
 with c2:
     grafica(pr(img["pr"], m["prevalencia"]))
 grupos = {**{f"Cohorte {COHORTES.get(c, c)}": a for c, a in m["auc_por_cohorte"].items()},
@@ -91,7 +97,7 @@ with st.expander("AUC por cohorte y por subtipo", icon=":material/groups:"):
     st.caption("La imagen discrimina algo mejor en HER2+ y casi nada en HR+/HER2−.")
 
 # ---------------------------------------------------------------- umbral y bandas
-seccion("4", "De la probabilidad a una <em>decisión</em>",
+seccion("5", "Umbral y bandas de probabilidad",
         "Un sí/no depende de un umbral. Las bandas ofrecen una lectura más honesta: qué proporción de pacientes "
         "con una probabilidad parecida alcanzó pCR.")
 c1, c2 = st.columns([1.05, 1], gap="large")
@@ -111,7 +117,7 @@ with st.expander("Calibración", icon=":material/tune:"):
     st.caption("Cada punto agrupa un 10 % de pacientes. Cerca de la diagonal = probabilidades honestas. Que todos "
                "queden entre ≈0,2 y ≈0,35 muestra que el modelo nunca está muy seguro.")
 
-seccion("5", "Conclusión")
+seccion("6", "Conclusión")
 aviso("Con imagen sola y una CNN desde cero hay una <b>señal pequeña pero real</b>: el intervalo de la AUC excluye el "
       "azar, la variación entre folds es baja y las curvas muestran que la red no memoriza. Como predictor aislado es "
       "débil, lo que motiva combinarla con los datos clínicos.", "info")

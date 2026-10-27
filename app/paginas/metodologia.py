@@ -3,11 +3,11 @@ import streamlit as st
 
 from componentes import aviso, cabecera, pasos, pie, seccion
 
-cabecera("Proyecto", "Datos y <em>método</em>",
+cabecera("Proyecto", "Datos y metodología",
          "Qué datos se usan, cómo se separan, cómo se evalúa y qué límites tiene el resultado.",
          meta=[("dataset", "BreastDCEDL MinCrop"), ("cohortes", "3"), ("train", "1.097"), ("test", "176")])
 
-seccion("1", "Datos: <em>BreastDCEDL</em>",
+seccion("1", "Datos: BreastDCEDL",
         "Resonancia dinámica con contraste (DCE-MRI) previa al tratamiento neoadyuvante, recortada a 256 × 256 "
         "alrededor del tumor, con unos diez cortes por paciente.")
 cohortes = pd.DataFrame([
@@ -38,8 +38,8 @@ st.markdown(f"""
 .folds{{display:grid;grid-template-columns:110px repeat(5,1fr);gap:4px;margin:.6rem 0 .4rem}}
 .folds .r{{font:400 .7rem var(--mono);color:var(--tenue);display:flex;align-items:center;letter-spacing:.06em}}
 .folds .c{{height:34px;background:#1a222b;position:relative;transition:transform .15s}}
-.folds .c.ev{{background:var(--realce);box-shadow:0 0 18px rgba(255,106,61,.35)}}
-.folds .c.de::after{{content:"";position:absolute;right:0;top:0;bottom:0;width:15%;background:repeating-linear-gradient(135deg,#3fc1dc55 0 2px,transparent 2px 5px)}}
+.folds .c.ev{{background:var(--realce)}}
+.folds .c.de::after{{content:"";position:absolute;right:0;top:0;bottom:0;width:15%;background:repeating-linear-gradient(135deg,#5a9ec455 0 2px,transparent 2px 5px)}}
 .folds .c:hover{{transform:scaleY(1.15)}}
 .folds .h{{font:500 .66rem var(--mono);color:var(--tenue);text-align:center;letter-spacing:.12em}}
 @media (max-width:760px){{.coh{{grid-template-columns:1fr}}}}
@@ -51,13 +51,13 @@ st.markdown(f"""
 st.caption("Las cohortes se procesaron de forma distinta y tienen prevalencias distintas: saber solo la cohorte ya da "
            "una AUC ≈ 0,55. Por eso la cohorte nunca es una entrada y se informa la AUC dentro de cada cohorte.")
 
-seccion("2", "Fases y <em>canales</em>")
+seccion("2", "Fases y canales")
 pasos([("PRE", "Antes del contraste"), ("EARLY", "Fase postcontraste temprana"), ("LATE", "Fase postcontraste tardía"),
        ("Realces", "EARLY−PRE, LATE−PRE y EARLY−LATE: la cinética del contraste")])
 st.caption("Los canales no son colores: no hay normalización de ImageNet ni aumentos de color, y toda transformación "
            "geométrica se aplica a las tres fases a la vez.")
 
-seccion("3", "Separación y <em>evaluación</em>",
+seccion("3", "Separación y evaluación",
         "Cinco folds por paciente. En cada ronda, un fold se predice (naranja) con redes entrenadas en los otros "
         "cuatro; dentro de esos, un 15 % de pacientes (rayado) solo vigila las curvas.")
 celdas = "".join(
@@ -77,7 +77,7 @@ aviso("<b>Reglas.</b> Nada del test ni de la validación privada interviene en l
       "calibración, los umbrales ni las bandas. La comparación entre modelos usa un bootstrap pareado estratificado "
       "por fold y clase.", "clave")
 
-seccion("4", "Límites")
+seccion("4", "Limitaciones")
 st.markdown(
     "- **Señal de imagen débil:** AUC ≈ 0,58 con una CNN desde cero y ≈1.100 pacientes. Modelos grandes "
     "preentrenados publicados tampoco funcionan en Duke (AUC ≈ 0,54).\n"

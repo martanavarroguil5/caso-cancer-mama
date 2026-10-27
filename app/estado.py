@@ -48,3 +48,8 @@ def portada() -> dict:
 @st.cache_data(show_spinner=False)
 def capas_red() -> list[dict]:
     return motor.capas_red()
+
+
+@st.cache_data(show_spinner=False)
+def bloques(corte: np.ndarray) -> list[dict]:
+    return motor.bloques(recorrido(corte), capas_red())

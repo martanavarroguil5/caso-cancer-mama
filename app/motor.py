@@ -108,7 +108,7 @@ def cortes_de_ejemplo(paciente: str) -> tuple[np.ndarray, list[str]]:
 
 # ---------------------------------------------------------------- imágenes para la web
 
-FONDO, REALCE, FRIO = np.array([7, 9, 12]), np.array([255, 106, 61]), np.array([63, 193, 220])
+FONDO, REALCE, FRIO = np.array([11, 14, 18]), np.array([201, 119, 83]), np.array([90, 158, 196])
 
 
 def url_imagen(arr: np.ndarray) -> str:
@@ -139,7 +139,7 @@ def magma(a: np.ndarray) -> np.ndarray:
 def realce_rgba(corte: np.ndarray, escala: float) -> np.ndarray:
     """EARLY − PRE positivo como capa RGBA caliente (transparente donde no capta)."""
     t = np.clip((corte[1].astype(float) - corte[0].astype(float)) / max(escala, 1.0), 0, 1)
-    rampa = np.array([[122, 29, 14], [255, 106, 61], [255, 208, 138]], dtype=float)  # rojo → naranja → ámbar
+    rampa = np.array([[110, 45, 28], [201, 119, 83], [232, 195, 154]], dtype=float)  # granate → cobre → arena
     u = np.clip(t * 2, 0, 2)[..., None]
     rgb = np.where(u < 1, rampa[0] + (rampa[1] - rampa[0]) * u, rampa[1] + (rampa[2] - rampa[1]) * (u - 1))
     alfa = np.clip(t * 1.6, 0, 1) ** 0.8 * 255
@@ -307,6 +307,26 @@ def recorrido(modelo: PartyNet, corte: np.ndarray, por_capa: int = 8, n_pool: in
         [[k, 0, round(float(abs(a) / (np.abs(ap).max() or 1)), 3), int(np.sign(a))] for k, a in enumerate(ap)],
     ]
     return {"capas": capas, "aristas": aristas, "p": float(p), "logit": logit}
+
+
+def bloques(recorrido_red: dict, tabla: list[dict]) -> list[dict]:
+    """Capas para la vista 3D por bloques: mapas reales (vista de 256 px) más forma y parámetros de la tabla."""
+    capas = {c["id"]: c for c in recorrido_red["capas"]}
+    cfg = json.loads((PAQUETE_IMAGEN / "paquete.json").read_text())["config_modelo"]
+    lado = cfg["lado"]
+    mapas = [("fases", 256, 3), ("canales", lado, 6)]
+    mapas += [(f"b{i}", lado >> i, c) for i, c in enumerate(cfg["anchos"], 1)]
+    salida = []
+    for (ident, s, canales), fila in zip(mapas, tabla):
+        c = capas[ident]
+        salida.append({"tipo": "mapas", "lado": s, "canales": canales, "pixelado": s <= 32,
+                       "imgs": [n["img"][0] for n in c["nodos"]], "mostrados": len(c["nodos"]), **fila})
+    pool, densa, final = capas["pool"], capas["densa"], capas["salida"]["nodos"][0]
+    salida.append({"tipo": "barra", "valores": [n["v"] for n in pool["nodos"]], **tabla[6]})
+    salida.append({"tipo": "neuronas", "valores": [n["v"] for n in densa["nodos"]],
+                   "signos": [n["signo"] for n in densa["nodos"]], **tabla[7]})
+    salida.append({"tipo": "salida", "p": final["p"], **tabla[8]})
+    return salida
 
 
 # ---------------------------------------------------------------- arquitectura

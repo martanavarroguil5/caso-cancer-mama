@@ -7,18 +7,19 @@ img = recurso("modelo_imagen")
 fus = recurso("modelo_fusion")
 m = img["metricas"]
 
-portada(estado.portada(), "¿Responderá el tumor <em>antes</em> de operar?",
-        "Una CNN 2D diseñada y entrenada desde cero lee la resonancia con contraste previa a la quimioterapia "
-        "neoadyuvante y estima la probabilidad de <b>respuesta patológica completa (pCR)</b>: que en la cirugía "
-        "ya no quede tumor invasivo. Opcionalmente se combina con cuatro datos clínicos.",
-        [("prediccion", "Predecir una paciente", True), ("red_imagen", "Ver la red por dentro", False)])
+portada(estado.portada(), "Predicción de la respuesta patológica completa en <em>cáncer de mama</em>",
+        "Modelo que estima, a partir de la resonancia magnética con contraste (DCE-MRI) previa a la quimioterapia "
+        "neoadyuvante, la probabilidad de <b>respuesta patológica completa (pCR)</b>: ausencia de tumor invasivo "
+        "residual en la pieza quirúrgica. La red neuronal convolucional se ha diseñado y entrenado desde cero y "
+        "puede combinarse con cuatro variables clínicas.",
+        [("prediccion", "Realizar una predicción", True), ("red_imagen", "Arquitectura del modelo", False)])
 
 aviso("<b>Uso exclusivamente educativo.</b> Una probabilidad no es una certeza: una estimación alta no garantiza "
       "pCR ni permite evitar la cirugía, y una baja no la descarta.", "atencion")
 
 # Escala de las barras: AUC entre el azar (0,5) y la perfección (1).
 escala = lambda auc: (auc - 0.5) / 0.5
-seccion("1", "El proyecto en <em>cifras</em>")
+seccion("1", "Resultados principales")
 if fus:
     r = fus["resumen"]["brazos"][fus["resumen"]["alias"]["completa+imagen"]]
     fusion = {"t": "Imagen + clínica", "v": num(r["auc_media_folds"]), "acento": True,
@@ -37,11 +38,11 @@ tarjetas([
     {"t": "Pacientes de desarrollo", "v": "1.097", "d": f"{img['n_pcr']} con pCR ({round(100 * m['prevalencia'])} %)",
      "barra": m["prevalencia"], "barra_txt": "con pCR",
      "ayuda": "Train: tres cohortes (I-SPY2, Duke, I-SPY1), ≈10 cortes por paciente. La separación es siempre por paciente."},
-    {"t": "Test reservado", "v": "176", "d": "Sellado: sin evaluar todavía",
+    {"t": "Test reservado", "v": "176", "d": "Reservado; aún no evaluado",
      "ayuda": "El test público se evaluará una sola vez con el modelo congelado. No interviene en ninguna decisión."},
 ])
 
-seccion("2", "De la resonancia a una <em>probabilidad</em>")
+seccion("2", "Flujo de predicción")
 pasos([
     ("Tres fases", "PRE, EARLY y LATE del mismo corte, antes del tratamiento"),
     ("CNN propia", f"{img['parametros']:,} parámetros desde cero; 5 redes en conjunto".replace(",", ".")),
@@ -50,7 +51,7 @@ pasos([
     ("Banda", "Baja, intermedia o alta, con la pCR que se observó en cada una"),
 ])
 
-seccion("3", "Cómo leer una <em>predicción</em>")
+seccion("3", "Interpretación de los resultados")
 c1, c2 = st.columns(2)
 with c1:
     aviso('<div class="error"><div class="mini"><i></i><i class="on"></i><i></i><i></i></div><div><b>Falso positivo.</b> '
@@ -64,11 +65,11 @@ aviso("Las <b>bandas</b> reparten a las pacientes de la validación cruzada en t
       "probabilidad. Al pasar el ratón por cada banda se ve cuántas tuvieron pCR de verdad: así la predicción se "
       "lee con datos observados y no como un sí o un no.", "clave")
 
-seccion("4", "Explorar")
+seccion("4", "Contenido")
 destinos([
-    ("prediccion", "Predecir una paciente", "Sube las tres fases o usa un ejemplo. Visor de cortes, bandas y la red por dentro."),
-    ("red_imagen", "CNN de imagen", "La red neurona a neurona, cómo aprendió época a época y cuánto discrimina."),
-    ("combinado", "Imagen + clínica", "Fusión tardía evaluada con CV anidada: qué aporta la imagen sobre la clínica."),
-    ("metodologia", "Datos y método", "Cohortes, separación por paciente, reglas de evaluación y límites."),
+    ("prediccion", "Predicción individual", "Carga de las tres fases o paciente de ejemplo, visor de cortes y bandas de probabilidad."),
+    ("red_imagen", "CNN de imagen", "Arquitectura, curvas de entrenamiento y capacidad de discriminación."),
+    ("combinado", "Imagen + clínica", "Fusión tardía evaluada con validación cruzada anidada."),
+    ("metodologia", "Datos y metodología", "Cohortes, separación por paciente, reglas de evaluación y limitaciones."),
 ])
 pie()
