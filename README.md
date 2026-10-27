@@ -11,13 +11,17 @@ es la media de las de sus cortes. El código permite además tareas auxiliares
 de entrenamiento (HR, HER2 y volumen), que nunca son entrada del modelo; se
 probaron y se descartaron.
 
-**Estado (27/10/2026):** modelo final vigente `modelos/party_final_v2/`,
+**Estado (27/10/2026):** dos modelos vigentes. Solo imagen: `modelos/party_final_v2/`,
 receta `presupuesto` (LR lineal hasta 0 en la época 12) con pérdida ponderada.
 AUC media de CV 0,581 ± 0,018, empatada con el anterior `party_final` (0,584 ±
 0,036; Δ −0,003 [−0,019; +0,014]) pero con la época 12, la mitad de variación
 entre folds y menos brecha fit−selección. La referencia de solo cohorte da
-0,549. Test aún sin evaluar. Resultados, curvas y decisiones en
-[docs/LECCIONES.md](docs/LECCIONES.md) §6–7.
+0,549. Imagen + datos clínicos (permitidos desde el 27/10): `modelos/party_fusion_v1/`,
+fusión tardía con CV anidada, AUC 0,714 ± 0,033 frente a 0,708 de la clínica
+sola (Δ +0,006 [−0,001; +0,013]); sobre el subtipo solo, la imagen suma +0,020
+[+0,008; +0,033]. Test aún sin evaluar. Resultados, curvas y decisiones en
+[docs/LECCIONES.md](docs/LECCIONES.md) §6–9 y
+[docs/PROTOCOLO_FUSION.md](docs/PROTOCOLO_FUSION.md).
 
 ## Estructura
 
@@ -29,8 +33,11 @@ pcr_party/
   cv.py          validación cruzada de 5 folds y resumen con bootstrap
   final.py       paquete final con todo train, Platt y umbral desde las OOF
   inferencia.py  carga del paquete, predicción y evaluación única de test
-tests/           pruebas unitarias (CPU, datos sintéticos)
-docs/LECCIONES.md
+  fusion.py      imagen + clínica: CV interna, evaluación anidada y paquete
+  recursos_app.py resúmenes JSON para la web
+app/             web Streamlit (inicio.py, paginas/, componentes, motor, recursos/)
+tests/           pruebas unitarias (CPU, datos sintéticos) y carga de las páginas
+docs/LECCIONES.md, docs/PROTOCOLO_FUSION.md
 ```
 
 `breastdcedl` y `.venv` son enlaces simbólicos a la copia de `main`. `cache/` y
@@ -115,22 +122,45 @@ fijar con `--epocas N`. Usa 5 semillas. Escribe `modelos/<nombre>/` con los
 pesos, `paquete.json` (receta, Platt, umbral Youden, métricas OOF, entorno y
 SHA-256) e historias.
 
-### 3. Predicción y test
+### 3. Imagen + datos clínicos (≈30 min)
+
+```bash
+nohup .venv/bin/python -m pcr_party fusion-interna > runs/fusion_interna.out 2>&1 &
+.venv/bin/python -m pcr_party fusion-evaluar
+.venv/bin/python -m pcr_party fusion-final --nombre party_fusion_v1
+```
+
+`fusion-interna` entrena las 60 redes de la CV interna (reanudable);
+`fusion-evaluar` escribe `runs/cv_interna_fusion/evaluacion/RESUMEN.md`.
+
+### 4. Web
+
+```bash
+.venv/bin/python -m pcr_party recursos-app
+.venv/bin/streamlit run app/inicio.py --server.address 100.120.212.49 --server.port 8502
+```
+
+Se abre en `http://100.120.212.49:8502` desde cualquier equipo de la red
+Tailscale. La predicción va en CPU.
+
+### 5. Predicción y test
 
 ```bash
 .venv/bin/python -m pcr_party predecir --pre a_PRE.png --early a_EARLY.png --late a_LATE.png
 .venv/bin/python -m pcr_party evaluar-test --confirmo-modelo-congelado
 ```
 
-Por defecto usan `modelos/party_final_v2`; `--modelo` elige otro paquete.
+Por defecto usan `modelos/party_final_v2`; `--modelo` elige otro paquete. Con
+`--modelo modelos/party_fusion_v1` se añaden `--edad`, `--volumen`, `--hr` y
+`--her2` (opcionales), y `evaluar-test` toma la clínica de test de `patients.csv`.
 `evaluar-test` se ejecuta **una sola vez**, con el paquete ya congelado:
 escribe `evaluacion_test.json` y se niega a repetirse. Nada del test vuelve a
 la elección de brazo, épocas, calibración ni umbral.
 
 ## Reglas de la rama
 
-- Entrada solo de píxeles; las variables clínicas solo son objetivos
-  auxiliares en train.
+- La CNN recibe solo píxeles. Los datos clínicos (edad, volumen, HR, HER2) solo
+  entran después, en la fusión tardía; nunca la cohorte ni datos del escáner.
 - Separación estricta por paciente. El fold exterior no decide nada.
 - Ni test ni validación privada para ajustar.
 - Sin push salvo autorización expresa.

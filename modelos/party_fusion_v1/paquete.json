@@ -1,0 +1,949 @@
+{
+  "nombre": "party_fusion_v1",
+  "tipo": "fusion",
+  "descripcion": "Regresión logística por patrón de datos clínicos sobre la puntuación de la CNN",
+  "paquete_imagen": "party_final_v2",
+  "sha256_paquete_imagen": "f7a5e11bde5f34360866fca40e2e8faf3fba181706c4129552e9db15b9fd7548",
+  "grupos": {
+    "subtipo": [
+      "HR",
+      "HER2"
+    ],
+    "edad": [
+      "edad"
+    ],
+    "volumen": [
+      "log_volumen"
+    ]
+  },
+  "variable_imagen": "logit de la probabilidad cruda de paciente de la CNN (media de cortes y semillas)",
+  "volumen": "log(1 + tum_vol) en las unidades de patients.csv",
+  "perdida": "normal (comparada con ponderada en la CV anidada)",
+  "submodelos": {
+    "imagen": {
+      "columnas": [
+        "imagen"
+      ],
+      "media": [
+        -0.060641628903215894
+      ],
+      "escala": [
+        0.23233535642638636
+      ],
+      "coeficientes": {
+        "imagen": 0.16883428598655062
+      },
+      "intercepto": -0.8841419755059099,
+      "interaccion": false,
+      "n_ajuste": 1097,
+      "pcr_ajuste": 322,
+      "politica": {
+        "umbral": 0.3001920962308828,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3032512379727529,
+        "oof_con_umbral": {
+          "umbral": 0.3001920962308828,
+          "TP": 172,
+          "TN": 470,
+          "FP": 305,
+          "FN": 150,
+          "sensibilidad": 0.5341614906832298,
+          "especificidad": 0.6064516129032258,
+          "precision_pcr": 0.36058700209643607,
+          "exactitud": 0.585232452142206,
+          "f1_pcr": 0.4305381727158949,
+          "macro_f1": 0.5521866490819618
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3032512379727529,
+          "TP": 143,
+          "TN": 525,
+          "FP": 250,
+          "FN": 179,
+          "sensibilidad": 0.4440993788819876,
+          "especificidad": 0.6774193548387096,
+          "precision_pcr": 0.3638676844783715,
+          "exactitud": 0.6089334548769371,
+          "f1_pcr": 0.4,
+          "macro_f1": 0.5549695740365111
+        },
+        "oof_auc_media_folds": 0.5814169869369044
+      }
+    },
+    "subtipo": {
+      "columnas": [
+        "HR",
+        "HER2"
+      ],
+      "media": [
+        0.5776965265082267,
+        0.2623400365630713
+      ],
+      "escala": [
+        0.4939263606738928,
+        0.43990651481781645
+      ],
+      "coeficientes": {
+        "HR": -0.5879322173196594,
+        "HER2": 0.4301867643181971
+      },
+      "intercepto": -0.9735642206773538,
+      "interaccion": false,
+      "n_ajuste": 1094,
+      "pcr_ajuste": 321,
+      "politica": {
+        "umbral": 0.3064451968897139,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3538638078700439,
+        "oof_con_umbral": {
+          "umbral": 0.3064451968897139,
+          "TP": 257,
+          "TN": 389,
+          "FP": 384,
+          "FN": 64,
+          "sensibilidad": 0.8006230529595015,
+          "especificidad": 0.5032341526520052,
+          "precision_pcr": 0.40093603744149764,
+          "exactitud": 0.5904936014625228,
+          "f1_pcr": 0.5343035343035343,
+          "macro_f1": 0.5844437736770527
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3538638078700439,
+          "TP": 196,
+          "TN": 507,
+          "FP": 266,
+          "FN": 125,
+          "sensibilidad": 0.6105919003115264,
+          "especificidad": 0.6558861578266494,
+          "precision_pcr": 0.42424242424242425,
+          "exactitud": 0.6425959780621572,
+          "f1_pcr": 0.5006385696040868,
+          "macro_f1": 0.6111733773287338
+        },
+        "oof_auc_media_folds": 0.6794099758586616
+      }
+    },
+    "subtipo+imagen": {
+      "columnas": [
+        "HR",
+        "HER2",
+        "imagen"
+      ],
+      "media": [
+        0.5776965265082267,
+        0.2623400365630713,
+        -0.06117055180057426
+      ],
+      "escala": [
+        0.4939263606738928,
+        0.43990651481781645,
+        0.2322674706365305
+      ],
+      "coeficientes": {
+        "HR": -0.5834769884074661,
+        "HER2": 0.43174899031704445,
+        "imagen": 0.1613714330677413
+      },
+      "intercepto": -0.9787416253338566,
+      "interaccion": false,
+      "n_ajuste": 1094,
+      "pcr_ajuste": 321,
+      "politica": {
+        "umbral": 0.3246092126977961,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3495526652960076,
+        "oof_con_umbral": {
+          "umbral": 0.3246092126977961,
+          "TP": 229,
+          "TN": 469,
+          "FP": 306,
+          "FN": 93,
+          "sensibilidad": 0.7111801242236024,
+          "especificidad": 0.6051612903225806,
+          "precision_pcr": 0.4280373831775701,
+          "exactitud": 0.6362807657247037,
+          "f1_pcr": 0.5344224037339557,
+          "macro_f1": 0.617996542181114
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3495526652960076,
+          "TP": 189,
+          "TN": 537,
+          "FP": 238,
+          "FN": 133,
+          "sensibilidad": 0.5869565217391305,
+          "especificidad": 0.6929032258064516,
+          "precision_pcr": 0.4426229508196721,
+          "exactitud": 0.6618049225159526,
+          "f1_pcr": 0.5046728971962616,
+          "macro_f1": 0.6239627461759855
+        },
+        "oof_auc_media_folds": 0.6991127918535256
+      }
+    },
+    "edad": {
+      "columnas": [
+        "edad"
+      ],
+      "media": [
+        48.66491773308958
+      ],
+      "escala": [
+        10.487463768291226
+      ],
+      "coeficientes": {
+        "edad": -0.15500635769994853
+      },
+      "intercepto": -0.8835038250249204,
+      "interaccion": false,
+      "n_ajuste": 1094,
+      "pcr_ajuste": 321,
+      "politica": {
+        "umbral": 0.2912849265973301,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3126165938022925,
+        "oof_con_umbral": {
+          "umbral": 0.2912849265973301,
+          "TP": 184,
+          "TN": 378,
+          "FP": 395,
+          "FN": 137,
+          "sensibilidad": 0.573208722741433,
+          "especificidad": 0.4890038809831824,
+          "precision_pcr": 0.3177892918825561,
+          "exactitud": 0.5137111517367459,
+          "f1_pcr": 0.4088888888888889,
+          "macro_f1": 0.49792270531400973
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3126165938022925,
+          "TP": 101,
+          "TN": 575,
+          "FP": 198,
+          "FN": 220,
+          "sensibilidad": 0.3146417445482866,
+          "especificidad": 0.7438551099611902,
+          "precision_pcr": 0.3377926421404682,
+          "exactitud": 0.6179159049360147,
+          "f1_pcr": 0.3258064516129032,
+          "macro_f1": 0.529612409479921
+        },
+        "oof_auc_media_folds": 0.5425373889543655
+      }
+    },
+    "edad+imagen": {
+      "columnas": [
+        "edad",
+        "imagen"
+      ],
+      "media": [
+        48.66491773308958,
+        -0.060879140116375824
+      ],
+      "escala": [
+        10.487463768291226,
+        0.23232839615947604
+      ],
+      "coeficientes": {
+        "edad": -0.16065349990787772,
+        "imagen": 0.18086431847871506
+      },
+      "intercepto": -0.8907571784750867,
+      "interaccion": false,
+      "n_ajuste": 1094,
+      "pcr_ajuste": 321,
+      "politica": {
+        "umbral": 0.2866043349537919,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3157955822702578,
+        "oof_con_umbral": {
+          "umbral": 0.2866043349537919,
+          "TP": 218,
+          "TN": 328,
+          "FP": 447,
+          "FN": 104,
+          "sensibilidad": 0.6770186335403726,
+          "especificidad": 0.4232258064516129,
+          "precision_pcr": 0.32781954887218046,
+          "exactitud": 0.4977210574293528,
+          "f1_pcr": 0.44174265450861194,
+          "macro_f1": 0.4926194631283739
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3157955822702578,
+          "TP": 111,
+          "TN": 558,
+          "FP": 217,
+          "FN": 211,
+          "sensibilidad": 0.3447204968944099,
+          "especificidad": 0.72,
+          "precision_pcr": 0.3384146341463415,
+          "exactitud": 0.609845031905196,
+          "f1_pcr": 0.3415384615384615,
+          "macro_f1": 0.5321681944998007
+        },
+        "oof_auc_media_folds": 0.5619884192391963
+      }
+    },
+    "volumen": {
+      "columnas": [
+        "log_volumen"
+      ],
+      "media": [
+        2.668144285892067
+      ],
+      "escala": [
+        1.0906507345623049
+      ],
+      "coeficientes": {
+        "log_volumen": -0.1787062776505152
+      },
+      "intercepto": -0.8878487066816204,
+      "interaccion": false,
+      "n_ajuste": 1096,
+      "pcr_ajuste": 321,
+      "politica": {
+        "umbral": 0.2999237435130055,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3016866354154091,
+        "oof_con_umbral": {
+          "umbral": 0.2999237435130055,
+          "TP": 163,
+          "TN": 451,
+          "FP": 324,
+          "FN": 158,
+          "sensibilidad": 0.5077881619937694,
+          "especificidad": 0.5819354838709677,
+          "precision_pcr": 0.3347022587268994,
+          "exactitud": 0.5602189781021898,
+          "f1_pcr": 0.4034653465346535,
+          "macro_f1": 0.5275997252904481
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3016866354154091,
+          "TP": 155,
+          "TN": 469,
+          "FP": 306,
+          "FN": 166,
+          "sensibilidad": 0.48286604361370716,
+          "especificidad": 0.6051612903225806,
+          "precision_pcr": 0.3362255965292842,
+          "exactitud": 0.5693430656934306,
+          "f1_pcr": 0.39641943734015345,
+          "macro_f1": 0.530833832145254
+        },
+        "oof_auc_media_folds": 0.5480973421366386
+      }
+    },
+    "volumen+imagen": {
+      "columnas": [
+        "log_volumen",
+        "imagen"
+      ],
+      "media": [
+        2.668144285892067,
+        -0.06070070013069319
+      ],
+      "escala": [
+        1.0906507345623049,
+        0.2324330904378205
+      ],
+      "coeficientes": {
+        "log_volumen": -0.18985883590584482,
+        "imagen": 0.17797264671217972
+      },
+      "intercepto": -0.8944722743552587,
+      "interaccion": false,
+      "n_ajuste": 1096,
+      "pcr_ajuste": 321,
+      "politica": {
+        "umbral": 0.2943127645223677,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3220498530901139,
+        "oof_con_umbral": {
+          "umbral": 0.2943127645223677,
+          "TP": 181,
+          "TN": 411,
+          "FP": 364,
+          "FN": 141,
+          "sensibilidad": 0.562111801242236,
+          "especificidad": 0.5303225806451612,
+          "precision_pcr": 0.3321100917431193,
+          "exactitud": 0.5396536007292616,
+          "f1_pcr": 0.41753171856978083,
+          "macro_f1": 0.5184870348689146
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3220498530901139,
+          "TP": 108,
+          "TN": 579,
+          "FP": 196,
+          "FN": 214,
+          "sensibilidad": 0.33540372670807456,
+          "especificidad": 0.7470967741935484,
+          "precision_pcr": 0.35526315789473684,
+          "exactitud": 0.626253418413856,
+          "f1_pcr": 0.3450479233226837,
+          "macro_f1": 0.5417841657429745
+        },
+        "oof_auc_media_folds": 0.5711131892795296
+      }
+    },
+    "subtipo+edad": {
+      "columnas": [
+        "HR",
+        "HER2",
+        "edad"
+      ],
+      "media": [
+        0.5774518790100825,
+        0.26306141154903756,
+        48.655572868927585
+      ],
+      "escala": [
+        0.4939647825886047,
+        0.4402954749970359,
+        10.496054477464902
+      ],
+      "coeficientes": {
+        "HR": -0.591283373217012,
+        "HER2": 0.44458039066087385,
+        "edad": -0.20288371911671402
+      },
+      "intercepto": -0.984425988528729,
+      "interaccion": false,
+      "n_ajuste": 1091,
+      "pcr_ajuste": 320,
+      "politica": {
+        "umbral": 0.2946979532652737,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3338493674103229,
+        "oof_con_umbral": {
+          "umbral": 0.2946979532652737,
+          "TP": 242,
+          "TN": 438,
+          "FP": 337,
+          "FN": 80,
+          "sensibilidad": 0.7515527950310559,
+          "especificidad": 0.5651612903225807,
+          "precision_pcr": 0.41796200345423146,
+          "exactitud": 0.6198723792160438,
+          "f1_pcr": 0.537180910099889,
+          "macro_f1": 0.607337554817926
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3338493674103229,
+          "TP": 195,
+          "TN": 522,
+          "FP": 253,
+          "FN": 127,
+          "sensibilidad": 0.6055900621118012,
+          "especificidad": 0.6735483870967742,
+          "precision_pcr": 0.43526785714285715,
+          "exactitud": 0.6536007292616226,
+          "f1_pcr": 0.5064935064935064,
+          "macro_f1": 0.6198197869546184
+        },
+        "oof_auc_media_folds": 0.6934710948788615
+      }
+    },
+    "subtipo+edad+imagen": {
+      "columnas": [
+        "HR",
+        "HER2",
+        "edad",
+        "imagen"
+      ],
+      "media": [
+        0.5774518790100825,
+        0.26306141154903756,
+        48.655572868927585,
+        -0.06141017053191161
+      ],
+      "escala": [
+        0.4939647825886047,
+        0.4402954749970359,
+        10.496054477464902,
+        0.23225975663138862
+      ],
+      "coeficientes": {
+        "HR": -0.5869229000662025,
+        "HER2": 0.4469158636637445,
+        "edad": -0.21066943923049875,
+        "imagen": 0.17696183015954248
+      },
+      "intercepto": -0.9913918231660334,
+      "interaccion": false,
+      "n_ajuste": 1091,
+      "pcr_ajuste": 320,
+      "politica": {
+        "umbral": 0.3003642210388019,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3402589102856003,
+        "oof_con_umbral": {
+          "umbral": 0.3003642210388019,
+          "TP": 235,
+          "TN": 453,
+          "FP": 322,
+          "FN": 87,
+          "sensibilidad": 0.7298136645962733,
+          "especificidad": 0.584516129032258,
+          "precision_pcr": 0.42190305206463197,
+          "exactitud": 0.6271649954421149,
+          "f1_pcr": 0.534698521046644,
+          "macro_f1": 0.6118359525385311
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3402589102856003,
+          "TP": 190,
+          "TN": 539,
+          "FP": 236,
+          "FN": 132,
+          "sensibilidad": 0.5900621118012422,
+          "especificidad": 0.6954838709677419,
+          "precision_pcr": 0.4460093896713615,
+          "exactitud": 0.6645396536007293,
+          "f1_pcr": 0.5080213903743316,
+          "macro_f1": 0.6267631156574286
+        },
+        "oof_auc_media_folds": 0.6994204594413382
+      }
+    },
+    "subtipo+volumen": {
+      "columnas": [
+        "HR",
+        "HER2",
+        "log_volumen"
+      ],
+      "media": [
+        0.5782250686184812,
+        0.2616651418115279,
+        2.6658109291096133
+      ],
+      "escala": [
+        0.49384292911778527,
+        0.439541232846568,
+        1.0906563744588955
+      ],
+      "coeficientes": {
+        "HR": -0.6281008177758178,
+        "HER2": 0.4253146015039055,
+        "log_volumen": -0.26854615946389404
+      },
+      "intercepto": -0.9915433547981086,
+      "interaccion": false,
+      "n_ajuste": 1093,
+      "pcr_ajuste": 320,
+      "politica": {
+        "umbral": 0.305853452799872,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3247815520210498,
+        "oof_con_umbral": {
+          "umbral": 0.305853452799872,
+          "TP": 229,
+          "TN": 486,
+          "FP": 289,
+          "FN": 93,
+          "sensibilidad": 0.7111801242236024,
+          "especificidad": 0.6270967741935484,
+          "precision_pcr": 0.4420849420849421,
+          "exactitud": 0.6517775752051048,
+          "f1_pcr": 0.5452380952380952,
+          "macro_f1": 0.6315555321094464
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3247815520210498,
+          "TP": 213,
+          "TN": 515,
+          "FP": 260,
+          "FN": 109,
+          "sensibilidad": 0.6614906832298136,
+          "especificidad": 0.6645161290322581,
+          "precision_pcr": 0.4503171247357294,
+          "exactitud": 0.6636280765724704,
+          "f1_pcr": 0.5358490566037736,
+          "macro_f1": 0.6360446140774407
+        },
+        "oof_auc_media_folds": 0.6996343547224995
+      }
+    },
+    "subtipo+volumen+imagen": {
+      "columnas": [
+        "HR",
+        "HER2",
+        "log_volumen",
+        "imagen"
+      ],
+      "media": [
+        0.5782250686184812,
+        0.2616651418115279,
+        2.6658109291096133,
+        -0.06123026908164698
+      ],
+      "escala": [
+        0.49384292911778527,
+        0.439541232846568,
+        1.0906563744588955,
+        0.23236530385920798
+      ],
+      "coeficientes": {
+        "HR": -0.6247988228469724,
+        "HER2": 0.42727913346622587,
+        "log_volumen": -0.27862477551422266,
+        "imagen": 0.17401745283959516
+      },
+      "intercepto": -0.9969283011703556,
+      "interaccion": false,
+      "n_ajuste": 1093,
+      "pcr_ajuste": 320,
+      "politica": {
+        "umbral": 0.3185346874395101,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3185346874395101,
+        "oof_con_umbral": {
+          "umbral": 0.3185346874395101,
+          "TP": 217,
+          "TN": 523,
+          "FP": 252,
+          "FN": 105,
+          "sensibilidad": 0.6739130434782609,
+          "especificidad": 0.6748387096774193,
+          "precision_pcr": 0.4626865671641791,
+          "exactitud": 0.6745670009115771,
+          "f1_pcr": 0.5486725663716814,
+          "macro_f1": 0.6471089132642441
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3185346874395101,
+          "TP": 217,
+          "TN": 523,
+          "FP": 252,
+          "FN": 105,
+          "sensibilidad": 0.6739130434782609,
+          "especificidad": 0.6748387096774193,
+          "precision_pcr": 0.4626865671641791,
+          "exactitud": 0.6745670009115771,
+          "f1_pcr": 0.5486725663716814,
+          "macro_f1": 0.6471089132642441
+        },
+        "oof_auc_media_folds": 0.7065420879983121
+      }
+    },
+    "edad+volumen": {
+      "columnas": [
+        "edad",
+        "log_volumen"
+      ],
+      "media": [
+        48.671015553522416,
+        2.6660552285357886
+      ],
+      "escala": [
+        10.4903215435312,
+        1.091195292478851
+      ],
+      "coeficientes": {
+        "edad": -0.19135629028095558,
+        "log_volumen": -0.21210091950454052
+      },
+      "intercepto": -0.895578463864197,
+      "interaccion": false,
+      "n_ajuste": 1093,
+      "pcr_ajuste": 320,
+      "politica": {
+        "umbral": 0.2997258750907603,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3253107023487129,
+        "oof_con_umbral": {
+          "umbral": 0.2997258750907603,
+          "TP": 163,
+          "TN": 458,
+          "FP": 317,
+          "FN": 159,
+          "sensibilidad": 0.5062111801242236,
+          "especificidad": 0.5909677419354838,
+          "precision_pcr": 0.33958333333333335,
+          "exactitud": 0.5660893345487694,
+          "f1_pcr": 0.40648379052369077,
+          "macro_f1": 0.5322648837675925
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3253107023487129,
+          "TP": 107,
+          "TN": 592,
+          "FP": 183,
+          "FN": 215,
+          "sensibilidad": 0.33229813664596275,
+          "especificidad": 0.7638709677419355,
+          "precision_pcr": 0.3689655172413793,
+          "exactitud": 0.6371923427529627,
+          "f1_pcr": 0.34967320261437906,
+          "macro_f1": 0.5490464622427143
+        },
+        "oof_auc_media_folds": 0.5632582669618561
+      }
+    },
+    "edad+volumen+imagen": {
+      "columnas": [
+        "edad",
+        "log_volumen",
+        "imagen"
+      ],
+      "media": [
+        48.671015553522416,
+        2.6660552285357886,
+        -0.06093859078108605
+      ],
+      "escala": [
+        10.4903215435312,
+        1.091195292478851,
+        0.2324263342216762
+      ],
+      "coeficientes": {
+        "edad": -0.19993224586754346,
+        "log_volumen": -0.22564714081001844,
+        "imagen": 0.19284918765896053
+      },
+      "intercepto": -0.9032255523281182,
+      "interaccion": false,
+      "n_ajuste": 1093,
+      "pcr_ajuste": 320,
+      "politica": {
+        "umbral": 0.286764437128458,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3216542453666381,
+        "oof_con_umbral": {
+          "umbral": 0.286764437128458,
+          "TP": 206,
+          "TN": 383,
+          "FP": 392,
+          "FN": 116,
+          "sensibilidad": 0.639751552795031,
+          "especificidad": 0.4941935483870968,
+          "precision_pcr": 0.34448160535117056,
+          "exactitud": 0.536918869644485,
+          "f1_pcr": 0.44782608695652176,
+          "macro_f1": 0.5245409869633473
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3216542453666381,
+          "TP": 131,
+          "TN": 557,
+          "FP": 218,
+          "FN": 191,
+          "sensibilidad": 0.40683229813664595,
+          "especificidad": 0.7187096774193549,
+          "precision_pcr": 0.3753581661891118,
+          "exactitud": 0.6271649954421149,
+          "f1_pcr": 0.39046199701937406,
+          "macro_f1": 0.560956540203712
+        },
+        "oof_auc_media_folds": 0.5835746089549954
+      }
+    },
+    "subtipo+edad+volumen": {
+      "columnas": [
+        "HR",
+        "HER2",
+        "edad",
+        "log_volumen"
+      ],
+      "media": [
+        0.5779816513761468,
+        0.26238532110091745,
+        48.66167889908257,
+        2.663709699971302
+      ],
+      "escala": [
+        0.4938814250897164,
+        0.43993097682669025,
+        10.49893108703399,
+        1.0911979393341895
+      ],
+      "coeficientes": {
+        "HR": -0.6394326046087703,
+        "HER2": 0.4415130581171563,
+        "edad": -0.2527262866272168,
+        "log_volumen": -0.3097805158519667
+      },
+      "intercepto": -1.0054070676182914,
+      "interaccion": false,
+      "n_ajuste": 1090,
+      "pcr_ajuste": 319,
+      "politica": {
+        "umbral": 0.2935201062734436,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3597933134732231,
+        "oof_con_umbral": {
+          "umbral": 0.2935201062734436,
+          "TP": 229,
+          "TN": 487,
+          "FP": 288,
+          "FN": 93,
+          "sensibilidad": 0.7111801242236024,
+          "especificidad": 0.6283870967741936,
+          "precision_pcr": 0.44294003868471954,
+          "exactitud": 0.6526891522333638,
+          "f1_pcr": 0.5458879618593564,
+          "macro_f1": 0.6323535750256192
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3597933134732231,
+          "TP": 172,
+          "TN": 589,
+          "FP": 186,
+          "FN": 150,
+          "sensibilidad": 0.5341614906832298,
+          "especificidad": 0.76,
+          "precision_pcr": 0.48044692737430167,
+          "exactitud": 0.6937101185050136,
+          "f1_pcr": 0.5058823529411764,
+          "macro_f1": 0.6419768435775896
+        },
+        "oof_auc_media_folds": 0.7078032555418763
+      }
+    },
+    "subtipo+edad+volumen+imagen": {
+      "columnas": [
+        "HR",
+        "HER2",
+        "edad",
+        "log_volumen",
+        "imagen"
+      ],
+      "media": [
+        0.5779816513761468,
+        0.26238532110091745,
+        48.66167889908257,
+        2.663709699971302,
+        -0.06147027200617199
+      ],
+      "escala": [
+        0.4938814250897164,
+        0.43993097682669025,
+        10.49893108703399,
+        1.0911979393341895,
+        0.23235779330150233
+      ],
+      "coeficientes": {
+        "HR": -0.6362670948651878,
+        "HER2": 0.44465720229835004,
+        "edad": -0.2636556115438984,
+        "log_volumen": -0.3229868951912438,
+        "imagen": 0.19428231243833782
+      },
+      "intercepto": -1.0133943611144256,
+      "interaccion": false,
+      "n_ajuste": 1090,
+      "pcr_ajuste": 319,
+      "politica": {
+        "umbral": 0.2580936926176536,
+        "regla_umbral": "Youden máximo sobre OOF anidadas (solo train)",
+        "umbral_macro_f1_alternativo": 0.3645179078257624,
+        "oof_con_umbral": {
+          "umbral": 0.2580936926176536,
+          "TP": 246,
+          "TN": 441,
+          "FP": 334,
+          "FN": 76,
+          "sensibilidad": 0.7639751552795031,
+          "especificidad": 0.5690322580645162,
+          "precision_pcr": 0.4241379310344828,
+          "exactitud": 0.626253418413856,
+          "f1_pcr": 0.5454545454545454,
+          "macro_f1": 0.6140585420771179
+        },
+        "oof_con_umbral_macro_f1": {
+          "umbral": 0.3645179078257624,
+          "TP": 172,
+          "TN": 599,
+          "FP": 176,
+          "FN": 150,
+          "sensibilidad": 0.5341614906832298,
+          "especificidad": 0.7729032258064517,
+          "precision_pcr": 0.4942528735632184,
+          "exactitud": 0.7028258887876025,
+          "f1_pcr": 0.5134328358208955,
+          "macro_f1": 0.6497610373330199
+        },
+        "oof_auc_media_folds": 0.7135414189348536
+      }
+    }
+  },
+  "cv_anidada": "runs/cv_interna_fusion/evaluacion",
+  "comparaciones": {
+    "principal: completa+imagen − completa": {
+      "delta": 0.00573816339297728,
+      "ic95": [
+        -0.0010910607654865594,
+        0.012598215763116608
+      ],
+      "p_delta_menor_igual_0": 0.0545,
+      "remuestreos": 2000
+    },
+    "subtipo+imagen − subtipo": {
+      "delta": 0.020136567103398617,
+      "ic95": [
+        0.0076019024202121695,
+        0.032467073691703464
+      ],
+      "p_delta_menor_igual_0": 0.0,
+      "remuestreos": 2000
+    },
+    "completa+imagen − imagen": {
+      "delta": 0.1321244319979492,
+      "ic95": [
+        0.08454772710788741,
+        0.18077348900087076
+      ],
+      "p_delta_menor_igual_0": 0.0,
+      "remuestreos": 2000
+    },
+    "completa+imagen ponderada − normal": {
+      "delta": -0.0014301256666856554,
+      "ic95": [
+        -0.0033464875230320296,
+        0.0003664608707958263
+      ],
+      "p_delta_menor_igual_0": 0.9375,
+      "remuestreos": 2000
+    },
+    "completa ponderada − normal": {
+      "delta": -0.0001784719774335919,
+      "ic95": [
+        -0.001908378648723344,
+        0.0015208774299522024
+      ],
+      "p_delta_menor_igual_0": 0.592,
+      "remuestreos": 2000
+    },
+    "exploratoria: completa+imagen×subtipo − completa+imagen": {
+      "delta": -0.007869477950307124,
+      "ic95": [
+        -0.01638874883955298,
+        -8.480063321979302e-05
+      ],
+      "p_delta_menor_igual_0": 0.976,
+      "remuestreos": 2000
+    },
+    "diagnóstico: ingenuo − anidado": {
+      "delta": -0.0009493947863588037,
+      "ic95": [
+        -0.0056532639270003735,
+        0.0035215421337510535
+      ],
+      "p_delta_menor_igual_0": 0.6535,
+      "remuestreos": 2000
+    }
+  },
+  "n_pacientes_train": 1097,
+  "test_evaluado": false,
+  "entorno": {
+    "python": "3.12.3",
+    "torch": "2.14.0+cu130",
+    "cuda": "13.0",
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "host": "Linux-PC-Jorge"
+  }
+}

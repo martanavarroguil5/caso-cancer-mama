@@ -141,6 +141,8 @@ def main(argv=None) -> None:
     fusion_final.add_argument("--nombre", required=True, help="Carpeta nueva en modelos/")
     fusion_final.add_argument("--imagen", default="party_final_v2", help="Paquete de imagen congelado")
 
+    sub.add_parser("recursos-app", help="Escribe app/recursos/*.json desde runs/ (solo train)")
+
     pred = sub.add_parser("predecir", help="Predice una tripleta PRE/EARLY/LATE (y clínica si la hay)")
     pred.add_argument("--modelo", default="modelos/party_final_v2")
     pred.add_argument("--pre", required=True)
@@ -188,6 +190,10 @@ def main(argv=None) -> None:
     elif args.orden == "fusion-final":
         from .fusion import paquete_final
         print(paquete_final(args.nombre, args.imagen))
+    elif args.orden == "recursos-app":
+        from .recursos_app import escribir
+        for ruta in escribir():
+            print(ruta)
     elif args.orden == "predecir":
         from .inferencia import Paquete, leer_tripleta
         tripleta = leer_tripleta(args.pre, args.early, args.late)

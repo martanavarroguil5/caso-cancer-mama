@@ -246,3 +246,73 @@ toca el 0.
   registro; ≈12 MB) está versionado en Git.
 - **Test aún no evaluado.** `evaluar-test` se ejecuta una sola vez y escribe la
   marca en el paquete.
+
+## 8. Imagen + datos clínicos: fusión tardía (27/10/2026)
+
+Desde el 27/10 el profesor permite usar datos clínicos. El diseño y las
+comparaciones se fijaron antes de entrenar en
+[PROTOCOLO_FUSION.md](PROTOCOLO_FUSION.md) (commit `5670b2f`). La CNN
+`party_final_v2` no cambia: su probabilidad entra como una variable más en una
+regresión logística con edad, log(1 + volumen), HR y HER2. Con datos
+incompletos se usa un submodelo por patrón de variables disponibles (Fletcher
+Mercaldo y Blume, 2020), sin imputar.
+
+**CV anidada.** La puntuación de imagen de las pacientes de ajuste de cada fold
+sale de 60 redes internas (5 exteriores × 4 interiores × 3 semillas, ≈25 s cada
+una) que nunca vieron el fold evaluado. Resultados en las 1.097 pacientes:
+
+| Modelo | Media AUC ± DE | AP | Brier |
+|---|---:|---:|---:|
+| Solo imagen | 0,581 ± 0,018 | 0,340 | 0,207 |
+| Solo subtipo (HR, HER2) | 0,679 ± 0,031 | 0,429 | 0,188 |
+| Subtipo + imagen | 0,699 ± 0,031 | 0,467 | 0,188 |
+| Clínica completa | 0,708 ± 0,033 | 0,496 | 0,184 |
+| **Clínica completa + imagen** | **0,714 ± 0,033** | **0,506** | **0,183** |
+
+| Comparación | Δ AUC | IC95 % pareado |
+|---|---:|---|
+| **Principal:** completa + imagen − completa | +0,006 | [−0,001; +0,013] |
+| Subtipo + imagen − subtipo | +0,020 | [+0,008; +0,033] |
+| Completa + imagen − imagen | +0,132 | [+0,085; +0,181] |
+| Ponderada − normal (completa + imagen) | −0,001 | [−0,003; +0,000] |
+| Exploratoria: interacción imagen × subtipo | −0,008 | [−0,016; −0,000] |
+| Diagnóstico: ingenuo − anidado | −0,001 | [−0,006; +0,004] |
+
+Qué se aprendió:
+
+1. **Con toda la clínica, la imagen aporta poco y no significativo**
+   (+0,006, P(Δ≤0) = 0,054). Su coeficiente estandarizado es positivo en los
+   5 folds (+0,08 a +0,20), pero pequeño frente a HR (−0,64) o HER2 (+0,45).
+2. **Con clínica parcial la imagen sí suma:** +0,020 sobre el subtipo y
+   +0,02 sobre edad o volumen. Es el caso realista si en la evaluación privada
+   faltan datos.
+3. La imagen aporta información distinta de la clínica (no se correlaciona con
+   volumen ni edad, ni predice HR/HER2), pero débil.
+4. La pérdida ponderada no cambia la AUC de la logística. La interacción
+   imagen × subtipo empeora y no se adopta.
+5. El stacking ingenuo daba lo mismo que el anidado: con una logística de 5
+   coeficientes, el optimismo era despreciable. El anidado queda como la cifra
+   defendible.
+6. **Bandas (terciles OOF):** con clínica + imagen, la pCR observada es del
+   13 %, 27 % y 48 % en las bandas baja, intermedia y alta; con imagen sola,
+   del 21 %, 33 % y 33 %.
+
+### `modelos/party_fusion_v1/` — vigente para imagen + clínica
+
+Solo `paquete.json` (≈28 KB): referencia a `party_final_v2` verificada por el
+SHA-256 de su `paquete.json` y 15 submodelos logísticos (8 con imagen y 7 solo
+clínicos) ajustados con las 1.097 pacientes. La imagen de cada paciente es su
+OOF de `cv_presupuesto`. Umbral de cada submodelo: Youden sobre sus OOF
+anidadas (completa + imagen: 0,258, sensibilidad 76,4 % y especificidad 56,9 %),
+con el de máximo macro-F1 como alternativa (0,365: 53,4 % y 77,3 %). Sin
+ningún dato clínico se usa el paquete de imagen tal cual.
+
+## 9. Web
+
+`app/` es una web Streamlit con cinco páginas: inicio, predicción, CNN de
+imagen, imagen + clínica y metodología. Lee los paquetes congelados y los
+resúmenes de `app/recursos/*.json`, que genera `python -m pcr_party
+recursos-app` a partir de `runs/` (solo train) y se versionan. La predicción
+muestra la probabilidad, la banda con la pCR observada en ella (hover), el
+detalle por corte, el desacuerdo entre las 5 redes y el submodelo clínico
+usado. Las pacientes de ejemplo son de train y se marcan como tales.
