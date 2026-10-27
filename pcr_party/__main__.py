@@ -1,4 +1,4 @@
-"""CLI: python -m pcr_party {cache,humo,piloto,cv,resumen,final,predecir,evaluar-test}."""
+"""CLI: python -m pcr_party {cache,humo,piloto,cv,resumen,final,fusion-*,predecir,evaluar-test}."""
 from __future__ import annotations
 
 import argparse
@@ -90,6 +90,10 @@ def _piloto(args) -> None:
           f"{resultado.segundos / 60:.1f} min", flush=True)
 
 
+def _es_fusion(ruta: str) -> bool:
+    return json.loads((Path(ruta) / "paquete.json").read_text()).get("tipo") == "fusion"
+
+
 def main(argv=None) -> None:
     analizador = argparse.ArgumentParser(prog="python -m pcr_party")
     sub = analizador.add_subparsers(dest="orden", required=True)
@@ -131,11 +135,21 @@ def main(argv=None) -> None:
     final.add_argument("--epocas", type=int, default=None,
                        help="Por defecto, mediana de épocas elegidas en la CV del brazo")
 
-    pred = sub.add_parser("predecir", help="Predice una tripleta PRE/EARLY/LATE")
+    sub.add_parser("fusion-interna", help="CV interna de imagen para la fusión (60 redes, reanudable)")
+    sub.add_parser("fusion-evaluar", help="CV anidada de la fusión imagen + clínica")
+    fusion_final = sub.add_parser("fusion-final", help="Paquete de fusión con todo train")
+    fusion_final.add_argument("--nombre", required=True, help="Carpeta nueva en modelos/")
+    fusion_final.add_argument("--imagen", default="party_final_v2", help="Paquete de imagen congelado")
+
+    pred = sub.add_parser("predecir", help="Predice una tripleta PRE/EARLY/LATE (y clínica si la hay)")
     pred.add_argument("--modelo", default="modelos/party_final_v2")
     pred.add_argument("--pre", required=True)
     pred.add_argument("--early", required=True)
     pred.add_argument("--late", required=True)
+    pred.add_argument("--edad", type=float, default=None, help="Solo paquetes de fusión")
+    pred.add_argument("--volumen", type=float, default=None, help="tum_vol, unidades de patients.csv")
+    pred.add_argument("--hr", type=int, choices=[0, 1], default=None)
+    pred.add_argument("--her2", type=int, choices=[0, 1], default=None)
 
     test = sub.add_parser("evaluar-test", help="Evaluación final ÚNICA de un paquete congelado")
     test.add_argument("--modelo", default="modelos/party_final_v2")
@@ -165,13 +179,33 @@ def main(argv=None) -> None:
         from .final import entrenar_final
         print(entrenar_final(RUNS / args.cv, args.perdida, args.lambda_aux, args.semillas,
                              args.nombre, args.epocas))
+    elif args.orden == "fusion-interna":
+        from .fusion import cv_interna
+        cv_interna()
+    elif args.orden == "fusion-evaluar":
+        from .fusion import evaluar
+        evaluar()
+    elif args.orden == "fusion-final":
+        from .fusion import paquete_final
+        print(paquete_final(args.nombre, args.imagen))
     elif args.orden == "predecir":
         from .inferencia import Paquete, leer_tripleta
-        paquete = Paquete(Path(args.modelo))
-        p = paquete.probabilidad_cortes(leer_tripleta(args.pre, args.early, args.late))[0]
-        print(json.dumps(paquete.decidir(p), indent=2, ensure_ascii=False))
+        tripleta = leer_tripleta(args.pre, args.early, args.late)
+        if _es_fusion(args.modelo):
+            from .fusion import PaqueteFusion
+            paquete = PaqueteFusion(Path(args.modelo))
+            p = paquete.imagen.probabilidad_cortes(tripleta)[0]
+            decision = paquete.decidir(p, {"edad": args.edad, "volumen": args.volumen,
+                                           "HR": args.hr, "HER2": args.her2})
+        else:
+            paquete = Paquete(Path(args.modelo))
+            decision = paquete.decidir(paquete.probabilidad_cortes(tripleta)[0])
+        print(json.dumps(decision, indent=2, ensure_ascii=False))
     elif args.orden == "evaluar-test":
-        from .inferencia import evaluar_test
+        if _es_fusion(args.modelo):
+            from .fusion import evaluar_test
+        else:
+            from .inferencia import evaluar_test
         print(json.dumps(evaluar_test(Path(args.modelo), args.forzar), indent=2, ensure_ascii=False))
 
 
