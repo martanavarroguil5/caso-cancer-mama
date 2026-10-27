@@ -184,32 +184,58 @@ def objetivos_auxiliares(indice: pd.DataFrame, fit_pacientes: set[str]) -> np.nd
                      (log_volumen - media) / desviacion), axis=1).astype(np.float32)
 
 
+def logit_pcr(salida: torch.Tensor, desplazamiento: torch.Tensor | None = None,
+              grupo: torch.Tensor | None = None) -> torch.Tensor:
+    """[N,K] → [N]: cabeza del grupo de cada corte (media si grupo < 0) más el offset."""
+    if salida.shape[1] == 1:
+        logit = salida.squeeze(1)
+    else:
+        if grupo is None:
+            raise ValueError("Con varias cabezas hay que indicar el grupo de cada corte")
+        elegida = salida.gather(1, grupo.clamp(min=0)[:, None]).squeeze(1)
+        logit = torch.where(grupo >= 0, elegida, salida.mean(1))
+    return logit if desplazamiento is None else logit + desplazamiento
+
+
+def _por_fila(valores: np.ndarray | None, dtype, dispositivo) -> torch.Tensor | None:
+    return None if valores is None else torch.as_tensor(np.asarray(valores, dtype=dtype), device=dispositivo)
+
+
 @torch.no_grad()
 def predecir(modelo: PartyNet, pixeles: torch.Tensor, filas: np.ndarray,
-             tta: bool = True, lote: int = 256) -> tuple[np.ndarray, np.ndarray]:
+             tta: bool = True, lote: int = 256, desplazamiento: np.ndarray | None = None,
+             grupo: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray]:
     """Probabilidad de pCR y salidas auxiliares por corte, en FP32 y modo eval.
 
     Con TTA se promedian las probabilidades de las cuatro reflexiones.
+    ``desplazamiento`` (offset clínico) y ``grupo`` van alineados con las filas
+    de ``pixeles``, no con ``filas``.
     """
     modelo.eval()
     dispositivo = next(modelo.parameters()).device
+    offset_t = _por_fila(desplazamiento, np.float32, dispositivo)
+    grupo_t = _por_fila(grupo, np.int64, dispositivo)
     probabilidades, auxiliares = [], []
     for inicio in range(0, len(filas), lote):
         indices = torch.as_tensor(filas[inicio:inicio + lote], device=pixeles.device)
         x = pixeles[indices].to(dispositivo).float().div_(255)
+        i = indices.to(dispositivo)
+        o = None if offset_t is None else offset_t[i]
+        g = None if grupo_t is None else grupo_t[i]
         variantes = [x, x.flip(-1), x.flip(-2), x.flip(-2).flip(-1)] if tta else [x]
         suma_p, suma_a = 0, 0
         for variante in variantes:
-            logit, aux = modelo.forward_todo(variante)
-            suma_p = suma_p + torch.sigmoid(logit.squeeze(1))
+            salida, aux = modelo.forward_todo(variante)
+            suma_p = suma_p + torch.sigmoid(logit_pcr(salida, o, g))
             suma_a = suma_a + aux
         probabilidades.append((suma_p / len(variantes)).cpu())
         auxiliares.append((suma_a / len(variantes)).cpu())
     return torch.cat(probabilidades).numpy(), torch.cat(auxiliares).numpy()
 
 
-def _evaluar(modelo, pixeles, indice, filas, prefijo: str, pos_weight: float = 1.0) -> dict:
-    p, aux = predecir(modelo, pixeles, filas, tta=False)
+def _evaluar(modelo, pixeles, indice, filas, prefijo: str, pos_weight: float = 1.0,
+             desplazamiento=None, grupo=None) -> dict:
+    p, aux = predecir(modelo, pixeles, filas, tta=False, desplazamiento=desplazamiento, grupo=grupo)
     cortes = indice.iloc[filas][["patient_id", "pCR", "HR", "HER2", "tum_vol"]].copy()
     cortes["p"] = p
     cortes[["a_hr", "a_her2", "a_vol"]] = aux
@@ -236,8 +262,14 @@ def _evaluar(modelo, pixeles, indice, filas, prefijo: str, pos_weight: float = 1
 def entrenar(receta: dict, pixeles: torch.Tensor, indice: pd.DataFrame,
              fit: np.ndarray, seleccion: np.ndarray | None, semilla: int,
              perdida: str, lambda_aux: float, epocas: int | None = None,
-             registro=print) -> Resultado:
+             registro=print, desplazamiento: np.ndarray | None = None,
+             grupo: np.ndarray | None = None) -> Resultado:
     """Entrena una red con BCEWithLogitsLoss por corte y peso 1/n_cortes por paciente.
+
+    ``desplazamiento`` (una por fila de ``indice``) es un offset fijo que se
+    suma al logit: la red aprende solo el residuo (p. ej. de la clínica).
+    ``grupo`` elige la cabeza de cada corte cuando ``receta["modelo"]`` tiene
+    varias (−1 = grupo desconocido, media de las cabezas).
 
     ``seleccion`` decide la parada temprana con la AUC de paciente de los pesos
     EMA, suavizada con una media móvil de ``ventana_auc`` épocas. No se usa la
@@ -263,8 +295,13 @@ def entrenar(receta: dict, pixeles: torch.Tensor, indice: pd.DataFrame,
     n1 = int(tabla_fit["pCR"].sum())
     n0 = len(tabla_fit) - n1
     pos_weight = n0 / n1 if perdida == "ponderada" else 1.0
+    if desplazamiento is not None and perdida != "normal":
+        raise ValueError("Con offset la base ya está calibrada: usa la pérdida normal")
     with torch.no_grad():
-        modelo.cabeza_pcr.bias.fill_(math.log(n1 * pos_weight / n0))
+        # Con offset, la prevalencia ya está en el desplazamiento.
+        modelo.sesgo.fill_(0.0 if desplazamiento is not None else math.log(n1 * pos_weight / n0))
+    offset_t = _por_fila(desplazamiento, np.float32, dispositivo)
+    grupo_t = _por_fila(grupo, np.int64, dispositivo)
 
     y = torch.tensor(indice["pCR"].to_numpy(np.float32), device=dispositivo)
     aux = torch.tensor(objetivos_auxiliares(indice, fit_pacientes), device=dispositivo)
@@ -325,8 +362,10 @@ def entrenar(receta: dict, pixeles: torch.Tensor, indice: pd.DataFrame,
             x = aumentar(pixeles[lote].float().div_(255), generador, receta["afin"],
                          receta.get("cutout"))
             with torch.autocast(dispositivo.type, dtype=torch.bfloat16, enabled=cuda):
-                logit, salida_aux = modelo.forward_todo(x)
-            logit, salida_aux = logit.float().squeeze(1), salida_aux.float()
+                salida, salida_aux = modelo.forward_todo(x)
+            logit = logit_pcr(salida.float(), None if offset_t is None else offset_t[lote],
+                              None if grupo_t is None else grupo_t[lote])
+            salida_aux = salida_aux.float()
             w = peso[lote] / peso[lote].mean()
             perdida_pcr = (F.binary_cross_entropy_with_logits(
                 logit, y_objetivo[lote], pos_weight=peso_positivo, reduction="none") * w).mean()
@@ -359,9 +398,10 @@ def entrenar(receta: dict, pixeles: torch.Tensor, indice: pd.DataFrame,
         fila = {"epoca": epoca, "bce_pcr_fit_aumentada": acumulada / max(1, vistos),
                 "lr_final": planificador.get_last_lr()[0],
                 "segundos_entrenamiento": time.time() - inicio}
-        fila.update(_evaluar(ema.modelo, pixeles, indice, diag, "fit", pos_weight))
+        fila.update(_evaluar(ema.modelo, pixeles, indice, diag, "fit", pos_weight, desplazamiento, grupo))
         if seleccion is not None:
-            fila.update(_evaluar(ema.modelo, pixeles, indice, seleccion, "sel", pos_weight))
+            fila.update(_evaluar(ema.modelo, pixeles, indice, seleccion, "sel", pos_weight,
+                                 desplazamiento, grupo))
             recientes = [h["sel_auc"] for h in historia[-(receta["ventana_auc"] - 1):]] + [fila["sel_auc"]]
             fila["sel_auc_suavizada"] = float(np.mean(recientes))
             candidata = epoca >= min(receta["ventana_auc"], n_epocas)

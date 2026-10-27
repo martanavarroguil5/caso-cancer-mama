@@ -53,9 +53,15 @@ tres salidas.
 Para cada fold exterior k (los `fold` de `samples.csv`):
 
 - **Pacientes de desarrollo (folds ≠ k, fit y selección):** offset por ajuste
-  cruzado dentro del desarrollo, 5 particiones estratificadas por pCR
-  (semilla 4000 + k). Ninguna paciente recibe un offset ajustado con su propia
-  etiqueta.
+  cruzado dentro del desarrollo con los folds de `samples.csv`: la paciente del
+  fold j recibe la logística ajustada con los folds ∉ {k, j}. Ninguna paciente
+  recibe un offset ajustado con su propia etiqueta.
+
+  *Enmienda (27/10/2026, antes de entrenar ninguna red ni ver resultados):* la
+  primera versión usaba 5 particiones estratificadas por pCR (semilla 4000 + k).
+  El test de fugas mostró que así la propia etiqueta decide en qué partición cae
+  la paciente y, con ello, su offset. Los folds del dataset no dependen de
+  ninguna etiqueta y repiten el diseño de la fusión anidada.
 - **Pacientes del exterior k:** offset de la logística ajustada con todo el
   desarrollo.
 - Sin ningún grupo clínico disponible: logit de la prevalencia del ajuste.

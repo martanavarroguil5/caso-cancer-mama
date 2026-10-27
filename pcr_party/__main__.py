@@ -1,4 +1,4 @@
-"""CLI: python -m pcr_party {cache,humo,piloto,cv,resumen,final,fusion-*,predecir,evaluar-test}."""
+"""CLI: python -m pcr_party {cache,humo,piloto,cv,resumen,final,fusion-*,offset-*,predecir,evaluar-test}."""
 from __future__ import annotations
 
 import argparse
@@ -141,6 +141,9 @@ def main(argv=None) -> None:
     fusion_final.add_argument("--nombre", required=True, help="Carpeta nueva en modelos/")
     fusion_final.add_argument("--imagen", default="party_final_v2", help="Paquete de imagen congelado")
 
+    sub.add_parser("offset-cv", help="Piloto: CNN entrenada sobre la clínica (30 redes, reanudable)")
+    sub.add_parser("offset-evaluar", help="Evalúa el piloto offset según docs/PROTOCOLO_OFFSET.md")
+
     sub.add_parser("recursos-app", help="Escribe app/recursos/*.json desde runs/ (solo train)")
 
     pred = sub.add_parser("predecir", help="Predice una tripleta PRE/EARLY/LATE (y clínica si la hay)")
@@ -190,6 +193,12 @@ def main(argv=None) -> None:
     elif args.orden == "fusion-final":
         from .fusion import paquete_final
         print(paquete_final(args.nombre, args.imagen))
+    elif args.orden == "offset-cv":
+        from .offset import cv as cv_offset
+        cv_offset()
+    elif args.orden == "offset-evaluar":
+        from .offset import evaluar as evaluar_offset
+        print(json.dumps(evaluar_offset()["decision"], indent=2, ensure_ascii=False))
     elif args.orden == "recursos-app":
         from .recursos_app import escribir
         for ruta in escribir():

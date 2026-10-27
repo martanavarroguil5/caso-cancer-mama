@@ -45,11 +45,13 @@ class Bloque(nn.Module):
 
 class PartyNet(nn.Module):
     def __init__(self, anchos=(24, 48, 96, 160), oculto=64, dropout=0.35,
-                 dropout_espacial=0.10, escalas=(256, 128, 64), lado=128):
+                 dropout_espacial=0.10, escalas=(256, 128, 64), lado=128, cabezas=1):
         super().__init__()
         self.config = {"anchos": list(anchos), "oculto": oculto, "dropout": dropout,
                        "dropout_espacial": dropout_espacial, "escalas": list(escalas),
                        "lado": lado}
+        if cabezas != 1:
+            self.config["cabezas"] = cabezas
         if any(t > 256 or t < 8 for t in escalas):
             raise ValueError("Cada vista central debe medir entre 8 y 256 píxeles")
         self.escalas = tuple(escalas)
@@ -65,9 +67,21 @@ class PartyNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.Dropout(dropout),
         )
-        self.cabeza_pcr = nn.Linear(oculto, 1)
+        # Con varias cabezas (una por subtipo) el sesgo es común: la cabeza
+        # elegida solo cambia los pesos, no el efecto principal del grupo.
+        self.cabeza_pcr = nn.Linear(oculto, cabezas, bias=cabezas == 1)
+        if cabezas != 1:
+            self.sesgo_pcr = nn.Parameter(torch.zeros(1))
         self.cabeza_aux = nn.Linear(oculto, len(AUXILIARES))
         self.apply(self._inicializar)
+
+    @property
+    def sesgo(self) -> torch.Tensor:
+        return self.cabeza_pcr.bias if self.cabeza_pcr.bias is not None else self.sesgo_pcr
+
+    def _pcr(self, z: torch.Tensor) -> torch.Tensor:
+        salida = self.cabeza_pcr(z)
+        return salida if self.cabeza_pcr.bias is not None else salida + self.sesgo_pcr
 
     @staticmethod
     def _inicializar(capa: nn.Module) -> None:
@@ -75,7 +89,8 @@ class PartyNet(nn.Module):
             nn.init.kaiming_normal_(capa.weight, mode="fan_out", nonlinearity="relu")
         elif isinstance(capa, nn.Linear):
             nn.init.kaiming_uniform_(capa.weight, nonlinearity="relu")
-            nn.init.zeros_(capa.bias)
+            if capa.bias is not None:
+                nn.init.zeros_(capa.bias)
         elif isinstance(capa, nn.BatchNorm2d):
             nn.init.ones_(capa.weight)
             nn.init.zeros_(capa.bias)
@@ -108,13 +123,13 @@ class PartyNet(nn.Module):
         return self.tronco(z.reshape(n, s * z.shape[1]))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Contrato de inferencia: un único logit de pCR por corte, [N,1]."""
-        return self.cabeza_pcr(self.representacion(x))
+        """Contrato de inferencia: un único logit de pCR por corte, [N,1] ([N,K] con K cabezas)."""
+        return self._pcr(self.representacion(x))
 
     def forward_todo(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        """Logit de pCR [N,1] y logits/regresión auxiliares [N,3] (solo entrenamiento)."""
+        """Logit de pCR [N,K] y logits/regresión auxiliares [N,3] (solo entrenamiento)."""
         z = self.representacion(x)
-        return self.cabeza_pcr(z), self.cabeza_aux(z)
+        return self._pcr(z), self.cabeza_aux(z)
 
 
 def numero_parametros(modelo: nn.Module) -> int:
