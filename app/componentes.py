@@ -9,7 +9,6 @@ import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 
 RECURSOS = Path(__file__).resolve().parent / "recursos"
 
@@ -508,7 +507,7 @@ def red_neuronal(datos: dict, alto: int = 600) -> None:
     """Red con conexiones: mapas de activación reales de un corte y pesos efectivos entre capas."""
     codigo = (_RED.replace("__FUENTES__", FUENTES).replace("__ALTO__", str(alto))
               .replace("__DATOS__", json.dumps(datos, ensure_ascii=False)))
-    components.html(codigo, height=alto + 4)
+    st.iframe(codigo, height=alto + 4)
 
 
 # ---------------------------------------------------------------- visor de cortes
@@ -603,7 +602,7 @@ def visor(cortes: list[dict], titulo: str, alto: int = 500, inicial: int = 0) ->
     codigo = (_VISOR.replace("__FUENTES__", FUENTES).replace("__ALTO__", str(alto)).replace("__LADO__", str(alto))
               .replace("__CORTES__", json.dumps(cortes)).replace("__META__", json.dumps({"titulo": titulo}))
               .replace("__INICIAL__", str(inicial)))
-    components.html(codigo, height=alto + 4)
+    st.iframe(codigo, height=alto + 4)
 
 
 # ---------------------------------------------------------------- gráficas (Altair, con hover)

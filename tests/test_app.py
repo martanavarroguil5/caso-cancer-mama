@@ -35,8 +35,9 @@ class TestPaginas(unittest.TestCase):
         at.segmented_control[0].set_value("Paciente de ejemplo").run()
         self.assertFalse(at.exception, [e.value for e in at.exception])
         textos = " ".join(m.value for m in at.markdown)
-        self.assertIn("probabilidad estimada de pCR", textos)
-        self.assertIn("Submodelo usado", textos)
+        self.assertIn("Solo imagen · CNN", textos)
+        self.assertIn("submodelo subtipo+edad+volumen+imagen", textos)
+        self.assertEqual(len(at.get("iframe")), 2)  # visor y red
 
 
 if __name__ == "__main__":
