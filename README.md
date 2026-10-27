@@ -137,11 +137,12 @@ nohup .venv/bin/python -m pcr_party fusion-interna > runs/fusion_interna.out 2>&
 
 ```bash
 .venv/bin/python -m pcr_party recursos-app
-.venv/bin/streamlit run app/inicio.py --server.address 100.120.212.49 --server.port 8502
+.venv/bin/streamlit run app/inicio.py
 ```
 
-Se abre en `http://100.120.212.49:8502` desde cualquier equipo de la red
-Tailscale. La predicción va en CPU.
+Se abre en `http://localhost:8501`, solo en el propio equipo
+(`.streamlit/config.toml` fija `address = "localhost"`). La predicción va en
+CPU, así que no necesita GPU.
 
 ### 5. Predicción y test
 
