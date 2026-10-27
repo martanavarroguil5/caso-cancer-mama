@@ -7,7 +7,10 @@ textColor = "#0f1b2d"
 font = "sans serif"
 
 [server]
-address = "localhost"
+# TEMPORAL (27/10/2026): escucha solo en la IP de Tailscale para verla desde el Mac.
+# Antes de entregar el proyecto, volver a address = "localhost" y borrar estas
+# líneas y la nota del README (ver docs/PENDIENTES.md).
+address = "100.120.212.49"
 port = 8501
 headless = true
 maxUploadSize = 20

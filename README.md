@@ -140,9 +140,12 @@ nohup .venv/bin/python -m pcr_party fusion-interna > runs/fusion_interna.out 2>&
 .venv/bin/streamlit run app/inicio.py
 ```
 
-Se abre en `http://localhost:8501`, solo en el propio equipo
-(`.streamlit/config.toml` fija `address = "localhost"`). La predicción va en
-CPU, así que no necesita GPU.
+La predicción va en CPU, así que no necesita GPU.
+
+> **Temporal, quitar antes de la entrega** (ver `docs/PENDIENTES.md`): durante el
+> desarrollo la web escucha solo en la IP de Tailscale, `http://100.120.212.49:8501`,
+> para abrirla desde el Mac. La versión final debe volver a `address = "localhost"`
+> (o desplegarse en Hugging Face) y esta nota debe desaparecer.
 
 ### 5. Predicción y test
 
