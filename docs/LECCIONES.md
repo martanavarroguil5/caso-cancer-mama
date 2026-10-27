@@ -316,3 +316,48 @@ recursos-app` a partir de `runs/` (solo train) y se versionan. La predicción
 muestra la probabilidad, la banda con la pCR observada en ella (hover), el
 detalle por corte, el desacuerdo entre las 5 redes y el submodelo clínico
 usado. Las pacientes de ejemplo son de train y se marcan como tales.
+
+## 10. ¿Puede la imagen aportar más junto a la clínica? (27/10/2026)
+
+### Análisis previo (solo OOF de train, `runs/analisis_aporte_imagen/`)
+
+- La puntuación de la CNN es casi independiente de la clínica (la clínica
+  explica el 0,6 % de su varianza; no predice HR ni HER2). Aporta poco
+  (+0,005) porque es débil, no porque sea redundante.
+- La señal se concentra en HER2+ (AUC 0,61) y triple negativo (0,58); en
+  HR+/HER2− es casi nula (0,54).
+- No mejora con otra agregación de cortes (todas 0,570–0,576), con la
+  heterogeneidad entre cortes, localizando el tumor (los PNG ya están
+  centrados en él) ni con rasgos cinéticos clásicos (AUC ≤ 0,53).
+- Para sumar +0,03 sobre la clínica, la imagen sola tendría que rondar 0,63.
+
+### Piloto: CNN entrenada sobre el offset clínico (`docs/PROTOCOLO_OFFSET.md`)
+
+La red no recibe la clínica: aprende solo el residuo, con
+logit = offset clínico fijo + f(imagen). Hay dos brazos: una cabeza, y tres
+cabezas por subtipo con el sesgo común. El offset se calcula sin fugas y hay
+30 redes (`runs/cv_offset/`).
+
+| Modelo | AUC media ± DE | Δ frente a fusión v1 [IC95 %] | Δ frente a su clínica [IC95 %] |
+|---|---|---|---|
+| fusión v1 (referencia) | 0,714 ± 0,033 | — | +0,006 [−0,001; +0,013] |
+| offset | 0,711 ± 0,032 | −0,002 [−0,009; +0,005] | +0,004 [−0,008; +0,015] |
+| offset por subtipo | 0,708 ± 0,031 | −0,005 [−0,011; +0,001] | +0,001 [−0,008; +0,009] |
+
+**Ningún brazo cumple el criterio fijado** (Δ ≥ +0,010 frente a la fusión e IC
+frente a su clínica sin el 0). `party_fusion_v1` sigue vigente.
+
+Qué se aprendió:
+
+- Concentrar el gradiente en lo que la clínica no explica no hace la señal de
+  imagen más fuerte. Con una sola cabeza, f(x) sola baja a 0,559: aprende un
+  residuo más específico, pero no mayor.
+- Por subtipo, el offset mejora algo dentro de HER2+, triple negativo y
+  HR+/HER2− (0,658, 0,621 y 0,574 frente a 0,654, 0,616 y 0,565). La mejora
+  dentro de cada subgrupo es pequeña y no aparece en el conjunto.
+- Las cabezas por subtipo empeoran (−0,003 frente a una cabeza): con
+  ≈300–450 pacientes por subtipo la cabeza extra solo añade varianza.
+- La fila «subtipo desconocido» del `RESUMEN.md` tiene n = 3 y no es
+  interpretable.
+- Conclusión: con ≈1.100 pacientes y una CNN desde cero, el techo está en la
+  señal de la imagen, no en cómo se combina con la clínica.
