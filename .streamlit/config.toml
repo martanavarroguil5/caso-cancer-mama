@@ -1,10 +1,18 @@
 [theme]
-base = "light"
-primaryColor = "#2a78d6"
-backgroundColor = "#f6f7f9"
-secondaryBackgroundColor = "#ffffff"
-textColor = "#0f1b2d"
-font = "sans serif"
+base = "dark"
+primaryColor = "#ff6a3d"
+backgroundColor = "#07090c"
+secondaryBackgroundColor = "#11161c"
+textColor = "#ece8df"
+linkColor = "#ff8a63"
+borderColor = "#222b36"
+showWidgetBorder = true
+baseRadius = "3px"
+font = "Geist:https://fonts.googleapis.com/css2?family=Geist:wght@300..700&display=swap, sans-serif"
+headingFont = "Instrument Serif:https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap, serif"
+headingFontWeights = 400
+codeFont = "Geist Mono:https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400..600&display=swap, monospace"
+chartCategoricalColors = ["#ee5a30", "#1d9fbb", "#b8861a", "#8d949d"]
 
 [server]
 # TEMPORAL (27/10/2026): escucha solo en la IP de Tailscale para verla desde el Mac.

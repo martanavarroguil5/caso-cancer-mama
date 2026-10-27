@@ -317,6 +317,8 @@ muestra la probabilidad, la banda con la pCR observada en ella (hover), el
 detalle por corte, el desacuerdo entre las 5 redes y el submodelo clínico
 usado. Las pacientes de ejemplo son de train y se marcan como tales.
 
+Estética propia (27/10): tema oscuro de «sala de lectura» con navegación superior. La predicción tiene un visor de cortes con las fases, el mapa de realce, las tres ventanas que mira la red y la p de cada corte. La red se dibuja con sus conexiones: mapas de activación reales del corte (`motor.recorrido`, red 1 sin TTA) y pesos efectivos entre los filtros que más pesan en la salida. Las páginas cachean recursos en `app/estado.py`.
+
 ## 10. ¿Puede la imagen aportar más junto a la clínica? (27/10/2026)
 
 ### Análisis previo (solo OOF de train, `runs/analisis_aporte_imagen/`)
