@@ -1,9 +1,14 @@
+import hashlib
+import json
+import tempfile
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 
-from pcr_party import datos, fusion
+from pcr_party import datos, fusion, metricas
 try:
     from test_party import indice_sintetico
 except ImportError:
@@ -21,7 +26,43 @@ def tabla_sintetica(n=400, semilla=0):
     return t
 
 
+class TestIntegridadFusion(unittest.TestCase):
+    def test_manifiesto_portable_sin_aceptar_cambios_de_contenido(self):
+        original = '{\n  "nombre": "imagen"\n}\n'.encode("utf-8")
+        with tempfile.TemporaryDirectory() as carpeta:
+            raiz = Path(carpeta)
+            imagen, combinado = raiz / "imagen", raiz / "fusion"
+            imagen.mkdir()
+            combinado.mkdir()
+            (combinado / "paquete.json").write_text(json.dumps({
+                "paquete_imagen": "imagen",
+                "sha256_paquete_imagen": hashlib.sha256(original).hexdigest()
+            }), encoding="utf-8")
+            for contenido in (original, original.replace(b"\n", b"\r\n")):
+                with self.subTest(contenido=contenido), patch("pcr_party.inferencia.Paquete") as cargar:
+                    (imagen / "paquete.json").write_bytes(contenido)
+                    fusion.PaqueteFusion(combinado, "cpu")
+                    cargar.assert_called_once_with(imagen, "cpu")
+            (imagen / "paquete.json").write_bytes(original.replace(b"imagen", b"otro"))
+            with patch("pcr_party.inferencia.Paquete") as cargar:
+                with self.assertRaisesRegex(RuntimeError, "no coincide"):
+                    fusion.PaqueteFusion(combinado, "cpu")
+                cargar.assert_not_called()
+
+
 class TestFusion(unittest.TestCase):
+    def test_diagnostico_ajuste_mide_brecha_logistica(self):
+        ajuste = tabla_sintetica(250, 2)
+        validacion = tabla_sintetica(100, 3)
+        modelos = fusion.ajustar_submodelos(ajuste, False)
+        d = fusion.diagnostico_ajuste(modelos, ajuste, validacion, 2)
+        p, _ = fusion.predecir_patron(modelos, validacion, tuple(fusion.GRUPOS), True)
+        self.assertEqual(d["ajuste"]["n"], 250)
+        self.assertEqual(d["validacion"]["n"], 100)
+        self.assertAlmostEqual(d["validacion"]["auc"], metricas.auc(validacion["pCR"], p))
+        self.assertAlmostEqual(d["brecha_auc"], d["ajuste"]["auc"] - d["validacion"]["auc"])
+        self.assertAlmostEqual(d["brecha_bce"], d["validacion"]["bce"] - d["ajuste"]["bce"])
+
     def test_ocho_combinaciones_y_nombres(self):
         c = fusion.combinaciones()
         self.assertEqual(len(c), 8)

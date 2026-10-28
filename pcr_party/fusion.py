@@ -6,6 +6,7 @@ disponibles (Fletcher Mercaldo y Blume, 2020), nunca imputación.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from itertools import combinations
 from pathlib import Path
@@ -212,6 +213,24 @@ def imagen_interna(salida: Path, exterior: int, n_semillas: int) -> pd.Series:
     return pd.concat(partes).rename("p_imagen")
 
 
+def diagnostico_ajuste(submodelos: dict, ajuste: pd.DataFrame, validacion: pd.DataFrame, fold: int) -> dict:
+    """Brecha de la etapa logística sobre puntuaciones de imagen cross-fitted.
+
+    No mide la memorización de la CNN: ambas tablas contienen puntuaciones de
+    redes que no vieron a la paciente. El fold exterior no participa en el ajuste.
+    """
+    grupos = tuple(GRUPOS)
+    resultado = {"fold": int(fold)}
+    for nombre, tabla in (("ajuste", ajuste), ("validacion", validacion)):
+        p, _ = predecir_patron(submodelos, tabla, grupos, True)
+        validos = np.isfinite(p)
+        y = tabla["pCR"].to_numpy()[validos]
+        resultado[nombre] = {"n": int(validos.sum()), **metricas.resumen_probabilidades(y, p[validos])}
+    resultado["brecha_auc"] = resultado["ajuste"]["auc"] - resultado["validacion"]["auc"]
+    resultado["brecha_bce"] = resultado["validacion"]["bce"] - resultado["ajuste"]["bce"]
+    return resultado
+
+
 # ---------------------------------------------------------------- evaluación anidada
 
 def evaluar(interna: str = "cv_interna_fusion", cv_exterior: str = CV_EXTERIOR,
@@ -234,6 +253,7 @@ def evaluar(interna: str = "cv_interna_fusion", cv_exterior: str = CV_EXTERIOR,
     pred["completa+imagen|normal|interaccion"] = pd.Series(np.nan, index=clinica.index)
     pred["completa+imagen|normal|ingenuo"] = pd.Series(np.nan, index=clinica.index)
     coeficientes = []
+    diagnosticos = []
     completa = tuple(GRUPOS)
     for k in sorted(clinica["fold"].unique()):
         ajuste = clinica[clinica["fold"] != k].copy()
@@ -249,6 +269,7 @@ def evaluar(interna: str = "cv_interna_fusion", cv_exterior: str = CV_EXTERIOR,
                 p, _ = predecir_patron(submodelos, prueba, grupos, imagen)
                 pred[f"{nombre}|{perdida}"].loc[prueba.index] = p
             if perdida == "normal":
+                diagnosticos.append(diagnostico_ajuste(submodelos, ajuste, prueba, k))
                 c = submodelos["subtipo+edad+volumen+imagen"]["coeficientes"]
                 coeficientes.append({"fold": int(k), **c})
         inter = ajustar_logistica(ajuste, variables(completa, True), False, interaccion=True)
@@ -283,7 +304,8 @@ def evaluar(interna: str = "cv_interna_fusion", cv_exterior: str = CV_EXTERIOR,
              "completa+imagen ingenuo": "completa+imagen|normal|ingenuo"}
     resumen = {"brazos": {clave: fila(clave) for clave in pred},
                "alias": alias,
-               "cnn_sin_recalibrar": fila("p_cnn")}
+               "cnn_sin_recalibrar": fila("p_cnn"),
+               "diagnostico_generalizacion": diagnosticos}
 
     def delta(a, b):
         t = tabla.dropna(subset=[alias[a], alias[b]])
@@ -427,9 +449,14 @@ class PaqueteFusion:
         from .inferencia import Paquete
 
         self.ruta = Path(ruta)
-        self.info = json.loads((self.ruta / "paquete.json").read_text())
+        self.info = json.loads((self.ruta / "paquete.json").read_text(encoding="utf-8"))
         ruta_imagen = self.ruta.parent / self.info["paquete_imagen"]
-        if sha256(ruta_imagen / "paquete.json") != self.info["sha256_paquete_imagen"]:
+        # Git puede convertir LF a CRLF al copiar el paquete a Windows.
+        # Solo se admite esa normalización; cualquier cambio de contenido falla.
+        manifiesto = ruta_imagen / "paquete.json"
+        esperado = self.info["sha256_paquete_imagen"]
+        hash_lf = hashlib.sha256(manifiesto.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+        if sha256(manifiesto) != esperado and hash_lf != esperado:
             raise RuntimeError("El paquete de imagen no coincide con el que se usó al ajustar")
         self.imagen = Paquete(ruta_imagen, dispositivo)
 

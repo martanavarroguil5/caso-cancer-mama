@@ -2,111 +2,154 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from componentes import (ACERO, COBRE, GRIS, OCRE, TINTA2, _base, aviso, bandas_grafica, cabecera, grafica, mancuernas,
-                         num, pasos, pie, recurso, roc, seccion, tabla, tarjetas)
+from componentes import (COBRE, GRIS, TINTA2, _base, aviso, bandas_grafica, cabecera, calibracion,
+                         grafica, matriz, num, pct, pie, pr, recurso, roc, seccion, tabla, tarjetas, estructura_fusion)
 
 fus = recurso("modelo_fusion")
-img = recurso("modelo_imagen")
-
-cabecera("Modelo 2 · imagen + datos clínicos", "Fusión de imagen y <em>datos clínicos</em>",
-         "La CNN de imagen no cambia. Su probabilidad entra como una variable más en una regresión logística junto "
-         "con la edad, el volumen tumoral, HR y HER2. Así el peso de la imagen es visible y medible.",
-         meta=[("fusión", "tardía"), ("variables", "imagen + 4"), ("submodelos", "por patrón"), ("evaluación", "CV anidada")])
-
-seccion("1", "Diseño")
-pasos([
-    ("CNN congelada", "La misma red de la página anterior produce la puntuación de imagen"),
-    ("Datos clínicos", "Edad, log(1 + volumen), HR y HER2; ni cohorte ni datos del escáner"),
-    ("Logística por patrón", "Un submodelo para cada combinación de datos disponibles: nunca se imputa"),
-    ("CV anidada", "La puntuación de imagen de las pacientes de ajuste sale de redes que no vieron el fold evaluado"),
-])
-with st.expander("¿Por qué así y no una red multimodal?", icon=":material/help:"):
-    st.markdown(
-        "- En el proyecto ya se probaron tres redes entrenadas junto con la clínica (V002, FiLM, SAM). En las tres, "
-        "quitar la parte de imagen dejaba la AUC igual o mejor: la red aprendía a **ignorar las imágenes**.\n"
-        "- Con la CNN congelada, la aportación de la imagen es un coeficiente y una diferencia pareada de AUC.\n"
-        "- Si en la evaluación no hay datos clínicos, la CNN sola sigue siendo un modelo completo.\n"
-        "- Con datos incompletos se usa el **submodelo por patrón** (Fletcher Mercaldo y Blume, *Biostatistics* "
-        "2020): una logística entrenada con exactamente las variables disponibles.")
-
-if fus is None:
-    aviso("<b>Evaluación en curso.</b> Cuando termine la validación cruzada anidada, esta página mostrará la "
-          "comparación con la imagen sola y con la clínica sola, los coeficientes y las bandas.", "atencion")
-    pie()
+if not fus:
+    st.info("Faltan los recursos de evaluación del modelo combinado.")
     st.stop()
-
 r = fus["resumen"]
-a = r["alias"]
-b = lambda n: r["brazos"][a[n]]
-comp = r["comparaciones"]
-principal = comp["principal: completa+imagen − completa"]
+m = r["brazos"][r["alias"]["completa+imagen"]]
+config = fus.get("configuracion", {})
+sub = config.get("submodelo")
+prevalencia = fus["bandas"]["subtipo+edad+volumen+imagen"]["prevalencia"]
 
-seccion("2", "Resultados de la validación cruzada anidada", "Mismas 1.097 pacientes y mismos folds para todos los modelos.")
-escala = lambda auc: (auc - 0.5) / 0.5
+cabecera("Modelo 2 · imagen + clínica", "Evaluación del <em>modelo combinado</em>",
+         "Regresión logística regularizada sobre la puntuación de imagen, edad, volumen, HR y HER2. "
+         "Resultados por paciente en validación cruzada anidada; test reservado.",
+         meta=[("variables", "5"), ("evaluación", "5 folds anidados"),
+               ("regularización", "L2 · C = 1"), ("test", "pendiente")])
 tarjetas([
-    {"t": "Imagen + clínica", "v": num(b("completa+imagen")["auc_media_folds"]), "acento": True,
-     "d": f"AUC media ± {num(b('completa+imagen')['auc_de_folds'])}", "barra": escala(b("completa+imagen")["auc_media_folds"]),
-     "barra_txt": "0,5 → 1", "ayuda": f"AP {num(b('completa+imagen')['ap'])} · Brier {num(b('completa+imagen')['brier'])}"},
-    {"t": "Solo clínica", "v": num(b("completa")["auc_media_folds"]), "d": f"AUC media ± {num(b('completa')['auc_de_folds'])}",
-     "barra": escala(b("completa")["auc_media_folds"]), "barra_txt": "0,5 → 1", "ayuda": "Edad, volumen, HR y HER2, sin imagen."},
-    {"t": "Solo imagen", "v": num(b("imagen")["auc_media_folds"]), "d": "CNN recalibrada",
-     "barra": escala(b("imagen")["auc_media_folds"]), "barra_txt": "0,5 → 1", "ayuda": "La misma CNN de la página anterior."},
-    {"t": "Aporte de la imagen", "v": f"{principal['delta']:+.3f}".replace(".", ","),
-     "d": f"IC95 % [{principal['ic95'][0]:+.3f}; {principal['ic95'][1]:+.3f}]".replace(".", ","),
-     "ayuda": "Comparación principal fijada antes de entrenar: diferencia pareada de AUC media por fold "
-              "(bootstrap estratificado, 2.000 remuestreos)."},
+    {"t": "Discriminación · AUC", "v": num(m["auc_media_folds"]), "d": f"± {num(m['auc_de_folds'])} entre folds",
+     "acento": True, "ayuda": "AUC media en validación anidada. 0,5 = azar; 1 = separación perfecta."},
+    {"t": "Precisión media · AP", "v": num(m["ap"]), "d": f"Referencia sin señal: {num(prevalencia)}"},
+    {"t": "Error probabilístico · Brier", "v": num(m["brier"]), "d": "Menor es mejor; 0 es perfecto"},
+    {"t": "Pérdida · BCE", "v": num(m["bce"]), "d": "Fuera de fold; menor es mejor"},
 ])
-c1, c2 = st.columns([1.1, 1], gap="large")
-with c1:
-    grafica(roc(fus["roc"], {"completa+imagen": COBRE, "completa": ACERO, "subtipo": OCRE, "imagen": GRIS},
-                "ROC fuera de fold (anidada)"))
-with c2:
-    filas = [{"Comparación": n.replace("principal: ", "★ "), "Δ AUC": f"{c['delta']:+.4f}",
-              "IC95 %": f"[{c['ic95'][0]:+.4f}; {c['ic95'][1]:+.4f}]", "P(Δ≤0)": f"{c['p_delta_menor_igual_0']:.3f}"}
-             for n, c in comp.items()]
-    st.markdown("<div style='height:2.6rem'></div>", unsafe_allow_html=True)
-    tabla(pd.DataFrame(filas))
-    st.caption("★ comparación principal. Un IC que no cruza el 0 indica una diferencia que no se explica por azar.")
 
-seccion("3", "Peso de cada variable", "Coeficientes estandarizados del modelo completo en cada fold: "
-        "cuánto cambia el logit de pCR por cada desviación típica de la variable.")
-coef = pd.DataFrame(fus["coeficientes_por_fold"]).melt(id_vars="fold", var_name="variable", value_name="coeficiente")
-nombres = {"HR": "HR positivo", "HER2": "HER2 positivo", "edad": "Edad", "log_volumen": "Volumen (log)", "imagen": "Imagen (CNN)"}
-coef["variable"] = coef["variable"].map(nombres)
-y = alt.Y("variable:N", title=None, sort=list(nombres.values()), axis=alt.Axis(labelFont="Geist", labelFontSize=12))
-rango = alt.Chart(coef).mark_rule(strokeWidth=6, opacity=0.25, strokeCap="round").encode(
-    y=y, x="min(coeficiente):Q", x2="max(coeficiente):Q",
-    color=alt.condition(alt.datum.variable == "Imagen (CNN)", alt.value(COBRE), alt.value(GRIS)))
-puntos = alt.Chart(coef).mark_circle(size=90, opacity=0.95, stroke="#0d1116", strokeWidth=1.5).encode(
-    y=y, x=alt.X("coeficiente:Q", title="Coeficiente estandarizado (un punto por fold)"),
-    color=alt.condition(alt.datum.variable == "Imagen (CNN)", alt.value(COBRE), alt.value(TINTA2)),
-    tooltip=["variable:N", "fold:Q", alt.Tooltip("coeficiente:Q", format="+.3f")])
-cero = alt.Chart(pd.DataFrame({"x": [0]})).mark_rule(color="#6b7480", strokeDash=[2, 3]).encode(x="x:Q")
-grafica(_base(alt.layer(cero, rango, puntos), 250))
 
-seccion("4", "Combinaciones de variables clínicas", "AUC media de cada submodelo sin imagen (gris) y con "
-        "imagen (naranja). La línea es lo que añade la imagen.")
-filas = []
-for clave, v in r["brazos"].items():
-    if clave.endswith("|normal") and not clave.startswith("imagen"):
-        base = clave.split("|")[0]
-        if base.endswith("+imagen"):
-            continue
-        con = r["brazos"].get(f"{base}+imagen|normal")
-        if con:
-            filas.append({"fila": base.replace("+", " + "), "sin": v["auc_media_folds"], "con": con["auc_media_folds"]})
-combos = pd.DataFrame(filas).sort_values("sin", ascending=False)
-grafica(mancuernas(combos))
-with st.expander("Tabla", icon=":material/table_rows:"):
-    tabla(pd.DataFrame({"Datos clínicos": combos["fila"], "Sin imagen": combos["sin"].map(num),
-                        "Con imagen": combos["con"].map(num),
-                        "Δ": (combos["con"] - combos["sin"]).map(lambda d: f"{d:+.3f}".replace(".", ","))}))
+if sub:
+    estructura_fusion(sub)
 
-seccion("5", "Bandas de probabilidad")
+seccion("1", "Discriminación y estabilidad", "Cada paciente se evalúa fuera del ajuste de su fold.")
 c1, c2 = st.columns(2, gap="large")
 with c1:
-    grafica(bandas_grafica(img["bandas"], "Solo imagen"))
+    grafica(roc({"Combinado": fus["roc"]["completa+imagen"]}, {"Combinado": COBRE}, "ROC del combinado · OOF anidada"))
 with c2:
-    grafica(bandas_grafica(fus["bandas"]["subtipo+edad+volumen+imagen"], "Imagen + clínica completa"))
-st.caption("Cuanto más separadas están las barras, mejor distingue el modelo a las pacientes con y sin pCR.")
+    df = pd.DataFrame({"Fold": [str(i + 1) for i in range(len(m["auc_por_fold"]))], "AUC": m["auc_por_fold"]})
+    barras = alt.Chart(df).mark_bar(color=COBRE, size=32).encode(
+        x=alt.X("Fold:O", title="Fold exterior"), y=alt.Y("AUC:Q", scale=alt.Scale(domain=[0, 1])),
+        tooltip=["Fold:O", alt.Tooltip("AUC:Q", format=".3f")])
+    etiquetas = barras.mark_text(dy=-9, color=TINTA2).encode(text=alt.Text("AUC:Q", format=".3f"))
+    azar = alt.Chart(pd.DataFrame({"y": [0.5]})).mark_rule(color=GRIS, strokeDash=[3, 3]).encode(y="y:Q")
+    grafica(_base(alt.layer(barras, etiquetas, azar).properties(title="AUC en cada fold"), 360))
+if fus.get("pr", {}).get("completa+imagen"):
+    grafica(pr(fus["pr"]["completa+imagen"], prevalencia))
+else:
+    st.caption("Curva precisión–sensibilidad pendiente de exportar desde las predicciones OOF originales; AP guardada arriba.")
+st.caption("Discriminación moderada. La DE describe variación entre folds; no es un intervalo de confianza ni descarta sobreajuste.")
+with st.expander("Rendimiento por cohorte y subtipo", icon=":material/groups:"):
+    filas = [{"Grupo": "Cohorte " + k, "AUC del combinado": num(v)} for k, v in m["auc_dentro_cohorte"].items()]
+    filas += [{"Grupo": "Subtipo " + k, "AUC del combinado": num(v["completa+imagen"])} for k, v in r["auc_por_subtipo"].items()]
+    tabla(pd.DataFrame(filas))
+
+seccion("2", "Errores de clasificación", "Selecciona el umbral: cambia el equilibrio entre falsos positivos y falsos negativos.")
+umbrales = {k: v for k, v in fus.get("umbrales", {}).items() if k.endswith("+imagen")}
+if umbrales:
+    patron = st.selectbox("Datos disponibles del modelo combinado", list(umbrales),
+                         index=list(umbrales).index("subtipo+edad+volumen+imagen"))
+    regla = st.segmented_control("Umbral de decisión", ["Youden", "Máximo macro-F1"], default="Youden")
+    met = umbrales[patron]["macro_f1" if regla == "Máximo macro-F1" else "youden"]
+    c1, c2 = st.columns(2, gap="large")
+    with c1:
+        grafica(matriz(met))
+        st.caption(f"Umbral {num(met['umbral'])} · {met['TP'] + met['TN'] + met['FP'] + met['FN']} pacientes.")
+    with c2:
+        tabla(pd.DataFrame([{"Métrica": nombre, "Valor": pct(met[clave], 1)} for clave, nombre in
+             (("sensibilidad", "Sensibilidad"), ("especificidad", "Especificidad"),
+              ("precision_pcr", "Valor predictivo positivo"), ("exactitud", "Exactitud"),
+              ("f1_pcr", "F1 pCR"), ("macro_f1", "Macro-F1"))]))
+    st.caption("Umbrales elegidos con estas mismas OOF: las métricas de clasificación pueden ser optimistas. Test pendiente.")
+
+seccion("3", "Calidad de las probabilidades")
+c1, c2 = st.columns(2, gap="large")
+with c1:
+    grafica(bandas_grafica(fus["bandas"]["subtipo+edad+volumen+imagen"], "pCR observada por banda del combinado"))
+with c2:
+    ref_brier = prevalencia * (1 - prevalencia)
+    df = pd.DataFrame([{"Predicción": "Prevalencia constante", "Brier": ref_brier},
+                       {"Predicción": "Combinado OOF", "Brier": m["brier"]}])
+    barras = alt.Chart(df).mark_bar(color=COBRE, size=40).encode(
+        x=alt.X("Predicción:N", axis=alt.Axis(labelAngle=0), title=None),
+        y=alt.Y("Brier:Q", title="Brier · menor es mejor", scale=alt.Scale(domain=[0, 0.25])),
+        tooltip=["Predicción:N", alt.Tooltip("Brier:Q", format=".3f")])
+    grafica(_base(alt.layer(barras, barras.mark_text(dy=-9, color=TINTA2).encode(text=alt.Text("Brier:Q", format=".3f")))
+                 .properties(title="Error de las probabilidades"), 320))
+st.caption("La prevalencia constante es una referencia descriptiva calculada en las OOF. "
+           "El Brier combina calibración y discriminación; por sí solo no demuestra buena calibración.")
+if fus.get("calibracion", {}).get("completa+imagen"):
+    grafica(calibracion(fus["calibracion"]["completa+imagen"]))
+else:
+    st.caption("Calibración por deciles pendiente: faltan las probabilidades individuales OOF en esta copia. "
+               "Las bandas muestran tasas observadas por tercil, no una curva de calibración.")
+
+seccion("4", "Complejidad y parámetros de la fusión",
+        "Cinco coeficientes y un intercepto en el submodelo completo; la CNN se mantiene congelada.")
+if sub:
+    tarjetas([
+        {"t": "Parámetros logísticos", "v": str(len(sub["coeficientes"]) + 1), "d": "5 coeficientes + intercepto"},
+        {"t": "Pacientes del ajuste final", "v": str(sub["n_ajuste"]), "d": f"{sub['pcr_ajuste']} con pCR"},
+        {"t": "Penalización", "v": "L2", "d": "C = 1 · sin pesos de clase"},
+        {"t": "Interacciones", "v": "0", "d": "Variables estandarizadas"},
+    ])
+coef = pd.DataFrame(fus["coeficientes_por_fold"]).melt(id_vars="fold", var_name="variable", value_name="coeficiente")
+nombres = {"HR": "HR positivo", "HER2": "HER2 positivo", "edad": "Edad", "log_volumen": "Volumen (log)", "imagen": "Puntuación de imagen"}
+coef["variable"] = coef["variable"].map(nombres)
+base = alt.Chart(coef).encode(y=alt.Y("variable:N", title=None, sort=list(nombres.values())))
+rango = base.mark_rule(color=COBRE, strokeWidth=5, opacity=0.3).encode(x="min(coeficiente):Q", x2="max(coeficiente):Q")
+puntos = base.mark_point(filled=True, color=COBRE, size=85).encode(
+    x=alt.X("coeficiente:Q", title="Coeficiente estandarizado · cada punto es un fold"),
+    tooltip=["variable:N", "fold:Q", alt.Tooltip("coeficiente:Q", format="+.3f")])
+cero = alt.Chart(pd.DataFrame({"x": [0]})).mark_rule(color=GRIS, strokeDash=[3, 3]).encode(x="x:Q")
+grafica(_base(alt.layer(cero, rango, puntos), 280))
+st.caption("L2 reduce la magnitud de los coeficientes; no garantiza ausencia de sobreajuste. "
+           "La estabilidad entre folds es un diagnóstico complementario. Los 6 parámetros corresponden a la etapa logística, no a la CNN.")
+if sub:
+    with st.expander("Parámetros del paquete final", icon=":material/table_rows:"):
+        tabla(pd.DataFrame([{"Variable": nombres.get(k, k), "Coeficiente": num(v),
+                             "Media": num(sub["media"][i]), "Escala": num(sub["escala"][i])}
+                            for i, (k, v) in enumerate(sub["coeficientes"].items())]))
+        st.caption(f"Intercepto {num(sub['intercepto'])}. Volumen transformado como log(1 + volumen). "
+                   "Cada patrón de datos ausentes tiene su propia logística.")
+
+seccion("5", "¿Hay sobreajuste de la fusión?",
+        "Diagnóstico propio: rendimiento en el ajuste logístico frente al fold exterior reservado.")
+diag = fus.get("diagnostico_generalizacion", r.get("diagnostico_generalizacion", []))
+if diag:
+    filas = [{"Fold": str(d["fold"] + 1), "Conjunto": titulo,
+              "AUC": d[clave]["auc"], "BCE": d[clave]["bce"]}
+             for d in diag for clave, titulo in (("ajuste", "Ajuste"), ("validacion", "Validación exterior"))]
+    for metrica in ("AUC", "BCE"):
+        grafica(_base(alt.Chart(pd.DataFrame(filas)).mark_line(point=True).encode(
+            x=alt.X("Fold:O"), y=alt.Y(f"{metrica}:Q", scale=alt.Scale(zero=False)),
+            color="Conjunto:N", tooltip=["Fold:O", "Conjunto:N", alt.Tooltip(f"{metrica}:Q", format=".3f")])
+            .properties(title=f"{metrica} · ajuste y validación de la fusión"), 260))
+    tabla(pd.DataFrame([{"Fold": d["fold"] + 1, "Brecha AUC (ajuste − validación)": num(d["brecha_auc"]),
+                         "Brecha BCE (validación − ajuste)": num(d["brecha_bce"])} for d in diag]))
+    st.caption("Brechas positivas indican optimismo del ajuste. Las puntuaciones de imagen del ajuste son cross-fitted. "
+               "Este diagnóstico mide la etapa logística, no la memorización de la CNN; no hay un umbral universal que descarte sobreajuste.")
+else:
+    aviso("<b>No determinado.</b> La copia local no contiene las predicciones internas necesarias para medir "
+          "la brecha de ajuste–validación. La AUC anidada mide generalización, pero no cuantifica esa brecha.", "atencion")
+    with st.expander("Cómo completar el diagnóstico", icon=":material/terminal:"):
+        st.code("python scripts/diagnostico_fusion.py", language="bash")
+        st.caption("Ejecutar desde la raíz del proyecto en el equipo que conserva runs/cv_interna_fusion y "
+                   "runs/cv_presupuesto. Reajusta solo las logísticas de los folds con el mismo C = 1; "
+                   "no entrena CNN, no cambia el paquete final y no lee test.")
+
+seccion("6", "Conclusión")
+aviso("<b>Discriminación moderada en validación anidada.</b> El combinado obtiene AUC 0,714 y AP 0,505; "
+      "sus probabilidades mejoran el Brier de la referencia constante. Esto no basta para afirmar "
+      "buena calibración ni ausencia de sobreajuste. <b>Evaluación final en test pendiente.</b>", "clave")
 pie()

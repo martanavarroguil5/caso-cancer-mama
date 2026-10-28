@@ -24,7 +24,7 @@ FUENTES = ("https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=
 
 def recurso(nombre: str) -> dict | None:
     ruta = RECURSOS / f"{nombre}.json"
-    return json.loads(ruta.read_text()) if ruta.exists() else None
+    return json.loads(ruta.read_text(encoding="utf-8")) if ruta.exists() else None
 
 
 def estilo() -> None:
@@ -931,3 +931,11 @@ def pie() -> None:
 
 def escapar(texto: str) -> str:
     return html.escape(str(texto))
+
+
+def estructura_fusion(params: dict) -> None:
+    """Recorrido interactivo de la fusión con los parámetros reales del paquete."""
+    plantilla = (RECURSOS / "estructura_fusion.html").read_text(encoding="utf-8")
+    codigo = plantilla.replace("__FUENTES__", FUENTES).replace(
+        "__PARAMETROS__", json.dumps(params, ensure_ascii=True).replace("<", "\\u003c"))
+    st.iframe(codigo, height=1280)
